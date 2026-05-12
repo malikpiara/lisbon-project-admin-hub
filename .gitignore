@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code per-user settings (permissions). Keep launch.json shared.
+.claude/settings.local.json
