@@ -1,0 +1,267 @@
+/* Ported from Adamastor — react-big-calendar custom styles.
+   Scoped under .adamastor-calendar so it doesn't bleed into the default RBC instance. */
+
+@reference "../../app/globals.css";
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+
+.adamastor-calendar .rbc-calendar {
+  @apply bg-white dark:bg-background;
+  @apply border rounded-xl;
+  font-family: inherit;
+}
+
+.adamastor-calendar .rbc-month-view {
+  @apply border-0;
+}
+
+.adamastor-calendar .rbc-allday-cell > .rbc-row-bg > .rbc-day-bg {
+  @apply border-l-0;
+}
+
+.adamastor-calendar .rbc-month-header {
+  @apply border-t;
+}
+
+.adamastor-calendar .rbc-month-row + .rbc-month-row,
+.adamastor-calendar .rbc-day-bg + .rbc-day-bg {
+  @apply border-neutral-200/60 dark:border-border;
+}
+
+.adamastor-calendar .rbc-day-bg {
+  @apply border-neutral-50 dark:border-border;
+  @apply hover:bg-neutral-50 dark:hover:bg-background;
+  @apply transition-colors duration-200;
+}
+
+.adamastor-calendar .rbc-today {
+  @apply bg-neutral-100/60;
+}
+
+.adamastor-calendar .rbc-time-content > .rbc-today,
+.adamastor-calendar .rbc-header.rbc-today,
+.adamastor-calendar .rbc-time-header-content .rbc-day-bg.rbc-today {
+  @apply bg-neutral-100/40;
+}
+
+.adamastor-calendar .rbc-off-range-bg {
+  @apply bg-neutral-50 dark:bg-background/50 text-neutral-200 dark:text-neutral-600;
+}
+
+.adamastor-calendar .rbc-date-cell.rbc-off-range {
+  @apply text-neutral-300;
+}
+
+.adamastor-calendar .rbc-day-bg.rbc-selected {
+  @apply bg-indigo-100 dark:bg-indigo-900/30;
+}
+
+.adamastor-calendar .rbc-date-cell {
+  @apply text-left p-3 text-xs text-neutral-600 dark:text-neutral-300 font-normal;
+}
+
+.adamastor-calendar .rbc-date-cell > a {
+  @apply text-neutral-700 dark:text-neutral-300 no-underline text-sm font-normal;
+}
+
+.adamastor-calendar .rbc-date-cell.rbc-now > a {
+  @apply text-indigo-600 dark:text-indigo-400 font-bold;
+}
+
+.adamastor-calendar .rbc-row-segment {
+  display: grid;
+  grid-auto-flow: row;
+  gap: 4px;
+  padding: 1px 4px;
+}
+
+.adamastor-calendar .rbc-time-view {
+  @apply border-none;
+}
+
+.adamastor-calendar .rbc-month-header .rbc-header + .rbc-header {
+  @apply border-l border-neutral-200/60;
+}
+
+.adamastor-calendar .rbc-header {
+  @apply text-neutral-500 dark:text-neutral-300;
+  @apply font-normal text-xs tracking-wider;
+  @apply py-3 px-2;
+  @apply border-none;
+}
+
+.adamastor-calendar .rbc-header + .rbc-header {
+  @apply border-l-0;
+}
+
+.adamastor-calendar .rbc-time-header {
+  @apply bg-white dark:bg-background;
+}
+
+.adamastor-calendar .rbc-header .rbc-button-link {
+  @apply p-2 rounded-lg;
+}
+
+.adamastor-calendar .rbc-header.rbc-today {
+  @apply overflow-visible;
+}
+
+.adamastor-calendar .rbc-header.rbc-today .rbc-button-link {
+  @apply bg-[#4EC9D8] text-white relative z-50;
+}
+
+.adamastor-calendar .rbc-time-header-content {
+  @apply border-l border-neutral-100 dark:border-border;
+}
+
+.adamastor-calendar .rbc-time-content {
+  @apply border-t-neutral-100 dark:border-t-border;
+}
+
+.adamastor-calendar .rbc-time-content > * + * > * {
+  @apply border-l-neutral-100 dark:border-border;
+}
+
+.adamastor-calendar .rbc-timeslot-group {
+  @apply border-b border-neutral-100 dark:border-border min-h-12;
+}
+
+.adamastor-calendar .rbc-label {
+  @apply text-xs;
+  top: -7px;
+  position: relative;
+}
+
+.adamastor-calendar .rbc-day-slot .rbc-time-slot {
+  @apply border-t-0;
+}
+
+.adamastor-calendar .rbc-time-slot {
+  @apply text-neutral-500 dark:text-neutral-400 text-xs;
+}
+
+.adamastor-calendar .rbc-event {
+  @apply bg-[#dff6f7] hover:bg-[#dff6f7]/80 text-[#28aeb8] rounded-md px-1;
+  @apply transition-all duration-200;
+}
+
+.adamastor-calendar .rbc-calendar .rbc-month-view .rbc-event,
+.adamastor-calendar .rbc-calendar .rbc-time-view .rbc-event,
+.adamastor-calendar .rbc-calendar .rbc-agenda-view .rbc-event {
+  @apply dark:border-border;
+  border: 1px solid rgba(40, 174, 184, 0.3);
+  padding: 5px;
+  opacity: 90%;
+  display: grid;
+}
+
+.adamastor-calendar .rbc-time-view .rbc-event {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  @apply hover:bg-[#dff6f7]/80 dark:hover:bg-background/80 transition-colors;
+}
+
+.adamastor-calendar .rbc-time-view .rbc-event-content {
+  order: 1;
+  font-weight: 600;
+}
+
+.adamastor-calendar .rbc-time-view .rbc-event-label {
+  order: 2;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.adamastor-calendar .rbc-day-slot .rbc-event,
+.adamastor-calendar .rbc-day-slot .rbc-background-event {
+  @apply border-[#28aeb8]/30 border-2;
+}
+
+.adamastor-calendar .rbc-event:hover {
+  @apply opacity-80 dark:bg-background;
+}
+
+.adamastor-calendar .rbc-event.rbc-selected {
+  @apply opacity-90 ring-2 ring-[#28aeb8] ring-offset-2 bg-[#dff6f7]/80;
+}
+
+.adamastor-calendar .rbc-event-content {
+  @apply text-xs font-semibold rounded-md;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.adamastor-calendar .rbc-agenda-view {
+  @apply text-sm;
+}
+
+.adamastor-calendar .rbc-agenda-view table.rbc-agenda-table {
+  @apply w-full;
+}
+
+.adamastor-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  @apply p-2 border-b border-neutral-200 dark:border-border;
+}
+
+.adamastor-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td + td {
+  @apply p-2;
+}
+
+.adamastor-calendar .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  @apply p-3 text-left font-semibold text-neutral-700 dark:text-neutral-300;
+  @apply bg-neutral-50 dark:bg-background/80 rounded-lg;
+  @apply border-b border-neutral-200 dark:border-border;
+}
+
+.adamastor-calendar .rbc-overlay {
+  @apply bg-white dark:bg-background;
+  @apply border border-neutral-200 dark:border-neutral-700;
+  @apply shadow-none rounded-lg;
+}
+
+.adamastor-calendar .rbc-overlay-header {
+  @apply border-b border-neutral-200 dark:border-neutral-700;
+  @apply p-2 font-semibold;
+}
+
+.adamastor-calendar .rbc-show-more {
+  @apply text-[#28aeb8] text-xs font-medium hover:opacity-80;
+}
+
+@keyframes adamastor-fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes adamastor-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.adamastor-calendar .rbc-month-view,
+.adamastor-calendar .rbc-time-view,
+.adamastor-calendar .rbc-agenda-view {
+  animation: adamastor-fadeInUp 0.3s ease-out;
+}
+
+.adamastor-calendar .rbc-month-view .rbc-row {
+  animation: adamastor-fadeIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(1) { animation-delay: 0.05s; }
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(2) { animation-delay: 0.1s; }
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(3) { animation-delay: 0.15s; }
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(4) { animation-delay: 0.2s; }
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(5) { animation-delay: 0.25s; }
+.adamastor-calendar .rbc-month-view .rbc-row:nth-child(6) { animation-delay: 0.3s; }
+
+.adamastor-calendar .rbc-time-view .rbc-time-content {
+  animation: adamastor-fadeInUp 0.3s ease-out;
+}
+
+.adamastor-calendar .rbc-event {
+  animation: adamastor-fadeIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
