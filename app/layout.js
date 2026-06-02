@@ -32,6 +32,16 @@ export default function RootLayout({ children }) {
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </AdminProvider>
+        {/* Zapier chatbot — fixed popup affordance, site-wide */}
+        <script
+          async
+          type="module"
+          src="https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js"
+        />
+        <zapier-interfaces-chatbot-embed
+          is-popup="true"
+          chatbot-id="cmeqzl2cf001e10atrngwijr8"
+        ></zapier-interfaces-chatbot-embed>
       </body>
     </html>
   );
