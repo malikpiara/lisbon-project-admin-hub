@@ -6,6 +6,8 @@ import moment from "moment";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { parseEventDate } from "@/lib/google-calendar";
+import { CATEGORIES, UNCATEGORISED, getCategory } from "@/lib/calendar-categories";
+import { CategoryFilter } from "./category-filter";
 import "./calendar-adamastor.css";
 
 moment.updateLocale("en", {
@@ -30,10 +32,27 @@ const formats = {
 export function BigCalendarAdamastor({ events }) {
   const [view, setView] = useState("month");
   const [date, setDate] = useState(new Date());
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  // Per-category counts drive the pill badges; only show the Uncategorised
+  // pill when there's actually something untagged to surface and fix.
+  const filterOptions = useMemo(() => {
+    const counts = new Map();
+    for (const e of events) counts.set(e.categoryId, (counts.get(e.categoryId) ?? 0) + 1);
+    const options = CATEGORIES.map((c) => ({ ...c, count: counts.get(c.id) ?? 0 }));
+    const uncategorised = counts.get(UNCATEGORISED.id) ?? 0;
+    if (uncategorised > 0) options.push({ ...UNCATEGORISED, count: uncategorised });
+    return options;
+  }, [events]);
+
+  const filteredEvents = useMemo(
+    () => (activeCategory === "all" ? events : events.filter((e) => e.categoryId === activeCategory)),
+    [events, activeCategory]
+  );
 
   const rbcEvents = useMemo(
     () =>
-      events.map((e) => ({
+      filteredEvents.map((e) => ({
         id: e.id,
         title: e.title,
         start: parseEventDate(e.start, e.allDay),
@@ -41,8 +60,22 @@ export function BigCalendarAdamastor({ events }) {
         allDay: e.allDay,
         resource: e,
       })),
-    [events]
+    [filteredEvents]
   );
+
+  // Colour each event by category. Inline styles win over the CSS `.rbc-event`
+  // defaults (class selectors), so a soft tint of the category hue replaces the
+  // default teal without touching the stylesheet.
+  const eventPropGetter = useCallback((event) => {
+    const { color } = getCategory(event.resource?.categoryId);
+    return {
+      style: {
+        backgroundColor: `${color}1F`,
+        borderColor: `${color}59`,
+        color,
+      },
+    };
+  }, []);
 
   const CustomToolbar = useCallback(
     ({ label, onNavigate, onView }) => (
@@ -97,6 +130,17 @@ export function BigCalendarAdamastor({ events }) {
 
   return (
     <div className="adamastor-calendar">
+      <div className="mb-4 flex flex-col gap-2">
+        <CategoryFilter
+          options={filterOptions}
+          activeId={activeCategory}
+          onChange={setActiveCategory}
+          totalCount={events.length}
+        />
+        <p className="text-sm text-muted-foreground">
+          Showing {rbcEvents.length} {rbcEvents.length === 1 ? "event" : "events"}.
+        </p>
+      </div>
       <div style={{ height: "720px" }} className="bg-white dark:bg-background rounded-lg p-4">
         <Calendar
           localizer={localizer}
@@ -109,6 +153,7 @@ export function BigCalendarAdamastor({ events }) {
           onView={setView}
           components={components}
           formats={formats}
+          eventPropGetter={eventPropGetter}
           scrollToTime={new Date(1970, 0, 1, 8, 40)}
         />
       </div>

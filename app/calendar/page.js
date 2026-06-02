@@ -1,4 +1,5 @@
 import { fetchUpcomingEvents, parseEventDate } from "@/lib/google-calendar";
+import { getCategory } from "@/lib/calendar-categories";
 import { BigCalendar } from "@/components/calendar/big-calendar";
 import { BigCalendarAdamastor } from "@/components/calendar/big-calendar-adamastor";
 import { CollapsibleSection } from "@/components/calendar/collapsible-section";
@@ -22,7 +23,10 @@ export default async function CalendarPage() {
         <p className="text-sm text-muted-foreground mb-3">
           Read-only feed from a public Google Calendar via the Calendar API. The
           events below are being taken in real-time from a public google
-          calendar.
+          calendar. Events are sorted into categories by a title prefix —
+          e.g. <span className="font-mono">&quot;Employability: AI Tools Workshop&quot;</span>{" "}
+          shows under <span className="font-medium">Employability</span> with the
+          prefix hidden from the public title.
         </p>
         <p className="text-sm text-muted-foreground mb-8">
           The two calendars below are reference visuals for what an in-scope
@@ -47,7 +51,13 @@ export default async function CalendarPage() {
         {events.map((e) => (
           <li key={e.id} className="py-4">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="font-medium">
+              <h2 className="font-medium flex items-baseline gap-2 min-w-0">
+                <span
+                  className="h-2 w-2 shrink-0 translate-y-0.5 rounded-full"
+                  style={{ backgroundColor: getCategory(e.categoryId).color }}
+                  title={getCategory(e.categoryId).label}
+                  aria-hidden="true"
+                />
                 {e.htmlLink ? (
                   <a href={e.htmlLink} target="_blank" rel="noreferrer" className="hover:underline">
                     {e.title}
