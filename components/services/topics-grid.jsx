@@ -1,61 +1,50 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
-
-const toneStyles = {
-  rose: { border: "border-l-rose-400", iconBg: "bg-rose-100" },
-  teal: { border: "border-l-teal-400", iconBg: "bg-teal-100" },
-  violet: { border: "border-l-violet-400", iconBg: "bg-violet-100" },
-  pink: { border: "border-l-pink-400", iconBg: "bg-pink-100" },
-  emerald: { border: "border-l-emerald-400", iconBg: "bg-emerald-100" },
-  cyan: { border: "border-l-cyan-400", iconBg: "bg-cyan-100" },
-  orange: { border: "border-l-orange-400", iconBg: "bg-orange-100" },
-  blue: { border: "border-l-blue-400", iconBg: "bg-blue-100" },
-};
+import { ChevronRight, Info } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 
 export function TopicsGrid({ topics, categorySlug }) {
   return (
-    <section id="topics" className="scroll-mt-20 bg-bg-mint">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Topics
-        </h2>
+    <section id="topics" className="scroll-mt-20 bg-bg-page">
+      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-14">
+        <div className="rounded-3xl bg-card p-6 ring-1 ring-foreground/5 sm:p-10">
+          <header className="mb-8 flex items-center gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-dark text-primary-foreground">
+              <Info className="size-5" />
+            </div>
+            <h2 className="font-heading text-ds-xxl font-medium tracking-tight text-primary">
+              Articles
+            </h2>
+          </header>
 
-        {topics.length === 0 ? (
-          <p className="mt-10 text-center text-sm text-muted-foreground">
-            Topics for this category will appear here.
-          </p>
-        ) : (
-          <div className="mt-10 grid gap-4 lg:grid-cols-2">
-            {topics.map((topic) => {
-              const tone = toneStyles[topic.tone] ?? toneStyles.teal;
-              return (
-                <Link
+          {topics.length === 0 ? (
+            <p className="text-ds-s text-muted-foreground">
+              Articles for this category will appear here.
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {topics.map((topic) => (
+                <div
                   key={topic.slug}
-                  href={`/services/${categorySlug}/${topic.slug}`}
-                  className="group rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex flex-col rounded-xl border border-border bg-card p-6"
                 >
-                  <Card
-                    className={`flex-row items-start gap-4 border-l-4 ${tone.border} bg-card p-5 transition-shadow group-hover:shadow-md`}
+                  <h3 className="font-heading text-ds-l font-medium text-foreground">
+                    {topic.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-4 flex-1 text-ds-xs text-muted-foreground">
+                    {topic.description}
+                  </p>
+                  <Link
+                    href={`/services/${categorySlug}/${topic.slug}`}
+                    className={buttonVariants({ className: "mt-5 h-11 w-fit px-4" })}
                   >
-                    <div
-                      className={`size-11 shrink-0 rounded-lg ${tone.iconBg}`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-semibold leading-snug text-foreground">
-                        {topic.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {topic.description}
-                      </p>
-                    </div>
-                    <ArrowRight className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+                    Read Article
+                    <ChevronRight className="size-4" />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

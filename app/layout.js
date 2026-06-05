@@ -1,16 +1,15 @@
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Quicksand } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site/site-header";
-import { SiteFooter } from "@/components/site/site-footer";
 import { AdminProvider } from "@/lib/admin-store";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 const jetBrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+});
+
+// Heading display font — Quicksand, per the DS Settings token (the DS's single family).
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
   subsets: ["latin"],
 });
 
@@ -24,24 +23,10 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${jetBrainsMono.variable} ${quicksand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <AdminProvider>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </AdminProvider>
-        {/* Zapier chatbot — fixed popup affordance, site-wide */}
-        <script
-          async
-          type="module"
-          src="https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js"
-        />
-        <zapier-interfaces-chatbot-embed
-          is-popup="true"
-          chatbot-id="cmeqzl2cf001e10atrngwijr8"
-        ></zapier-interfaces-chatbot-embed>
+        <AdminProvider>{children}</AdminProvider>
       </body>
     </html>
   );

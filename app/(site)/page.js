@@ -1,8 +1,8 @@
 import { Hero } from "@/components/home/hero";
 import { QuickAccess } from "@/components/home/quick-access";
 import { ServicesGrid } from "@/components/home/services-grid";
-import { SupportHours } from "@/components/home/support-hours";
-import { VisitUs } from "@/components/shared/visit-us";
+import { AllContacts } from "@/components/home/all-contacts";
+import { MapVisit } from "@/components/home/map-visit";
 
 export default function Home() {
   return (
@@ -10,8 +10,8 @@ export default function Home() {
       <Hero />
       <QuickAccess />
       <ServicesGrid />
-      <SupportHours />
-      <VisitUs />
+      <AllContacts />
+      <MapVisit />
     </>
   );
 }

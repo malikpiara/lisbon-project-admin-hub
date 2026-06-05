@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* DS Settings token: Quicksand is the single family for all text. */
+  --font-sans: var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,45 +44,70 @@
   --color-brand-yellow-soft: var(--brand-yellow-soft);
   --color-bg-page: var(--bg-page);
   --color-bg-mint: var(--bg-mint);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-bg-water: var(--bg-water);
+  --color-brand-dark: var(--brand-dark);
+  /* DS radii (Settings + Breakpoint tokens) */
+  --radius-sm: 0.25rem;  /* 4px  — checkbox */
+  --radius-md: 0.5rem;   /* 8px */
+  --radius-lg: 1rem;     /* 16px — button, input, tag/badge */
+  --radius-xl: 1.5rem;   /* 24px — card */
+  --radius-2xl: 2rem;    /* 32px — hero icon tile, photo gallery */
+  --radius-3xl: 3.5rem;  /* 56px — section panel */
+  --radius-4xl: 3.5rem;  /* 56px — cap */
+  /* DS responsive type scale — sizes resolve from breakpoint vars (see media queries below) */
+  --text-ds-xxxxl: var(--ds-text-xxxxl);
+  --text-ds-xxxxl--line-height: var(--ds-leading-xxxxl);
+  --text-ds-xxxl: var(--ds-text-xxxl);
+  --text-ds-xxxl--line-height: var(--ds-leading-xxxl);
+  --text-ds-xxl: var(--ds-text-xxl);
+  --text-ds-xxl--line-height: var(--ds-leading-xxl);
+  --text-ds-xl: var(--ds-text-xl);
+  --text-ds-xl--line-height: var(--ds-leading-xl);
+  --text-ds-l: var(--ds-text-l);
+  --text-ds-l--line-height: var(--ds-leading-l);
+  --text-ds-m: var(--ds-text-m);
+  --text-ds-m--line-height: var(--ds-leading-m);
+  --text-ds-s: var(--ds-text-s);
+  --text-ds-s--line-height: var(--ds-leading-s);
+  --text-ds-xs: var(--ds-text-xs);
+  --text-ds-xs--line-height: var(--ds-leading-xs);
+  --text-ds-xxs: var(--ds-text-xxs);
+  --text-ds-xxs--line-height: var(--ds-leading-xxs);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.18 0.01 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.01 240);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.01 240);
-  --primary: #00B6AA;
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.005 240);
-  --secondary-foreground: oklch(0.205 0.005 240);
-  --muted: oklch(0.96 0.005 240);
-  --muted-foreground: oklch(0.55 0.01 240);
-  --accent: oklch(0.95 0.02 178);
-  --accent-foreground: oklch(0.35 0.08 178);
+  /* Lisbon Project DS — sampled from Figma 2026-06-02 redesign */
+  --background: #F2FCFC;
+  --foreground: #1C1C1C;
+  --card: #FFFFFF;
+  --card-foreground: #1C1C1C;
+  --popover: #FFFFFF;
+  --popover-foreground: #1C1C1C;
+  --primary: #1F8E87;
+  --primary-foreground: #FFFFFF;
+  --secondary: #D9F7F5;
+  --secondary-foreground: #155E57;
+  --muted: #E8F6F4;
+  --muted-foreground: #585B5B;
+  --accent: #D9F7F5;
+  --accent-foreground: #1F8E87;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.005 240);
-  --input: oklch(0.92 0.005 240);
-  --ring: #00B6AA;
+  --border: #D6EEEA;
+  --input: #D6EEEA;
+  --ring: #1F8E87;
   /* Brand */
   --brand-yellow: oklch(0.86 0.14 90);
   --brand-yellow-soft: oklch(0.93 0.09 92);
-  --bg-page: oklch(0.97 0.005 240);
-  --bg-mint: oklch(0.95 0.045 178);
+  --bg-page: #F2FCFC;
+  --bg-mint: #B3EFEB;
+  --bg-water: #90DAEC;
+  --brand-dark: #0A4D48;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 1rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -99,18 +125,18 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #3FB6AC;
+  --primary-foreground: #07312E;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.30 0.03 180);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: #3FB6AC;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -124,6 +150,58 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* DS responsive type scale — values per breakpoint (Phone base → Tablet 768 → Laptop 1280 → Desktop 1680) */
+:root {
+  --ds-text-xxxxl: 1.875rem;  --ds-leading-xxxxl: 1.875rem;
+  --ds-text-xxxl: 1.5625rem;  --ds-leading-xxxl: 1.875rem;
+  --ds-text-xxl: 1.5rem;      --ds-leading-xxl: 1.625rem;
+  --ds-text-xl: 1.375rem;     --ds-leading-xl: 1.5rem;
+  --ds-text-l: 1.1875rem;     --ds-leading-l: 1.4375rem;
+  --ds-text-m: 1.0625rem;     --ds-leading-m: 1.375rem;
+  --ds-text-s: 1rem;          --ds-leading-s: 1.5rem;
+  --ds-text-xs: 0.9375rem;    --ds-leading-xs: 1.25rem;
+  --ds-text-xxs: 0.8125rem;   --ds-leading-xxs: 1.125rem;
+}
+@media (min-width: 768px) {
+  :root {
+    --ds-text-xxxxl: 2.6875rem; --ds-leading-xxxxl: 2.9375rem;
+    --ds-text-xxxl: 2.0625rem;  --ds-leading-xxxl: 2.25rem;
+    --ds-text-xxl: 1.9375rem;   --ds-leading-xxl: 2.375rem;
+    --ds-text-xl: 1.75rem;      --ds-leading-xl: 2rem;
+    --ds-text-l: 1.25rem;       --ds-leading-l: 1.5625rem;
+    --ds-text-m: 1.0625rem;     --ds-leading-m: 1.375rem;
+    --ds-text-s: 1rem;          --ds-leading-s: 1.5rem;
+    --ds-text-xs: 0.9375rem;    --ds-leading-xs: 1.25rem;
+    --ds-text-xxs: 0.8125rem;   --ds-leading-xxs: 1.125rem;
+  }
+}
+@media (min-width: 1280px) {
+  :root {
+    --ds-text-xxxxl: 3.6875rem; --ds-leading-xxxxl: 3.8125rem;
+    --ds-text-xxxl: 2.625rem;   --ds-leading-xxxl: 2.875rem;
+    --ds-text-xxl: 2.5rem;      --ds-leading-xxl: 2.75rem;
+    --ds-text-xl: 1.75rem;      --ds-leading-xl: 2.25rem;
+    --ds-text-l: 1.375rem;      --ds-leading-l: 1.625rem;
+    --ds-text-m: 1.125rem;      --ds-leading-m: 1.4375rem;
+    --ds-text-s: 1rem;          --ds-leading-s: 1.4375rem;
+    --ds-text-xs: 0.9375rem;    --ds-leading-xs: 1.375rem;
+    --ds-text-xxs: 0.8125rem;   --ds-leading-xxs: 1.125rem;
+  }
+}
+@media (min-width: 1680px) {
+  :root {
+    --ds-text-xxxxl: 3.75rem;   --ds-leading-xxxxl: 3.875rem;
+    --ds-text-xxxl: 2.625rem;   --ds-leading-xxxl: 2.9375rem;
+    --ds-text-xxl: 2.5rem;      --ds-leading-xxl: 3rem;
+    --ds-text-xl: 1.75rem;      --ds-leading-xl: 2.25rem;
+    --ds-text-l: 1.375rem;      --ds-leading-l: 1.625rem;
+    --ds-text-m: 1.125rem;      --ds-leading-m: 1.5625rem;
+    --ds-text-s: 1rem;          --ds-leading-s: 1.4375rem;
+    --ds-text-xs: 0.9375rem;    --ds-leading-xs: 1.375rem;
+    --ds-text-xxs: 0.8125rem;   --ds-leading-xxs: 1.125rem;
+  }
 }
 
 @layer base {

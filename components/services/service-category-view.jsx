@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { ServiceHero } from "@/components/services/service-hero";
-import { CategoryQuickAccess } from "@/components/services/category-quick-access";
 import { TopicsGrid } from "@/components/services/topics-grid";
-import { ContactsTable } from "@/components/services/contacts-table";
-import { VisitUs } from "@/components/shared/visit-us";
+import { ContactsSection } from "@/components/shared/contacts-section";
+import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
 
 export function ServiceCategoryView({ slug }) {
@@ -16,15 +15,15 @@ export function ServiceCategoryView({ slug }) {
     if (!hydrated) return null;
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
-        <h1 className="text-2xl font-bold text-foreground">
+        <h1 className="font-heading text-ds-xxl font-medium text-foreground">
           Service not found
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-ds-s text-muted-foreground">
           This category may have been removed or the link is incorrect.
         </p>
         <Link
           href="/"
-          className="mt-6 inline-block text-sm font-medium text-primary hover:underline"
+          className="mt-6 inline-block text-ds-s font-medium text-primary hover:underline"
         >
           Back to home
         </Link>
@@ -38,18 +37,16 @@ export function ServiceCategoryView({ slug }) {
         title={service.title}
         breadcrumb={service.breadcrumb}
         intro={service.intro}
-      />
-      <CategoryQuickAccess
-        categoryLabel={service.breadcrumb.toLowerCase()}
+        iconKey={service.iconKey}
       />
       <TopicsGrid topics={service.topics} categorySlug={service.slug} />
-      <ContactsTable
+      <ContactsSection
         title={service.contactsTitle ?? `${service.title} Contacts`}
         subtitle={service.contactsSubtitle}
         contacts={service.contacts}
         categoryFilters={service.categoryFilters}
       />
-      <VisitUs />
+      <MapVisit />
     </>
   );
 }

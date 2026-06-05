@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
+    <div className="flex min-h-dvh">
       <AdminSidebar />
       <div className="flex-1 bg-background">{children}</div>
     </div>
