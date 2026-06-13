@@ -1,50 +1,60 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function SiteHeader() {
+export function SiteHeader({ sticky = true } = {}) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header
+      className={cn(
+        "z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
+        sticky && "sticky top-0"
+      )}
+    >
+      <div className="mx-auto flex min-h-[72px] max-w-[1680px] items-center justify-between px-4 py-4 sm:px-6 lg:px-14">
         <Link
           href="/"
-          aria-label="Lisbon Project home"
-          className="inline-flex items-center"
+          aria-label="Admin Hub home"
+          className="inline-flex items-center gap-2.5 overflow-hidden"
         >
-          <Image
-            src="/lisbon-project-logo.svg"
-            alt="Lisbon Project"
-            width={108}
-            height={43}
-            priority
-            className="h-9 w-auto"
-          />
+          <span className="relative block h-10 w-10 shrink-0 overflow-hidden">
+            <Image
+              src="/lisbon-project-logo.svg"
+              alt=""
+              width={108}
+              height={43}
+              priority
+              aria-hidden="true"
+              className="absolute left-0 top-0 h-10 w-[101px] max-w-none"
+            />
+          </span>
+          <span className="flex flex-col leading-none">
+            <span className="text-[19px] font-bold text-brand-dark">
+              Admin hub
+            </span>
+            <span className="mt-1 text-[15px] font-normal text-primary">
+              <span className="font-bold">lisbon</span> project
+            </span>
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-3 sm:gap-4">
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-primary hover:text-primary/80"
+            aria-label="Open menu"
+            className={buttonVariants({ size: "icon" })}
           >
-            <ChevronDown className="size-4" />
-            Menu
-          </button>
-          <button
-            type="button"
-            aria-label="Search"
-            className="grid size-9 place-items-center rounded-full text-primary hover:bg-accent hover:text-primary/80"
-          >
-            <Search className="size-4" />
+            <Menu className="size-5" strokeWidth={1.9} />
           </button>
           <Link
             href="/donate"
             className={buttonVariants({
               size: "lg",
-              className: "rounded-full px-5 tracking-wide",
+              className: "px-4",
             })}
           >
-            DONATE
+            Donate
           </Link>
         </nav>
       </div>

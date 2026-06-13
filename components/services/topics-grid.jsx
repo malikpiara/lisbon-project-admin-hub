@@ -5,13 +5,13 @@ import { buttonVariants } from "@/components/ui/button";
 export function TopicsGrid({ topics, categorySlug }) {
   return (
     <section id="topics" className="scroll-mt-20 bg-bg-page">
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-14">
-        <div className="rounded-3xl bg-card p-6 ring-1 ring-foreground/5 sm:p-10">
-          <header className="mb-8 flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-dark text-primary-foreground">
-              <Info className="size-5" />
+      <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
+        <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
+          <header className="mb-10 flex items-center gap-4">
+            <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
+              <Info className="size-5" strokeWidth={1.9} />
             </div>
-            <h2 className="font-heading text-ds-xxl font-medium tracking-tight text-primary">
+            <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
               Articles
             </h2>
           </header>
@@ -21,21 +21,21 @@ export function TopicsGrid({ topics, categorySlug }) {
               Articles for this category will appear here.
             </p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
               {topics.map((topic) => (
                 <div
                   key={topic.slug}
-                  className="flex flex-col rounded-xl border border-border bg-card p-6"
+                  className="flex flex-col rounded-3xl border-2 border-border bg-card p-6"
                 >
-                  <h3 className="font-heading text-ds-l font-medium text-foreground">
+                  <h3 className="font-heading text-ds-l font-bold text-foreground">
                     {topic.title}
                   </h3>
-                  <p className="mt-2 line-clamp-4 flex-1 text-ds-xs text-muted-foreground">
+                  <p className="mt-2 line-clamp-5 flex-1 text-ds-s font-medium text-foreground">
                     {topic.description}
                   </p>
                   <Link
                     href={`/services/${categorySlug}/${topic.slug}`}
-                    className={buttonVariants({ className: "mt-5 h-11 w-fit px-4" })}
+                    className={buttonVariants({ className: "mt-5 w-fit" })}
                   >
                     Read Article
                     <ChevronRight className="size-4" />

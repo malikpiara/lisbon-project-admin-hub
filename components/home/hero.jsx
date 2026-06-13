@@ -1,12 +1,16 @@
+import Image from "next/image";
+import { QuickAccess } from "@/components/home/quick-access";
+
 function HeroIllustration() {
   // Faint DS hero decoration (document + search), exported from Figma.
-  // eslint-disable-next-line @next/next/no-img-element
   return (
-    <img
+    <Image
       src="/illustrations/hero-home.svg"
       alt=""
       aria-hidden="true"
-      className="ml-auto w-full max-w-[460px]"
+      width={800}
+      height={800}
+      className="pointer-events-none absolute right-4 top-6 -z-10 hidden w-[min(46vw,800px)] max-w-[800px] 2xl:block"
     />
   );
 }
@@ -14,34 +18,37 @@ function HeroIllustration() {
 export function Hero() {
   return (
     <section className="bg-bg-page">
-      <div className="mx-auto max-w-7xl px-4 pb-12 pt-12 sm:px-6 lg:px-14 lg:pb-16 lg:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.35fr_1fr]">
-          <div>
-            <div className="flex items-center gap-5">
+      <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
+        <div className="ds-section-padding relative isolate flex flex-col gap-12 overflow-hidden rounded-none xl:rounded-[3.5rem]">
+          <HeroIllustration />
+          <div className="max-w-[760px]">
+            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
               <div
                 aria-hidden
-                className="grid size-28 shrink-0 place-items-center rounded-2xl bg-secondary"
+                className="grid size-28 shrink-0 place-items-center rounded-[2rem] bg-primary/[0.08]"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/illustrations/hero-home-icon.svg" alt="" className="size-20" />
+                <Image
+                  src="/illustrations/hero-home-icon.svg"
+                  alt=""
+                  width={80}
+                  height={80}
+                  className="size-20"
+                />
               </div>
-              <h1 className="font-heading text-ds-xxxxl font-medium tracking-tight text-primary">
+              <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
                 Admin Hub
               </h1>
             </div>
-            <p className="mt-8 max-w-2xl text-ds-xl font-semibold text-foreground">
+            <p className="mt-8 max-w-2xl text-ds-l font-bold text-foreground">
               Connecting community members to external services and internal
               resources.
             </p>
-            <p className="mt-4 max-w-2xl text-ds-s text-muted-foreground">
+            <p className="mt-4 max-w-2xl text-ds-s font-medium text-foreground">
               Information platform summarizing the most common administrative
               processes, sharing tips and mapping external services.
             </p>
           </div>
-
-          <div className="hidden lg:block">
-            <HeroIllustration />
-          </div>
+          <QuickAccess embedded />
         </div>
       </div>
     </section>

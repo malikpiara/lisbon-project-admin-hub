@@ -58,22 +58,22 @@ export function ContactsSection({
 
   return (
     <section className="bg-bg-page">
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-14">
-        <header className="flex items-center gap-3">
-          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-dark text-primary-foreground">
-            <Info className="size-5" />
+      <div className="mx-auto max-w-[1680px] px-4 pb-20 sm:px-6 lg:px-14">
+        <header className="ds-section-x-padding flex items-center gap-4">
+          <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
+            <Info className="size-5" strokeWidth={1.9} />
           </div>
-          <h2 className="font-heading text-ds-xxl font-medium tracking-tight text-primary">
+          <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
             {title}
           </h2>
         </header>
         {subtitle ? (
-          <p className="mt-3 font-heading text-ds-s font-medium text-primary/80">
+          <p className="ds-section-x-padding mt-3 font-heading text-ds-xs font-bold text-primary">
             {subtitle}
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="ds-section-x-padding mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -82,7 +82,7 @@ export function ContactsSection({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by organization, service, or email..."
               aria-label="Search contacts"
-              className="h-12 pl-11"
+              className="pl-11"
             />
           </div>
           <div className="relative sm:w-60">
@@ -90,7 +90,7 @@ export function ContactsSection({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               aria-label="Filter by category"
-              className="h-12 w-full appearance-none rounded-lg border border-input bg-card pl-4 pr-10 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-11 w-full appearance-none rounded-2xl border-2 border-input bg-card pl-4 pr-10 text-ds-xs font-medium text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35"
             >
               <option value="all">All Categories</option>
               {categoryFilters.map((c) => (
@@ -103,36 +103,36 @@ export function ContactsSection({
           </div>
         </div>
 
-        <div className="mt-4">
-          <Table>
+        <div className="ds-section-x-padding mt-4">
+          <Table className="min-w-[920px]">
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="py-3 text-muted-foreground">Organization</TableHead>
-                <TableHead className="text-muted-foreground">Service Provided</TableHead>
-                <TableHead className="text-muted-foreground">Contact Information</TableHead>
-                <TableHead className="text-muted-foreground">Category</TableHead>
-                <TableHead className="text-muted-foreground">Link</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
+                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
+                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
+                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
+                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((c) => (
-                <TableRow key={c.organization} className="hover:bg-transparent">
-                  <TableCell className="max-w-48 py-5 align-top text-base font-medium whitespace-normal text-foreground">
+                <TableRow key={c.organization} className="border-border hover:bg-transparent">
+                  <TableCell className="max-w-48 py-5 align-top text-ds-xs font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
-                  <TableCell className="max-w-56 align-top whitespace-normal text-muted-foreground">
+                  <TableCell className="max-w-56 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
                   </TableCell>
                   <TableCell className="align-top">
                     <div className="space-y-2">
                       <a
                         href={`mailto:${c.email}`}
-                        className="flex items-center gap-2 text-primary hover:underline"
+                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
                       >
                         <Mail className="size-4" />
                         {c.email}
                       </a>
-                      <div className="flex items-center gap-2 text-primary">
+                      <div className="flex items-center gap-2 text-ds-xxs font-bold text-primary">
                         <Phone className="size-4" />
                         {c.phone}
                       </div>

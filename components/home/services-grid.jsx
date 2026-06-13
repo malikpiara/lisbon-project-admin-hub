@@ -1,40 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Accessibility,
-  Building2,
-  Bus,
-  ChevronRight,
-  FileText,
-  GraduationCap,
-  Heart,
-  HeartPulse,
-  Home,
-  Info,
-  Package,
-  Phone,
-  Scale,
-  Shield,
-  Wallet,
-} from "lucide-react";
+import { ChevronRight, Info } from "lucide-react";
 import { useAdmin } from "@/lib/admin-store";
-
-const iconMap = {
-  Phone,
-  Building2,
-  GraduationCap,
-  Heart,
-  Wallet,
-  HeartPulse,
-  Home,
-  FileText,
-  Shield,
-  Bus,
-  Accessibility,
-  Scale,
-  Package,
-};
+import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 
 export function ServicesGrid() {
   const { data } = useAdmin();
@@ -42,35 +11,37 @@ export function ServicesGrid() {
 
   return (
     <section className="bg-bg-page">
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-14">
-        <div className="rounded-3xl bg-card p-6 ring-1 ring-foreground/5 sm:p-10">
-          <header className="mb-8 flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-dark text-primary-foreground">
-              <Info className="size-5" />
+      <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
+        <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
+          <header className="mb-10 flex items-center gap-4">
+            <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
+              <Info className="size-5" strokeWidth={1.9} />
             </div>
-            <h2 className="font-heading text-ds-xxl font-medium tracking-tight text-primary">
+            <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
               Services and Information
             </h2>
           </header>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-4">
             {services.map((service) => {
-              const Icon = iconMap[service.iconKey] ?? Building2;
+              const Icon = getServiceIcon(
+                getServiceIconKey(service.slug, service.iconKey)
+              );
               return (
                 <Link
                   key={service.slug}
                   href={`/services/${service.slug}`}
-                  className="group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group rounded-3xl focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
                 >
-                  <div className="flex h-full items-start gap-4 rounded-xl border border-border bg-card p-5 transition-shadow group-hover:shadow-md">
-                    <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
-                      <Icon className="size-5" />
+                  <div className="flex h-full items-start gap-4 rounded-3xl border-2 border-border bg-card p-5 transition-shadow group-hover:shadow-[0_16px_32px_rgba(7,24,23,0.07)]">
+                    <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
+                      <Icon className="size-5" strokeWidth={1.9} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-heading text-ds-s font-medium text-foreground">
+                      <h3 className="font-heading text-ds-s font-bold text-foreground">
                         {service.title}
                       </h3>
-                      <p className="mt-1 text-ds-xs text-muted-foreground">
+                      <p className="mt-1 line-clamp-2 text-ds-xxs font-medium text-foreground">
                         {service.shortDescription}
                       </p>
                     </div>

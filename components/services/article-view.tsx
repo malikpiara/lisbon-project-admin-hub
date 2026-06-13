@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const HERO_SUBHEAD =
   "Connecting community members to external services and internal resources.";
@@ -30,8 +32,9 @@ function articleSections(topic: Topic) {
       ],
       after: [
         "Those who have completed the process can continue accessing related services and support.",
-        "Anyone can begin the process — neither residence permits nor prior registration are required to get started.",
+        "Anyone can begin the process. Residence permits or prior registration are not required to get started.",
       ],
+      panel: true,
     },
     {
       heading: "Why would I need it?",
@@ -42,18 +45,56 @@ function articleSections(topic: Topic) {
       ],
       bullets: [] as string[],
       after: [] as string[],
+      panel: false,
     },
     {
-      heading: "How do I get it?",
+      heading: "Step-by-Step guide",
       lead: "Follow these steps to access the service and get the support you need.",
-      paragraphs: [
-        "Lorem ipsum dolor sit amet consectetur. Risus id posuere ornare proin gravida egestas dictumst diam. Reach out via the contacts listed on the category page, or visit us in person during opening hours.",
+      paragraphs: [],
+      bullets: [
+        "Review the requirements and confirm which organization is responsible for your request.",
+        "Collect identification, proof of address, and any supporting documents listed below.",
+        "Contact the service provider or visit during opening hours to start the process.",
+        "Keep copies of submitted documents and note any reference numbers or follow-up dates.",
       ],
-      bullets: [] as string[],
       after: [] as string[],
+      panel: true,
+    },
+    {
+      heading: "Documents Required",
+      lead: "Bring the documents that prove identity, residence, and eligibility for this process.",
+      paragraphs: [
+        "Requirements vary by organization, so confirm the list before your appointment or visit.",
+      ],
+      bullets: [
+        "Identification document or passport",
+        "Proof of address in Portugal",
+        "Relevant certificates, forms, or previous case documents",
+      ],
+      after: [] as string[],
+      panel: false,
+    },
+    {
+      heading: "Community Tips and Learning",
+      lead: "A few practical notes can make the process easier to complete.",
+      paragraphs: [
+        "Arrive early when visiting public offices, keep digital and paper copies of key documents, and ask for written confirmation when a request is submitted.",
+      ],
+      bullets: [
+        "Take a translator or trusted support person if language may be a barrier.",
+        "Save phone numbers and email addresses for follow-up.",
+        "Check whether appointments are required before travelling.",
+      ],
+      after: [] as string[],
+      panel: true,
     },
   ];
 }
+
+const faqs = [
+  "How do I register my child for public education?",
+  "What family benefits am I entitled to?",
+];
 
 export function ArticleView({
   slug,
@@ -92,8 +133,11 @@ export function ArticleView({
     <>
       {/* Hero */}
       <section className="bg-bg-page">
-        <div className="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-14 lg:pb-16">
-          <nav aria-label="Breadcrumb" className="mb-10 text-ds-xs">
+        <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
+          <nav
+            aria-label="Breadcrumb"
+            className="ds-section-x-padding pb-6 text-ds-xxs font-bold"
+          >
             <Link href="/" className="text-primary hover:underline">
               Home
             </Link>
@@ -105,52 +149,99 @@ export function ArticleView({
             <span className="text-foreground">{topic.title}</span>
           </nav>
 
-          <h1 className="font-heading text-ds-xxxxl font-medium tracking-tight text-primary">
-            {topic.title}
-          </h1>
-          <p className="mt-6 max-w-2xl text-ds-xl font-semibold text-foreground">
-            {HERO_SUBHEAD}
-          </p>
+          <div className="ds-section-padding rounded-none xl:rounded-[3.5rem]">
+            <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
+              {topic.title}
+            </h1>
+            <p className="mt-6 max-w-2xl text-ds-l font-bold text-foreground">
+              {HERO_SUBHEAD}
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Content sections */}
       <section className="bg-bg-page">
-        <div className="mx-auto max-w-7xl space-y-8 px-4 pb-16 sm:px-6 lg:px-14">
-          {sections.map((s) => (
+        <div className="mx-auto max-w-[1680px] space-y-8 px-4 pb-16 sm:px-6 lg:px-14">
+          {sections.map((s, index) => (
             <article
               key={s.heading}
-              className="rounded-3xl bg-card p-6 ring-1 ring-foreground/5 sm:p-10"
+              className={cn(
+                "ds-section-padding rounded-none xl:rounded-[3.5rem]",
+                s.panel ? "bg-card" : "bg-bg-page"
+              )}
             >
-              <header className="mb-5 flex items-center gap-3">
-                <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-dark text-primary-foreground">
-                  <Info className="size-5" />
-                </div>
-                <h2 className="font-heading text-ds-xxl font-medium tracking-tight text-primary">
-                  {s.heading}
-                </h2>
-              </header>
+              <div className="mx-auto max-w-[760px]">
+                <header className="mb-6 flex items-center gap-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
+                    <Info className="size-5" strokeWidth={1.9} />
+                  </div>
+                  <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
+                    {s.heading}
+                  </h2>
+                </header>
 
-              <p className="max-w-3xl text-ds-m font-semibold text-primary">
-                {s.lead}
-              </p>
-              <div className="mt-4 max-w-3xl space-y-3 text-ds-s text-foreground">
-                {s.paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-                {s.bullets.length ? (
-                  <ul className="list-disc space-y-1 pl-6">
-                    {s.bullets.map((b, i) => (
-                      <li key={i}>{b}</li>
-                    ))}
-                  </ul>
+                <p className="max-w-3xl text-ds-m font-bold text-primary">
+                  {s.lead}
+                </p>
+                <div className="mt-4 max-w-3xl space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep">
+                  {s.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                  {s.bullets.length ? (
+                    <ul className="list-disc space-y-1 pl-6">
+                      {s.bullets.map((b, i) => (
+                        <li key={i}>{b}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {s.after.map((p, i) => (
+                    <p key={`a-${i}`}>{p}</p>
+                  ))}
+                </div>
+                {index === 1 ? (
+                  <Link
+                    href={`/services/${service.slug}`}
+                    className={buttonVariants({ className: "mt-6 w-fit" })}
+                  >
+                    Get Support Now
+                  </Link>
                 ) : null}
-                {s.after.map((p, i) => (
-                  <p key={`a-${i}`}>{p}</p>
-                ))}
               </div>
             </article>
           ))}
+
+          <section className="ds-section-padding-compact rounded-none xl:rounded-[3.5rem]">
+            <div className="mx-auto max-w-[760px]">
+              <header className="mb-6 flex items-center gap-4">
+                <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
+                  <Info className="size-5" strokeWidth={1.9} />
+                </div>
+                <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
+                  Frequently Asked Questions
+                </h2>
+              </header>
+              <p className="text-ds-m font-bold text-primary">
+                Find answers to common questions about family and childcare services.
+              </p>
+              <div className="mt-6 divide-y-2 divide-border">
+                {faqs.map((faq) => (
+                  <button
+                    key={faq}
+                    type="button"
+                    className="flex w-full items-center gap-4 py-4 text-left"
+                  >
+                    <span className="flex-1 text-ds-m font-bold text-primary">
+                      {faq}
+                    </span>
+                    <span className="grid size-11 place-items-center rounded-lg text-primary">
+                      <ChevronDown className="size-4" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
       </section>
 

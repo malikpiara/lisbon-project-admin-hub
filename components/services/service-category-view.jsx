@@ -6,6 +6,7 @@ import { TopicsGrid } from "@/components/services/topics-grid";
 import { ContactsSection } from "@/components/shared/contacts-section";
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
+import { getServiceIconKey } from "@/lib/service-icons";
 
 export function ServiceCategoryView({ slug }) {
   const { data, hydrated } = useAdmin();
@@ -37,7 +38,7 @@ export function ServiceCategoryView({ slug }) {
         title={service.title}
         breadcrumb={service.breadcrumb}
         intro={service.intro}
-        iconKey={service.iconKey}
+        iconKey={getServiceIconKey(service.slug, service.iconKey)}
       />
       <TopicsGrid topics={service.topics} categorySlug={service.slug} />
       <ContactsSection

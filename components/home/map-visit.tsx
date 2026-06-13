@@ -1,7 +1,7 @@
 import { Bus, Info, Phone, TramFront } from "lucide-react";
 
 const schedule = [
-  { day: "Mon - Tue - Thu", hours: "10:00–13:00 / 14:00–18:00" },
+  { day: "Mon, Tue, Thu", hours: "10:00–12:30 & 14:00–17:30" },
   { day: "Wednesday (Extended)", hours: "Until 19:30" },
   { day: "Friday", hours: "Until 18:30" },
 ];
@@ -11,31 +11,31 @@ const MAP_QUERY = "Rua Carvalho Araújo 66B, 1900-140 Lisboa, Portugal";
 export function MapVisit() {
   return (
     <section className="bg-bg-page">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <iframe
           title="Lisbon Project Association location"
           src={`https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&z=14&output=embed`}
           loading="lazy"
-          className="h-[440px] w-full border-0"
+          className="h-[520px] w-full border-0"
           referrerPolicy="no-referrer-when-downgrade"
         />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-14">
-          <div className="relative -mt-28 grid gap-10 rounded-3xl bg-card p-8 shadow-lg ring-1 ring-foreground/5 sm:p-10 lg:grid-cols-3">
+        <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-14">
+          <div className="relative -mt-32 grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-10 rounded-3xl border-2 border-border bg-card px-6 py-10 sm:px-10 lg:px-14 lg:py-14 min-[1680px]:gap-[88px]">
             {/* Where we are */}
             <div>
-              <h3 className="font-heading text-ds-l font-medium text-foreground">
+              <h3 className="font-heading text-ds-xl font-bold text-foreground">
                 Where we are
               </h3>
-              <address className="mt-4 text-base not-italic text-foreground">
+              <address className="mt-4 text-ds-m font-medium not-italic text-brand-dark">
                 Rua Carvalho Araújo 66-B
                 <br />
                 1900-140 Lisboa
                 <br />
                 Portugal
               </address>
-              <p className="mt-5 font-semibold text-foreground">How to Get Here</p>
-              <ul className="mt-2 space-y-2 text-sm text-foreground">
+              <p className="mt-5 text-ds-s font-bold text-brand-dark">How to Get Here</p>
+              <ul className="mt-2 space-y-2 text-ds-xs font-medium text-brand-dark">
                 <li className="flex items-center gap-2">
                   <TramFront className="size-4 text-primary" />
                   Metro: Linha Verde (Green Line) - Intendente Station
@@ -49,21 +49,21 @@ export function MapVisit() {
 
             {/* Opening hours */}
             <div>
-              <h3 className="font-heading text-ds-l font-medium text-foreground">
+              <h3 className="font-heading text-ds-xl font-bold text-foreground">
                 Opening hours
               </h3>
-              <dl className="mt-4 divide-y divide-border">
+              <dl className="mt-4 divide-y-2 divide-border">
                 {schedule.map((row) => (
                   <div
                     key={row.day}
-                    className="flex items-center justify-between gap-4 py-3.5 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-4 py-3.5 text-ds-xxs"
                   >
                     <dt className="font-semibold text-foreground">{row.day}</dt>
-                    <dd className="text-muted-foreground">{row.hours}</dd>
+                    <dd className="font-medium text-foreground">{row.hours}</dd>
                   </div>
                 ))}
               </dl>
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-foreground">
+              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-accent px-4 py-2.5 text-ds-xxs font-bold text-foreground">
                 <Info className="size-4 text-primary" />
                 No appointment needed. Just walk in.
               </div>
@@ -71,12 +71,12 @@ export function MapVisit() {
 
             {/* Contact info */}
             <div>
-              <h3 className="font-heading text-ds-l font-medium text-foreground">
+              <h3 className="font-heading text-ds-xl font-bold text-foreground">
                 Contact info
               </h3>
               <a
                 href="tel:+351964809959"
-                className="mt-4 flex items-center gap-2 text-primary hover:underline"
+                className="mt-4 flex items-center gap-2 text-ds-s font-bold text-brand-link hover:underline"
               >
                 <Phone className="size-4" />
                 +351 964 809 959
@@ -85,7 +85,7 @@ export function MapVisit() {
           </div>
         </div>
       </div>
-      <div className="h-16" />
+      <div className="h-12" />
     </section>
   );
 }
