@@ -30,7 +30,7 @@ export default function ServiceDetailAdminPage({ params }) {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto max-w-5xl px-8 py-10 text-sm text-muted-foreground">
+      <div className="mx-auto max-w-5xl px-8 py-10 text-ds-xs font-medium text-muted-foreground">
         Loading…
       </div>
     );
@@ -43,7 +43,7 @@ export default function ServiceDetailAdminPage({ params }) {
     <div className="mx-auto max-w-5xl px-8 py-10">
       <Link
         href="/admin/services"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-ds-xs font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
         All categories
@@ -51,20 +51,20 @@ export default function ServiceDetailAdminPage({ params }) {
 
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             {service.title || "Untitled category"}
           </h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">
+          <p className="mt-1 font-mono text-ds-xxs text-muted-foreground">
             /services/{service.slug}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
+            size="sm"
             onClick={() => resetService(service.slug)}
-            className="h-9 gap-1.5"
           >
-            <RotateCcw className="size-3.5" />
+            <RotateCcw />
             Reset
           </Button>
           <Button
@@ -77,9 +77,10 @@ export default function ServiceDetailAdminPage({ params }) {
                 window.location.href = "/admin/services";
               }
             }}
-            className="h-9 gap-1.5 text-destructive"
+            size="sm"
+            className="text-destructive hover:text-destructive"
           >
-            <Trash2 className="size-3.5" />
+            <Trash2 />
             Delete
           </Button>
         </div>
@@ -161,7 +162,7 @@ export default function ServiceDetailAdminPage({ params }) {
         action={
           <Button
             onClick={() => addTopic(service.slug)}
-            className="h-8 gap-1.5"
+            size="sm"
           >
             <Plus className="size-3.5" />
             Add topic
@@ -175,7 +176,7 @@ export default function ServiceDetailAdminPage({ params }) {
             {service.topics.map((topic) => (
               <Card
                 key={topic.slug}
-                className="gap-3 border-border/60 p-4"
+                className="gap-3 p-4"
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field
@@ -206,13 +207,14 @@ export default function ServiceDetailAdminPage({ params }) {
                     rows={2}
                   />
                 </div>
-                <div className="flex justify-end border-t border-border/60 pt-2">
+                <div className="flex justify-end border-t-2 border-border pt-2">
                   <Button
                     variant="ghost"
                     onClick={() => removeTopic(service.slug, topic.slug)}
-                    className="h-7 gap-1.5 text-destructive"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 className="size-3.5" />
+                    <Trash2 />
                     Delete
                   </Button>
                 </div>
@@ -228,7 +230,7 @@ export default function ServiceDetailAdminPage({ params }) {
         action={
           <Button
             onClick={() => addContact(service.slug)}
-            className="h-8 gap-1.5"
+            size="sm"
           >
             <Plus className="size-3.5" />
             Add contact
@@ -280,13 +282,14 @@ export default function ServiceDetailAdminPage({ params }) {
                     }
                   />
                 </div>
-                <div className="flex justify-end border-t border-border/60 pt-2">
+                <div className="flex justify-end border-t-2 border-border pt-2">
                   <Button
                     variant="ghost"
                     onClick={() => removeContact(service.slug, i)}
-                    className="h-7 gap-1.5 text-destructive"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 className="size-3.5" />
+                    <Trash2 />
                     Delete
                   </Button>
                 </div>
@@ -303,7 +306,7 @@ function Section({ title, action, children }) {
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <h2 className="font-heading text-ds-l font-bold text-foreground">{title}</h2>
         {action}
       </div>
       <div>{children}</div>
@@ -313,7 +316,7 @@ function Section({ title, action, children }) {
 
 function EmptyState({ label }) {
   return (
-    <p className="rounded-lg border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">
+    <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
       {label}
     </p>
   );

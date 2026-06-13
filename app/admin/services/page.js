@@ -14,61 +14,58 @@ export default function ServicesAdminPage() {
     <div className="mx-auto max-w-5xl px-8 py-10">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Services & Information
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            The {data.services.length} service categories shown on the home
-            page. Click a category to edit its topics, contacts, and intro.
+          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+            The {data.services.length} service categories shown on the home page.
+            Click a category to edit its topics, contacts, and intro.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
+            size="sm"
             onClick={() => resetSection("services")}
-            className="h-9 gap-1.5"
           >
-            <RotateCcw className="size-3.5" />
+            <RotateCcw />
             Reset
           </Button>
-          <Button onClick={addService} className="h-9 gap-1.5">
-            <Plus className="size-4" />
+          <Button size="sm" onClick={addService}>
+            <Plus />
             Add category
           </Button>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {data.services.map((service) => (
           <Link
             key={service.slug}
             href={`/admin/services/${service.slug}`}
-            className="group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           >
-            <Card className="h-full flex-row items-start justify-between gap-3 border-border/60 p-5 transition-shadow group-hover:shadow-md">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="truncate text-base font-semibold text-foreground">
-                    {service.title}
-                  </h2>
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full bg-accent text-[10px] uppercase tracking-wider text-primary"
-                  >
-                    {service.tone}
-                  </Badge>
+            <Card className="h-full transition-shadow group-hover:shadow-md">
+              <div className="flex items-start justify-between gap-3 px-4 xl:px-6">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="truncate font-heading text-ds-s font-bold text-foreground">
+                      {service.title}
+                    </h2>
+                    <Badge variant="outline">{service.tone}</Badge>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-ds-xs font-medium text-muted-foreground">
+                    {service.shortDescription || "No short description"}
+                  </p>
+                  <p className="mt-3 text-ds-xxs font-medium text-muted-foreground">
+                    {service.topics.length} topic
+                    {service.topics.length === 1 ? "" : "s"} ·{" "}
+                    {service.contacts.length} contact
+                    {service.contacts.length === 1 ? "" : "s"}
+                  </p>
                 </div>
-                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                  {service.shortDescription || "No short description"}
-                </p>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {service.topics.length} topic
-                  {service.topics.length === 1 ? "" : "s"} ·{" "}
-                  {service.contacts.length} contact
-                  {service.contacts.length === 1 ? "" : "s"}
-                </p>
+                <ChevronRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
               </div>
-              <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
             </Card>
           </Link>
         ))}
