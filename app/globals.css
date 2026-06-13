@@ -46,6 +46,31 @@
   --color-bg-mint: var(--bg-mint);
   --color-bg-water: var(--bg-water);
   --color-brand-dark: var(--brand-dark);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-link: var(--brand-link);
+  /* DS semantic roles + program-area colors (Figma: brand/*, semantic/*, projects/*) */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-tertiary: var(--brand-tertiary);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-project-social-care: var(--project-social-care);
+  --color-project-people-culture: var(--project-people-culture);
+  --color-project-community-life: var(--project-community-life);
+  --color-project-education: var(--project-education);
+  --color-project-employability: var(--project-employability);
+  /* DS brand ramp (primitives/brand-*) — drives per-state component colors */
+  --color-brand-000: var(--brand-000);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-1000: var(--brand-1000);
   /* DS radii (Settings + Breakpoint tokens) */
   --radius-sm: 0.25rem;  /* 4px  — checkbox */
   --radius-md: 0.5rem;   /* 8px */
@@ -76,32 +101,92 @@
 }
 
 :root {
-  /* Lisbon Project DS — sampled from Figma 2026-06-02 redesign */
-  --background: #F2FCFC;
-  --foreground: #1C1C1C;
-  --card: #FFFFFF;
-  --card-foreground: #1C1C1C;
-  --popover: #FFFFFF;
-  --popover-foreground: #1C1C1C;
-  --primary: #1F8E87;
-  --primary-foreground: #FFFFFF;
-  --secondary: #D9F7F5;
-  --secondary-foreground: #155E57;
-  --muted: #E8F6F4;
-  --muted-foreground: #585B5B;
-  --accent: #D9F7F5;
-  --accent-foreground: #1F8E87;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: #D6EEEA;
-  --input: #D6EEEA;
-  --ring: #1F8E87;
-  /* Brand */
-  --brand-yellow: oklch(0.86 0.14 90);
+  /* ============================================================
+     Lisbon Project DS — token foundation
+     Mirrors Figma "Lisbon-Project---DS" v11.06.2026 · Light mode.
+     Layer 1 primitives → Layer 2 semantic roles → shadcn aliases.
+     Components reference semantic roles, never raw primitives.
+     ============================================================ */
+
+  /* — Layer 1: primitives (raw ramps; Figma primitives/*) — */
+  --brand-1000: #071817;
+  --brand-900:  #0A2422;
+  --brand-800:  #083B37;
+  --brand-700:  #0A4D48;
+  --brand-600:  #0D635D;
+  --brand-500:  #1F8E87;
+  --brand-400:  #6ADCD5;
+  --brand-300:  #B3EFEB;
+  --brand-200:  #D9F7F5;
+  --brand-100:  #F2FCFC;
+  --brand-000:  #FFFFFF;
+
+  --neutral-1000: #000000;
+  --neutral-900:  #1C1C1C;
+  --neutral-800:  #262626;
+  --neutral-700:  #383838;
+  --neutral-600:  #666666;
+  --neutral-500:  #999999;
+  --neutral-400:  #BDBDBD;
+  --neutral-300:  #E3E3E3;
+  --neutral-200:  #F5F5F5;
+  --neutral-100:  #FFFFFF;
+
+  --green: #72C549;
+  --red:   #D60000;
+
+  /* Program-area colors — one per Lisbon Project programme (Figma projects/*) */
+  --project-social-care:    #D66B00;
+  --project-people-culture: #CE1DD7;
+  --project-community-life: #DB0F0F;
+  --project-education:       #6A40E2;
+  --project-employability:   #1A72D5;
+
+  /* — Layer 2: semantic roles (Figma brand/*, semantic/*) — */
+  --brand-primary:   var(--brand-500);
+  --brand-secondary: var(--brand-000);
+  --brand-tertiary:  var(--brand-1000);
+
+  --bg-primary:   var(--brand-100);
+  --bg-secondary: var(--neutral-100);
+  --bg-tertiary:  var(--brand-200);
+
+  --text-primary:   var(--neutral-900);
+  --text-secondary: var(--neutral-700);
+  --text-tertiary:  var(--neutral-600);
+
+  --positive: var(--green);
+  --negative: var(--red);
+
+  /* — shadcn aliases (derived from the layers above) — */
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: var(--bg-secondary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-secondary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-secondary);
+  --secondary: var(--bg-tertiary);
+  --secondary-foreground: #155E57; /* TODO: map to DS token when building Button/Tag */
+  --muted: #E8F6F4;                /* TODO: confirm muted role against Figma when a component needs it */
+  --muted-foreground: var(--text-tertiary); /* was #585B5B → DS semantic/text/tertiary #666666 */
+  --accent: var(--bg-tertiary);
+  --accent-foreground: var(--brand-primary);
+  --destructive: var(--negative);  /* was generic oklch red → DS semantic/negative #D60000 */
+  --border: var(--bg-tertiary);
+  --input: var(--neutral-300);
+  --ring: var(--brand-primary);
+
+  /* Legacy brand aliases (kept for existing utilities; now resolve through primitives) */
+  --brand-yellow: oklch(0.86 0.14 90);     /* yellow accent — not in DS variable set */
   --brand-yellow-soft: oklch(0.93 0.09 92);
-  --bg-page: #F2FCFC;
-  --bg-mint: #B3EFEB;
-  --bg-water: #90DAEC;
-  --brand-dark: #0A4D48;
+  --bg-page: var(--brand-100);
+  --bg-mint: var(--brand-300);
+  --bg-water: #90DAEC;                       /* not in DS variable set — one-off; flag for review */
+  --brand-dark: var(--brand-700);
+  --brand-deep: var(--brand-1000);
+  --brand-link: var(--brand-600);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -204,12 +289,61 @@
   }
 }
 
+.ds-section-padding {
+  padding: 4rem 1.5rem;
+}
+
+.ds-section-padding-compact {
+  padding: 4rem 1.5rem;
+}
+
+.ds-section-x-padding {
+  padding-inline: 0;
+}
+
+@media (min-width: 640px) {
+  .ds-section-padding,
+  .ds-section-padding-compact {
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .ds-section-padding,
+  .ds-section-padding-compact {
+    padding-inline: 5rem;
+    padding-block: 6rem;
+  }
+
+  .ds-section-x-padding {
+    padding-inline: 5rem;
+  }
+}
+
+@media (min-width: 1680px) {
+  .ds-section-padding {
+    padding-inline: 8.4rem;
+    padding-block: 8.75rem;
+  }
+
+  .ds-section-padding-compact {
+    padding-inline: 8.4rem;
+    padding-block: 6.5rem;
+  }
+
+  .ds-section-x-padding {
+    padding-inline: 8.4rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    /* DS Settings token: typography/font-weight-regular = medium (500). */
+    font-weight: 500;
   }
   html {
     @apply font-sans;
