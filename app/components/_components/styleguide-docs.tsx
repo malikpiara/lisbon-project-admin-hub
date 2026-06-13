@@ -1,0 +1,1257 @@
+import type { ReactNode } from "react";
+import { Check, ChevronRight, Clock, Info, Plus, Search } from "lucide-react";
+
+import { DS_ICON_NAMES } from "@/lib/ds-icons-data";
+import { defaultAdminData } from "@/lib/admin-default-data";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardSchedule,
+  CardService,
+  CardShortcut,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AgendaDemo } from "./agenda-demo";
+import { CalendarDemo } from "./calendar-demo";
+import { Icon } from "@/components/ui/icon";
+import { Infobox } from "@/components/ui/infobox";
+import { Input, InputPassword, InputSearch } from "@/components/ui/input";
+import {
+  ListItem,
+  ListItemHeader,
+  ListItemIcon,
+  ListItemSubtitle,
+  ListItemValue,
+} from "@/components/ui/list-item";
+import { PhotoGallery } from "@/components/ui/photo-gallery";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SelectDemo } from "./select-demo";
+import { TextBlock } from "@/components/ui/text-block";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AllContacts } from "@/components/home/all-contacts";
+import { Hero } from "@/components/home/hero";
+import { MapVisit } from "@/components/home/map-visit";
+import { QuickAccess } from "@/components/home/quick-access";
+import { ServicesGrid } from "@/components/home/services-grid";
+import { ArticleView } from "@/components/services/article-view";
+import { ServiceHero } from "@/components/services/service-hero";
+import { TopicsGrid } from "@/components/services/topics-grid";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
+
+type Example = {
+  title: string;
+  description?: string;
+  preview: ReactNode;
+  code?: string;
+  fullWidth?: boolean;
+};
+
+type ApiRow = {
+  name: string;
+  type: string;
+  defaultValue: string;
+  description: string;
+};
+
+export type ComponentDoc = {
+  slug: string;
+  title: string;
+  category: string;
+  description: string;
+  status?: string;
+  preview: ReactNode;
+  fullWidthPreview?: boolean;
+  installation: string;
+  importCode?: string;
+  usage: string;
+  usageCode?: string;
+  composition: string[];
+  examples: Example[];
+  api: ApiRow[];
+};
+
+const familyService =
+  defaultAdminData.services.find((service) => service.slug === "family-child-support") ??
+  defaultAdminData.services[0];
+
+const colorSwatches = [
+  { name: "background", className: "bg-background" },
+  { name: "foreground", className: "bg-foreground" },
+  { name: "card", className: "bg-card" },
+  { name: "primary", className: "bg-primary" },
+  { name: "secondary", className: "bg-secondary" },
+  { name: "border", className: "bg-border" },
+  { name: "input", className: "bg-input" },
+  { name: "bg-page", className: "bg-bg-page" },
+  { name: "bg-mint", className: "bg-bg-mint" },
+  { name: "brand-dark", className: "bg-brand-dark" },
+] as const;
+
+const radii = [
+  "rounded-sm",
+  "rounded-md",
+  "rounded-lg",
+  "rounded-xl",
+  "rounded-2xl",
+  "rounded-3xl",
+] as const;
+
+const buttonVariants = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
+const badgeVariants = ["default", "secondary", "destructive", "outline", "ghost", "link"] as const;
+
+function ColorGrid() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {colorSwatches.map((swatch) => (
+        <div key={swatch.name} className="space-y-2">
+          <div
+            className={cn(
+              "h-20 rounded-2xl ring-2 ring-border",
+              swatch.className
+            )}
+          />
+          <p className="font-mono text-ds-xxs text-muted-foreground">
+            {swatch.name}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TypographySpec() {
+  return (
+    <div className="space-y-5">
+      <p className="font-heading text-ds-xxxxl font-bold text-primary">Admin Hub</p>
+      <p className="font-heading text-ds-xxxl font-bold text-brand-dark">Services and Information</p>
+      <p className="text-ds-l font-bold text-foreground">Connecting community members to external services.</p>
+      <p className="text-ds-s font-medium text-foreground">Information platform summarizing administrative processes, sharing tips and mapping services.</p>
+      <p className="font-mono text-ds-xs text-muted-foreground">font-mono / token labels / ids</p>
+    </div>
+  );
+}
+
+function RadiiSpec() {
+  return (
+    <div className="flex flex-wrap items-end gap-5">
+      {radii.map((radius) => (
+        <div key={radius} className="space-y-2 text-center">
+          <div className={cn("size-20 bg-secondary ring-2 ring-border", radius)} />
+          <p className="font-mono text-ds-xxs text-muted-foreground">{radius}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ButtonMatrix() {
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-3">
+        {buttonVariants.map((variant) => (
+          <Button key={variant} variant={variant}>
+            {variant}
+          </Button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button size="xs">xs</Button>
+        <Button size="sm">sm</Button>
+        <Button>default</Button>
+        <Button size="lg">lg</Button>
+        <Button size="icon" aria-label="Add">
+          <Plus />
+        </Button>
+        <Button size="icon" variant="secondary" aria-label="Search">
+          <Search />
+        </Button>
+        <Button disabled>disabled</Button>
+      </div>
+    </div>
+  );
+}
+
+function BadgeMatrix() {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {badgeVariants.map((variant) => (
+        <Badge key={variant} variant={variant}>
+          {variant}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function CardExamples() {
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-muted-foreground">card-service</p>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CardService
+            icon={<Icon name="users-group" />}
+            title="Family Support"
+            description="Tenancy, rights, and finding a place to live"
+          />
+          <CardService
+            icon={<Icon name="briefcase-search" />}
+            title="Employment"
+            description="Job search, CV help, and training"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-muted-foreground">card-shortcut</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <CardShortcut
+            icon={<Icon name="notes" className="size-12" />}
+            title="Read the guide"
+            description="Step-by-step help for new arrivals."
+            action={
+              <Button size="sm">
+                More info <ChevronRight />
+              </Button>
+            }
+          />
+          <CardShortcut
+            icon={<Icon name="clock" className="size-12" />}
+            title="Book a visit"
+            description="See opening hours and plan ahead."
+            action={
+              <Button size="sm">
+                More info <ChevronRight />
+              </Button>
+            }
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-muted-foreground">card-schedule</p>
+        <CardSchedule
+          icon={<Clock strokeWidth={1.9} />}
+          title="Bridge Team Hours"
+          className="max-w-sm"
+          footer={
+            <Infobox
+              title="Outside these hours?"
+              description="Message us on WhatsApp to arrange a time."
+              action={
+                <Button size="icon-sm" variant="secondary" aria-label="Open">
+                  <ChevronRight />
+                </Button>
+              }
+            />
+          }
+        >
+          <ListItem>
+            <ListItemIcon>
+              <Check />
+            </ListItemIcon>
+            <ListItemSubtitle>Mon–Thu</ListItemSubtitle>
+            <ListItemValue>10:00–12:30 / 14:00–17:30</ListItemValue>
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Check />
+            </ListItemIcon>
+            <ListItemSubtitle>Friday</ListItemSubtitle>
+            <ListItemValue>Until 19:30</ListItemValue>
+          </ListItem>
+          <ListItem className="border-b-0">
+            <ListItemIcon>
+              <Check />
+            </ListItemIcon>
+            <ListItemSubtitle>Saturday</ListItemSubtitle>
+            <ListItemValue>Until 18:30</ListItemValue>
+          </ListItem>
+        </CardSchedule>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-muted-foreground">base card</p>
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Generic surface</CardTitle>
+            <CardDescription>
+              The base bounded surface — compose headers, content, and footers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-ds-xs font-medium text-foreground">
+            Use CardService and CardShortcut for the DS patterns; the base Card
+            for everything else.
+          </CardContent>
+          <CardFooter>
+            <Button size="sm" variant="secondary">
+              Open
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function FormExamples() {
+  return (
+    <div className="grid max-w-xl gap-4">
+      <Input placeholder="Search by organization, service, or email..." />
+      <Input placeholder="Disabled input" disabled />
+      <Input placeholder="Invalid value" aria-invalid />
+      <Textarea placeholder="Write a message..." />
+    </div>
+  );
+}
+
+function TableExample() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Service</TableHead>
+          <TableHead>Contact</TableHead>
+          <TableHead>Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>Housing</TableCell>
+          <TableCell>Ana Silva</TableCell>
+          <TableCell><Badge variant="secondary">Active</Badge></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Legal aid</TableCell>
+          <TableCell>Joao Pereira</TableCell>
+          <TableCell><Badge variant="outline">Pending</Badge></TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+}
+
+function CollapsibleExample({ bordered = false }: { bordered?: boolean }) {
+  return (
+    <Collapsible defaultOpen>
+      <CollapsibleTrigger
+        className={cn(
+          "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-ds-s font-bold text-primary",
+          bordered && "border-2 border-border bg-card"
+        )}
+      >
+        How do I register?
+        <ChevronRight className="size-4 rotate-90" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-4 pb-4 pt-2 text-ds-s font-medium text-foreground">
+        Start with the support form and bring identification, proof of address,
+        and any documents related to the request.
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+const sharedFoundationApi = [
+  { name: "source", type: "CSS custom property", defaultValue: ":root", description: "Defined in app/globals.css and exposed through Tailwind theme aliases." },
+  { name: "dark", type: "variant", defaultValue: "class scoped", description: "Dark mode variables are available through the local .dark scope." },
+];
+
+function FormControlsDemo() {
+  // DS: a selected checkbox/radio turns its label brand-600 + bold (text/selected token).
+  const itemLabel =
+    "text-ds-s font-medium text-foreground peer-data-[checked]:font-bold peer-data-[checked]:text-brand-link";
+  return (
+    <div className="flex flex-col gap-10 sm:flex-row sm:gap-20">
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-foreground">Checkbox</p>
+        <label className="flex items-center gap-2">
+          <Checkbox defaultChecked className="peer" />
+          <span className={itemLabel}>Email updates</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <Checkbox className="peer" />
+          <span className={itemLabel}>SMS reminders</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <Checkbox disabled className="peer" />
+          <span className={cn(itemLabel, "peer-disabled:opacity-50")}>
+            Disabled option
+          </span>
+        </label>
+        <label className="flex items-center gap-2">
+          <Checkbox aria-invalid="true" className="peer" />
+          <span className="text-ds-s font-medium text-destructive">
+            Required (error)
+          </span>
+        </label>
+      </div>
+      <div className="space-y-3">
+        <p className="text-ds-xs font-bold text-foreground">Radio</p>
+        <RadioGroup defaultValue="weekly" className="gap-3">
+          <label className="flex items-center gap-2">
+            <RadioGroupItem value="weekly" className="peer" />
+            <span className={itemLabel}>Weekly digest</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <RadioGroupItem value="monthly" className="peer" />
+            <span className={itemLabel}>Monthly digest</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <RadioGroupItem value="never" disabled className="peer" />
+            <span className={cn(itemLabel, "peer-disabled:opacity-50")}>
+              Never (disabled)
+            </span>
+          </label>
+        </RadioGroup>
+      </div>
+    </div>
+  );
+}
+
+function BreadcrumbDemo() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="#">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="#">Services</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Family &amp; Child Support</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+function ListItemDemo() {
+  const rows = [
+    { label: "Family & Child Support", value: "Mon–Fri" },
+    { label: "Housing Assistance", value: "By appointment" },
+    { label: "Employment Services", value: "Tue, Thu" },
+  ];
+  return (
+    <div className="max-w-md">
+      <ListItemHeader>Opening hours</ListItemHeader>
+      {rows.map((r) => (
+        <ListItem key={r.label}>
+          <ListItemIcon>
+            <Check />
+          </ListItemIcon>
+          <ListItemSubtitle>{r.label}</ListItemSubtitle>
+          <ListItemValue>{r.value}</ListItemValue>
+        </ListItem>
+      ))}
+    </div>
+  );
+}
+
+function InfoboxDemo() {
+  return (
+    <div className="flex max-w-xl flex-col gap-4">
+      <Infobox
+        title="Opening hours may vary"
+        description="Check the calendar before visiting in person."
+      />
+      <Infobox
+        title="New service available"
+        description="Housing assistance applications are now open."
+        action={
+          <Button size="icon-sm" variant="secondary" aria-label="Open">
+            <ChevronRight />
+          </Button>
+        }
+      />
+    </div>
+  );
+}
+
+function TextBlockDemo() {
+  return (
+    <TextBlock
+      category="Information"
+      categoryIcon={<Info className="size-4" strokeWidth={2} />}
+      title="Family & Child Support"
+      lead="Guidance for parents and guardians navigating local services."
+    >
+      <p>
+        The Lisbon Project connects families with trusted external services and
+        internal resources across the city.
+      </p>
+      <p>
+        Our team can help you understand processes, prepare documents, and find
+        the right contacts for your situation.
+      </p>
+    </TextBlock>
+  );
+}
+
+function InputAffixesDemo() {
+  return (
+    <div className="flex max-w-md flex-col gap-5">
+      <div className="space-y-1.5">
+        <label className="text-ds-xs font-medium text-foreground">Search</label>
+        <InputSearch placeholder="Search services..." />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-ds-xs font-medium text-foreground">Password</label>
+        <InputPassword placeholder="Enter password" defaultValue="secret123" />
+      </div>
+    </div>
+  );
+}
+
+const galleryPhoto = (color: string, label: string) =>
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect width='800' height='450' fill='${color}'/><text x='400' y='240' font-family='sans-serif' font-size='32' fill='white' text-anchor='middle' opacity='0.85'>${label}</text></svg>`
+  );
+
+function PhotoGalleryDemo() {
+  const images = [
+    { src: galleryPhoto("#1F8E87", "Photo 1"), alt: "Photo 1" },
+    { src: galleryPhoto("#1A72D5", "Photo 2"), alt: "Photo 2" },
+    { src: galleryPhoto("#6A40E2", "Photo 3"), alt: "Photo 3" },
+  ];
+  return <PhotoGallery images={images} className="max-w-2xl" />;
+}
+
+function IconGallery() {
+  return (
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+      {DS_ICON_NAMES.map((name) => (
+        <div
+          key={name}
+          className="flex flex-col items-center gap-2 rounded-lg border-2 border-border bg-card p-3 text-center"
+        >
+          <Icon name={name} className="size-6 text-primary" />
+          <span
+            className="w-full truncate text-[0.65rem] font-medium text-muted-foreground"
+            title={name}
+          >
+            {name}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AccordionDemo() {
+  const items = [
+    { n: "01", title: "How do I register?", tag: "Getting started", body: "Visit the front desk with a photo ID. Our team will set up your account and walk you through the services available to you." },
+    { n: "02", title: "What documents should I bring?", tag: "Documents", body: "Bring your passport or residence permit, plus any letters from services you are already working with." },
+    { n: "03", title: "Where is the office?", tag: "Visit", body: "We are on Rua de São Bento, a short walk from the Rato metro. Opening hours are listed on the agenda." },
+  ];
+  return (
+    <Accordion defaultValue={["01"]} className="max-w-2xl">
+      {items.map((it) => (
+        <AccordionItem key={it.n} value={it.n}>
+          <AccordionTrigger number={it.n} tag={it.tag}>
+            {it.title}
+          </AccordionTrigger>
+          <AccordionContent>{it.body}</AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  );
+}
+
+export const COMPONENT_DOCS: ComponentDoc[] = [
+  {
+    slug: "colors",
+    title: "Colors",
+    category: "Foundations",
+    description: "Core Lisbon Project design tokens used for surfaces, text, controls, borders, and brand accents.",
+    preview: <ColorGrid />,
+    installation: "Color tokens are global foundations. They do not need a component import.",
+    usage: "Use semantic tokens first: primary, secondary, border, input, bg-page, bg-mint, brand-dark, and foreground.",
+    composition: [
+      "Use bg-page for full-page surfaces.",
+      "Use card for contained surfaces and repeated items.",
+      "Use border and input separately: border is the mint DS divider, input is the neutral field border.",
+    ],
+    examples: [
+      { title: "Token grid", preview: <ColorGrid /> },
+    ],
+    api: sharedFoundationApi,
+  },
+  {
+    slug: "typography",
+    title: "Typography",
+    category: "Foundations",
+    description: "Responsive Quicksand type scale for product UI, service pages, and content-heavy sections.",
+    preview: <TypographySpec />,
+    installation: "Typography is configured globally through next/font and Tailwind theme tokens.",
+    usage: "Use ds text tokens for public UI so typography follows the Figma breakpoint scale.",
+    composition: [
+      "Use text-ds-xxxxl for page hero titles.",
+      "Use text-ds-xxxl for section headers.",
+      "Use text-ds-s and text-ds-xs for dense UI copy and tables.",
+    ],
+    examples: [
+      { title: "Responsive scale", preview: <TypographySpec /> },
+    ],
+    api: [
+      { name: "font-heading", type: "class", defaultValue: "Quicksand", description: "Shared heading/display family." },
+      { name: "text-ds-*", type: "class", defaultValue: "responsive", description: "Breakpoint-driven DS size aliases." },
+    ],
+  },
+  {
+    slug: "radii",
+    title: "Radii",
+    category: "Foundations",
+    description: "Shared corner system for inputs, buttons, cards, and large page sections.",
+    preview: <RadiiSpec />,
+    installation: "Radius tokens are defined globally in app/globals.css.",
+    usage: "Use 16px for controls, 24px for cards, 32px for hero icon tiles, and 56px for section panels.",
+    composition: [
+      "Controls (button, input, tag): rounded-lg (16px).",
+      "Cards: rounded-xl (24px).",
+      "Section panels: rounded-none below laptop → rounded-[3.5rem] (56px) at xl+.",
+    ],
+    examples: [
+      { title: "Radius scale", preview: <RadiiSpec /> },
+    ],
+    api: sharedFoundationApi,
+  },
+  {
+    slug: "icons",
+    title: "Iconography",
+    category: "Foundations",
+    description: "The Lisbon Project DS icon set — 81 filled icons exported from Figma, normalized to currentColor.",
+    preview: <IconGallery />,
+    fullWidthPreview: true,
+    installation: "Import the Icon component; icons live in public/icons and lib/ds-icons-data.ts.",
+    importCode: `import { Icon } from "@/components/ui/icon"`,
+    usage: `Use <Icon name="call-solo" /> wherever a DS glyph is needed; it inherits text color and scales via className.`,
+    composition: [
+      "Each icon is a filled SVG normalized to currentColor.",
+      "Color with text-* utilities; size with size-* on the Icon.",
+      "Names mirror the Figma set (e.g. call-solo, briefcase-search, ui-arrow-right).",
+    ],
+    examples: [
+      { title: "All icons", preview: <IconGallery /> },
+    ],
+    api: sharedFoundationApi,
+  },
+  {
+    slug: "button",
+    title: "Button",
+    category: "Primitives",
+    description: "Action control with Lisbon Project color, radius, typography, icon, disabled, and size variants.",
+    preview: <ButtonMatrix />,
+    installation: "Import Button from the local UI primitive.",
+    importCode: `import { Button } from "@/components/ui/button"`,
+    usage: "Use Button for commands. Use links for navigation unless the visual treatment must match a command.",
+    usageCode: `<Button>\n  Donate\n  <ChevronRight />\n</Button>`,
+    composition: [
+      "Default buttons are 44px high with 16px radius.",
+      "Icon buttons use the same 44px square hit area.",
+      "Use secondary or outline variants for lower-priority actions.",
+    ],
+    examples: [
+      { title: "Variants", preview: <ButtonMatrix /> },
+      { title: "Disabled", preview: <Button disabled>Disabled</Button> },
+      { title: "Icon", preview: <Button size="icon" aria-label="Add"><Plus /></Button> },
+    ],
+    api: [
+      { name: "variant", type: "default | secondary | outline | ghost | destructive | link", defaultValue: "default", description: "Visual treatment." },
+      { name: "size", type: "xs | sm | default | lg | icon", defaultValue: "default", description: "Height, padding, and icon-only sizing." },
+      { name: "disabled", type: "boolean", defaultValue: "false", description: "Applies disabled opacity and interaction lock." },
+    ],
+  },
+  {
+    slug: "badge",
+    title: "Badge",
+    category: "Primitives",
+    description: "Small label used for statuses, categories, tags, and compact metadata.",
+    preview: <BadgeMatrix />,
+    installation: "Import Badge from the local UI primitive.",
+    importCode: `import { Badge } from "@/components/ui/badge"`,
+    usage: "Use badges inside tables, cards, and metadata rows where a short category needs visual separation.",
+    usageCode: `<Badge variant="outline">Family Support</Badge>`,
+    composition: [
+      "Badges are 28px minimum height.",
+      "Use outline for contact categories.",
+      "Use secondary for active or positive states.",
+    ],
+    examples: [
+      { title: "Variants", preview: <BadgeMatrix /> },
+    ],
+    api: [
+      { name: "variant", type: "default | secondary | destructive | outline | ghost | link", defaultValue: "default", description: "Visual treatment." },
+    ],
+  },
+  {
+    slug: "card",
+    title: "Card",
+    category: "Primitives",
+    description: "Bounded surface for repeated content, service cards, quick access cards, and admin previews.",
+    preview: <CardExamples />,
+    installation: "Import card parts from the local UI primitive.",
+    importCode: `import { Card, CardService, CardShortcut, CardContent, CardHeader, CardTitle } from "@/components/ui/card"`,
+    usage: "Use cards for individual repeated items. Avoid nesting cards inside cards.",
+    composition: [
+      "Cards use a 24px radius and 2px mint border.",
+      "CardHeader, CardContent, and CardFooter provide consistent internal spacing.",
+      "Use size=\"sm\" for denser admin lists.",
+    ],
+    examples: [
+      { title: "Basic", preview: <CardExamples /> },
+    ],
+    api: [
+      { name: "size", type: "default | sm", defaultValue: "default", description: "Adjusts inner spacing density." },
+    ],
+  },
+  {
+    slug: "form-fields",
+    title: "Form Fields",
+    category: "Primitives",
+    description: "Input and textarea controls with DS height, border, radius, disabled, and invalid states.",
+    preview: <FormExamples />,
+    installation: "Import Input and Textarea from local UI primitives.",
+    importCode: `import { Input } from "@/components/ui/input"\nimport { Textarea } from "@/components/ui/textarea"`,
+    usage: "Use these controls for search, newsletter forms, admin editing, and filters.",
+    composition: [
+      "Input is 44px high with 16px radius and 2px neutral border.",
+      "Textarea follows the same border/radius language with taller minimum height.",
+      "Use aria-invalid for validation state.",
+    ],
+    examples: [
+      { title: "Basic", preview: <FormExamples /> },
+    ],
+    api: [
+      { name: "disabled", type: "boolean", defaultValue: "false", description: "Locks interaction and softens the surface." },
+      { name: "aria-invalid", type: "boolean", defaultValue: "false", description: "Applies destructive validation treatment." },
+    ],
+  },
+  {
+    slug: "form-controls",
+    title: "Checkbox & Radio",
+    category: "Primitives",
+    description: "Selection controls with 24px box/dial and DS states (default, hover, selected, disabled, error).",
+    preview: <FormControlsDemo />,
+    installation: "Import Checkbox and RadioGroup from local UI primitives.",
+    importCode: `import { Checkbox } from "@/components/ui/checkbox"\nimport { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"`,
+    usage: "Use checkboxes for multi-select opt-ins and radios for single-choice settings.",
+    composition: [
+      "Checkbox is a 24px box with 4px radius and 2px border; checked = white fill, brand-600 border + check.",
+      "Radio is a 24px dial; selected = brand-600 ring + brand-600 dot.",
+      "Both expose hover, disabled, and aria-invalid (error) states.",
+    ],
+    examples: [
+      { title: "States", preview: <FormControlsDemo /> },
+    ],
+    api: [
+      { name: "defaultChecked", type: "boolean", defaultValue: "false", description: "Checkbox initial checked state (uncontrolled)." },
+      { name: "value", type: "string", defaultValue: "-", description: "RadioGroupItem value within a RadioGroup." },
+      { name: "aria-invalid", type: "boolean", defaultValue: "false", description: "Applies destructive validation treatment." },
+    ],
+  },
+  {
+    slug: "breadcrumb",
+    title: "Breadcrumb",
+    category: "Primitives",
+    description: "Hierarchical navigation trail with interactive (brand-500) and current-page (brand-1000) labels.",
+    preview: <BreadcrumbDemo />,
+    installation: "Import Breadcrumb parts from the local UI primitive.",
+    importCode: `import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"`,
+    usage: "Use on service and article pages to show location within the information hierarchy.",
+    composition: [
+      "Links use brand-500 → brand-600 on hover; the current page uses brand-1000.",
+      "Labels are bold 13px; the separator is a muted slash.",
+      "BreadcrumbPage marks aria-current=page for the active step.",
+    ],
+    examples: [{ title: "Basic", preview: <BreadcrumbDemo /> }],
+    api: [
+      { name: "href", type: "string", defaultValue: "-", description: "Target for BreadcrumbLink (Next.js Link)." },
+    ],
+  },
+  {
+    slug: "list-item",
+    title: "List Item",
+    category: "Primitives",
+    description: "Icon + title/text row with a 2px brand-200 divider, for service and contact lists.",
+    preview: <ListItemDemo />,
+    installation: "Import ListItem parts from the local UI primitive.",
+    importCode: `import { ListItem, ListItemIcon, ListItemContent, ListItemTitle, ListItemText } from "@/components/ui/list-item"`,
+    usage: "Use for scannable lists of services, contacts, or topics.",
+    composition: [
+      "Title is brand-500 bold 15px; supporting text is foreground medium 13px.",
+      "Each row has a 2px brand-200 bottom divider.",
+      "Leading icon uses brand-500.",
+    ],
+    examples: [{ title: "Basic", preview: <ListItemDemo /> }],
+    api: [
+      { name: "className", type: "string", defaultValue: "-", description: "Compose layout/spacing on the row container." },
+    ],
+  },
+  {
+    slug: "infobox",
+    title: "Infobox",
+    category: "Primitives",
+    description: "Inline callout with brand-200 fill and brand-600 border for tips, notices, and inline guidance.",
+    preview: <InfoboxDemo />,
+    installation: "Import Infobox from the local UI primitive.",
+    importCode: `import { Infobox } from "@/components/ui/infobox"`,
+    usage: "Use for short, contextual notices near the content they describe.",
+    composition: [
+      "brand-200 fill, 2px brand-600 border, 16px radius.",
+      "Faded info icon, bold title (13px) over medium description (text-secondary).",
+      "Optional trailing action (e.g. a secondary icon button).",
+    ],
+    examples: [{ title: "Basic", preview: <InfoboxDemo /> }],
+    api: [
+      { name: "title", type: "ReactNode", defaultValue: "-", description: "Bold lead line." },
+      { name: "description", type: "ReactNode", defaultValue: "-", description: "Supporting copy." },
+      { name: "action", type: "ReactNode", defaultValue: "-", description: "Optional trailing control." },
+    ],
+  },
+  {
+    slug: "text-block",
+    title: "Text Block",
+    category: "Primitives",
+    description: "Section-body content composition: category chip, brand-700 title, brand-500 lead, body copy.",
+    preview: <TextBlockDemo />,
+    installation: "Import TextBlock from the local UI primitive.",
+    importCode: `import { TextBlock } from "@/components/ui/text-block"`,
+    usage: "Use as the text column inside service and article sections.",
+    composition: [
+      "Optional category chip uses brand-700 fill with a white icon.",
+      "Title is xxxl brand-700; lead is m brand-500 bold.",
+      "Body copy is xs foreground medium with comfortable line height.",
+    ],
+    examples: [{ title: "Basic", preview: <TextBlockDemo /> }],
+    api: [
+      { name: "category", type: "ReactNode", defaultValue: "-", description: "Label for the category chip." },
+      { name: "title", type: "ReactNode", defaultValue: "-", description: "Block heading." },
+      { name: "lead", type: "ReactNode", defaultValue: "-", description: "Emphasised intro line." },
+    ],
+  },
+  {
+    slug: "input-affixes",
+    title: "Search & Password",
+    category: "Primitives",
+    description: "Input variants: leading search icon, and a password field with a show/hide toggle.",
+    preview: <InputAffixesDemo />,
+    installation: "Import the variants from the input primitive.",
+    importCode: `import { InputSearch, InputPassword } from "@/components/ui/input"`,
+    usage: "Use InputSearch for filters/lookups and InputPassword for credential fields.",
+    composition: [
+      "Both reuse the base Input field (44px, 16px radius, 2px border).",
+      "InputSearch adds a leading search icon with left padding.",
+      "InputPassword adds a trailing eye toggle that switches type between password/text.",
+    ],
+    examples: [{ title: "Basic", preview: <InputAffixesDemo /> }],
+    api: [
+      { name: "placeholder", type: "string", defaultValue: "-", description: "Field placeholder text." },
+      { name: "disabled", type: "boolean", defaultValue: "false", description: "Locks the field." },
+    ],
+  },
+  {
+    slug: "photo-gallery",
+    title: "Photo Gallery",
+    category: "Primitives",
+    description: "Full-bleed image with responsive height/radii and secondary prev/next navigation.",
+    preview: <PhotoGalleryDemo />,
+    fullWidthPreview: true,
+    installation: "Import PhotoGallery from the local UI primitive.",
+    importCode: `import { PhotoGallery } from "@/components/ui/photo-gallery"`,
+    usage: "Use on service and article pages to show a set of location or program photos.",
+    composition: [
+      "Height steps 227 → 260 → 424 → 410 and radii 16 → 16 → 24 → 32 across breakpoints.",
+      "Image is object-cover within an overflow-hidden container.",
+      "Prev/next use the secondary button variant, anchored bottom-left.",
+    ],
+    examples: [{ title: "Basic", preview: <PhotoGalleryDemo /> }],
+    api: [
+      { name: "images", type: "{ src, alt }[]", defaultValue: "[]", description: "Photos to cycle through." },
+      { name: "showNavigation", type: "boolean", defaultValue: "true", description: "Toggles the prev/next controls." },
+    ],
+  },
+  {
+    slug: "calendar",
+    title: "Calendar",
+    category: "Primitives",
+    description: "Month date-picker built on react-day-picker, styled to the DS (selected, today, nav).",
+    preview: <CalendarDemo />,
+    installation: "Import Calendar from the local UI primitive (depends on react-day-picker).",
+    importCode: `import { Calendar } from "@/components/ui/calendar"`,
+    usage: "Use for date selection in the agenda, booking flows, and admin filters.",
+    composition: [
+      "White card surface with bold month title and chevron nav.",
+      "Monday-start weekdays in muted; rounded day cells.",
+      "Selected day shows a rounded outline; today is teal + bold.",
+    ],
+    examples: [{ title: "Single date", preview: <CalendarDemo /> }],
+    api: [
+      { name: "mode", type: "single | range | multiple", defaultValue: "single", description: "Selection mode (react-day-picker)." },
+      { name: "selected", type: "Date | Date[]", defaultValue: "-", description: "Controlled selection." },
+      { name: "onSelect", type: "(date) => void", defaultValue: "-", description: "Selection callback." },
+    ],
+  },
+  {
+    slug: "agenda",
+    title: "Agenda",
+    category: "System components",
+    description: "Event browser: category filter chips, a calendar with event dots, and a day event list.",
+    preview: <AgendaDemo />,
+    fullWidthPreview: true,
+    installation: "Composition of Calendar + filter chips + event list.",
+    importCode: `import { Calendar } from "@/components/ui/calendar"`,
+    usage: "Use to browse program events by category and date.",
+    composition: [
+      "Filter chips toggle program-area categories (project colors).",
+      "Calendar marks event days with a teal dot (the event modifier).",
+      "Selecting a day lists its events with category accents.",
+    ],
+    examples: [{ title: "Event browser", preview: <AgendaDemo /> }],
+    api: [
+      { name: "—", type: "composition", defaultValue: "-", description: "Composes Calendar, chips, and an event list; wire to your event source." },
+    ],
+  },
+  {
+    slug: "accordion",
+    title: "Accordion",
+    category: "Primitives",
+    description: "Expandable FAQ rows with a number badge, teal title, optional Label tag, and +/- toggle.",
+    preview: <AccordionDemo />,
+    installation: "Import Accordion parts from the local UI primitive (Base UI).",
+    importCode: `import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"`,
+    usage: "Use for FAQs and progressively-disclosed help content.",
+    composition: [
+      "Each item has a brand-200 number badge, teal title, and optional Label tag.",
+      "The +/- toggle flips with the open state; rows are split by a 2px brand-200 divider.",
+      "Single-open by default; pass openMultiple on the Root to allow several.",
+    ],
+    examples: [{ title: "FAQ", preview: <AccordionDemo /> }],
+    api: [
+      { name: "number", type: "ReactNode", defaultValue: "-", description: "Leading badge content (e.g. 01)." },
+      { name: "tag", type: "ReactNode", defaultValue: "-", description: "Optional trailing Label tag." },
+      { name: "openMultiple", type: "boolean", defaultValue: "false", description: "Allow multiple open items (Root)." },
+    ],
+  },
+  {
+    slug: "select",
+    title: "Select",
+    category: "Primitives",
+    description: "Single-value menu control for filters, settings, and compact option choices.",
+    preview: <SelectDemo />,
+    installation: "Import Select primitives from the local UI wrapper.",
+    importCode: `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"`,
+    usage: "Use Select where a bounded option list is clearer than free-form input.",
+    composition: [
+      "Trigger uses the same 44px / 16px control shape as Input.",
+      "SelectContent is a rounded menu with DS border and option states.",
+      "Use size=\"sm\" for compact admin toolbars.",
+    ],
+    examples: [
+      { title: "Basic", preview: <SelectDemo /> },
+    ],
+    api: [
+      { name: "size", type: "default | sm", defaultValue: "default", description: "Controls trigger height and minimum width." },
+      { name: "disabled", type: "boolean", defaultValue: "false", description: "Disables the root select." },
+    ],
+  },
+  {
+    slug: "table",
+    title: "Table",
+    category: "Primitives",
+    description: "Structured data table with contained horizontal scrolling and DS dividers.",
+    preview: <TableExample />,
+    installation: "Import table parts from the local UI primitive.",
+    importCode: `import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"`,
+    usage: "Use tables for contacts, admin listings, and dense comparable data.",
+    composition: [
+      "Tables are wrapped in an overflow-x-auto container.",
+      "Rows and headers use 2px DS dividers.",
+      "Set min-width on the table for mobile scrollers.",
+    ],
+    examples: [
+      { title: "Basic", preview: <TableExample /> },
+    ],
+    api: [
+      { name: "className", type: "string", defaultValue: "-", description: "Use min-w values for predictable mobile scrolling." },
+    ],
+  },
+  {
+    slug: "collapsible",
+    title: "Collapsible",
+    category: "Primitives",
+    description: "Disclosure primitive used for FAQ rows and dense expandable content.",
+    preview: <CollapsibleExample bordered />,
+    installation: "Import Collapsible primitives from the local UI wrapper.",
+    importCode: `import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"`,
+    usage: "Use Collapsible when content should be available without expanding the default page height.",
+    composition: [
+      "Trigger owns the visible row treatment.",
+      "Content should stay visually connected to the trigger.",
+      "Use defaultOpen for examples or primary FAQ answers.",
+    ],
+    examples: [
+      { title: "Basic", preview: <CollapsibleExample /> },
+      { title: "Borders", preview: <CollapsibleExample bordered /> },
+    ],
+    api: [
+      { name: "defaultOpen", type: "boolean", defaultValue: "false", description: "Initial open state." },
+    ],
+  },
+  {
+    slug: "main-menu",
+    title: "Main Menu",
+    category: "System components",
+    description: "Sticky public-site navigation with Lisbon Project lockup, menu action, and donate CTA.",
+    preview: <SiteHeader sticky={false} />,
+    fullWidthPreview: true,
+    installation: "Import the production site header.",
+    importCode: `import { SiteHeader } from "@/components/site/site-header"`,
+    usage: "Use once at the top of public site layouts.",
+    composition: [
+      "Header uses 56px desktop outer gutters inside a 1680px frame.",
+      "Menu and donate actions use 44px control sizing.",
+      "Use sticky={false} only inside previews or static mocks.",
+    ],
+    examples: [
+      { title: "Static preview", preview: <SiteHeader sticky={false} />, fullWidth: true },
+    ],
+    api: [
+      { name: "sticky", type: "boolean", defaultValue: "true", description: "Controls sticky positioning for production vs preview contexts." },
+    ],
+  },
+  {
+    slug: "home-hero",
+    title: "Home Hero",
+    category: "System components",
+    description: "Admin Hub landing hero with DS illustration, title block, and embedded quick access cards.",
+    preview: <Hero />,
+    fullWidthPreview: true,
+    installation: "Import the production home hero.",
+    importCode: `import { Hero } from "@/components/home/hero"`,
+    usage: "Use as the first section on the Admin Hub home page.",
+    composition: [
+      "Includes the four quick access cards as part of the Figma hero section.",
+      "Uses 56px rounded panel and 135px desktop inner inset.",
+      "Decorative illustration is hidden until wide desktop to avoid overlap.",
+    ],
+    examples: [
+      { title: "Desktop frame", preview: <Hero />, fullWidth: true },
+    ],
+    api: [
+      { name: "data", type: "AdminProvider state", defaultValue: "quickAccess", description: "Reads quick access items from the admin store." },
+    ],
+  },
+  {
+    slug: "quick-access",
+    title: "Quick Access",
+    category: "System components",
+    description: "Four-card shortcut grid used inside the home hero and standalone contexts.",
+    preview: <QuickAccess />,
+    fullWidthPreview: true,
+    installation: "Import the production quick access component.",
+    importCode: `import { QuickAccess } from "@/components/home/quick-access"`,
+    usage: "Use embedded inside Hero, or standalone when a page needs shortcuts.",
+    composition: [
+      "Cards auto-fit with a 280px minimum track.",
+      "Icons are semantic per card id.",
+      "Use embedded to remove the surrounding section wrapper.",
+    ],
+    examples: [
+      { title: "Standalone", preview: <QuickAccess />, fullWidth: true },
+    ],
+    api: [
+      { name: "embedded", type: "boolean", defaultValue: "false", description: "Removes standalone section wrapper when used inside Hero." },
+    ],
+  },
+  {
+    slug: "services-list",
+    title: "Services List",
+    category: "System components",
+    description: "Two-column service information list with semantic icons and compact card rows.",
+    preview: <ServicesGrid />,
+    fullWidthPreview: true,
+    installation: "Import the production services grid.",
+    importCode: `import { ServicesGrid } from "@/components/home/services-grid"`,
+    usage: "Use on the home page to expose all service categories.",
+    composition: [
+      "Service rows use a 480px minimum track.",
+      "Service icons resolve through lib/service-icons.",
+      "Panel uses the same DS section padding as Figma.",
+    ],
+    examples: [
+      { title: "Full list", preview: <ServicesGrid />, fullWidth: true },
+    ],
+    api: [
+      { name: "services", type: "AdminProvider state", defaultValue: "defaultAdminData.services", description: "Rendered from the admin store." },
+    ],
+  },
+  {
+    slug: "contacts",
+    title: "Contacts",
+    category: "System components",
+    description: "Searchable and filterable contacts section with DS table, badges, and action buttons.",
+    preview: <AllContacts />,
+    fullWidthPreview: true,
+    installation: "Import AllContacts or ContactsSection depending on the page.",
+    importCode: `import { AllContacts } from "@/components/home/all-contacts"\nimport { ContactsSection } from "@/components/shared/contacts-section"`,
+    usage: "Use ContactsSection when a service page needs a scoped contact table.",
+    composition: [
+      "Search input and select controls sit above the table.",
+      "Mobile overflow is contained by the table scroller.",
+      "Contact badges use the outline badge variant.",
+    ],
+    examples: [
+      { title: "All contacts", preview: <AllContacts />, fullWidth: true },
+    ],
+    api: [
+      { name: "contacts", type: "Contact[]", defaultValue: "[]", description: "Rows rendered by ContactsSection." },
+      { name: "categoryFilters", type: "string[]", defaultValue: "[]", description: "Options for the category filter." },
+    ],
+  },
+  {
+    slug: "map-visit",
+    title: "Map Visit",
+    category: "System components",
+    description: "Map, address, opening hours, and contact information section used near page footers.",
+    preview: <MapVisit />,
+    fullWidthPreview: true,
+    installation: "Import the production map visit component.",
+    importCode: `import { MapVisit } from "@/components/home/map-visit"`,
+    usage: "Use near the end of public pages where location and visiting information are needed.",
+    composition: [
+      "Map iframe sits behind a white information panel.",
+      "Information panel auto-fits columns to avoid overflow.",
+      "Desktop column gap matches the Figma 88px gap at 1680px.",
+    ],
+    examples: [
+      { title: "Map and visit card", preview: <MapVisit />, fullWidth: true },
+    ],
+    api: [
+      { name: "MAP_QUERY", type: "constant", defaultValue: "Rua Carvalho Araujo 66B", description: "Google Maps query used by the iframe." },
+    ],
+  },
+  {
+    slug: "service-page",
+    title: "Service Page",
+    category: "System components",
+    description: "Service-category composition combining hero, topic cards, contacts, and location sections.",
+    preview: (
+      <>
+        <ServiceHero title={familyService.title} breadcrumb={familyService.breadcrumb} intro={familyService.intro} iconKey={familyService.iconKey} />
+        <TopicsGrid topics={familyService.topics} categorySlug={familyService.slug} />
+      </>
+    ),
+    fullWidthPreview: true,
+    installation: "Import page-level service components or use the route-level ServiceCategoryView.",
+    importCode: `import { ServiceHero } from "@/components/services/service-hero"\nimport { TopicsGrid } from "@/components/services/topics-grid"`,
+    usage: "Use the route-level ServiceCategoryView for production routes; use these parts for custom service pages.",
+    composition: [
+      "Hero uses the selected service icon and intro copy.",
+      "TopicsGrid renders article cards for the service category.",
+      "ContactsSection and MapVisit typically follow this composition.",
+    ],
+    examples: [
+      { title: "Family and childcare", preview: <><ServiceHero title={familyService.title} breadcrumb={familyService.breadcrumb} intro={familyService.intro} iconKey={familyService.iconKey} /><TopicsGrid topics={familyService.topics} categorySlug={familyService.slug} /></>, fullWidth: true },
+    ],
+    api: [
+      { name: "slug", type: "string", defaultValue: "-", description: "Service slug used to resolve admin data and routes." },
+    ],
+  },
+  {
+    slug: "article-page",
+    title: "Article Page",
+    category: "System components",
+    description: "Article view composition with hero, alternating content panels, FAQ, map, and footer-ready spacing.",
+    preview: <ArticleView slug="family-child-support" topicSlug="basic-education" />,
+    fullWidthPreview: true,
+    installation: "Import the route-level article view.",
+    importCode: `import { ArticleView } from "@/components/services/article-view"`,
+    usage: "Use for service topic routes that need the Figma article structure.",
+    composition: [
+      "Hero introduces the topic.",
+      "Content sections alternate white panel and page background.",
+      "FAQ rows use collapsible-style affordances.",
+    ],
+    examples: [
+      { title: "Basic education article", preview: <ArticleView slug="family-child-support" topicSlug="basic-education" />, fullWidth: true },
+    ],
+    api: [
+      { name: "slug", type: "string", defaultValue: "-", description: "Parent service slug." },
+      { name: "topicSlug", type: "string", defaultValue: "-", description: "Article topic slug." },
+    ],
+  },
+  {
+    slug: "footer",
+    title: "Footer",
+    category: "System components",
+    description: "Newsletter band and legal/social footer used on public site pages.",
+    preview: <SiteFooter />,
+    fullWidthPreview: true,
+    installation: "Import the production footer.",
+    importCode: `import { SiteFooter } from "@/components/site/site-footer"`,
+    usage: "Use once at the bottom of public site layouts.",
+    composition: [
+      "Newsletter band uses bg-mint.",
+      "Inputs and CTA reuse DS form/button primitives.",
+      "Social actions use circular icon links.",
+    ],
+    examples: [
+      { title: "Newsletter footer", preview: <SiteFooter />, fullWidth: true },
+    ],
+    api: [
+      { name: "children", type: "none", defaultValue: "-", description: "Footer is currently static." },
+    ],
+  },
+];
+
+export const STYLEGUIDE_NAV_GROUPS = ["Foundations", "Primitives", "System components"].map((title) => ({
+  title,
+  items: COMPONENT_DOCS.filter((doc) => doc.category === title).map((doc) => ({
+    slug: doc.slug,
+    title: doc.title,
+    status: doc.status,
+  })),
+}));
+
+export function getComponentDoc(slug: string) {
+  return COMPONENT_DOCS.find((doc) => doc.slug === slug);
+}
