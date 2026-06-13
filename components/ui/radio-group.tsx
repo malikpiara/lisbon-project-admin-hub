@@ -35,7 +35,7 @@ function RadioGroupItem({
         "hover:border-[var(--neutral-700)] hover:bg-[var(--neutral-200)]",
         "active:border-[var(--neutral-800)] active:bg-[var(--neutral-400)]",
         "data-[checked]:border-brand-link",
-        "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
         "disabled:pointer-events-none disabled:opacity-50",
         "aria-invalid:border-destructive data-invalid:border-destructive",
         className

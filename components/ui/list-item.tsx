@@ -20,7 +20,7 @@ function ListItem({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="list-item"
       className={cn(
-        "flex items-center gap-4 border-b-2 border-border py-3",
+        "flex items-center gap-4 border-b-2 border-border py-4",
         className
       )}
       {...props}

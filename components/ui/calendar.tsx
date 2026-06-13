@@ -33,19 +33,19 @@ function Calendar({
         months: "relative flex flex-col gap-4",
         month: "flex flex-col gap-3",
         month_caption: "flex h-9 items-center px-1",
-        caption_label: "text-ds-m font-bold text-foreground",
+        caption_label: "text-ds-s font-bold text-foreground",
         nav: "absolute right-0 top-0 flex items-center gap-1",
         button_previous: cn(buttonVariants({ variant: "ghost", size: "icon-sm" })),
         button_next: cn(buttonVariants({ variant: "ghost", size: "icon-sm" })),
         month_grid: "w-full border-collapse",
         weekdays: "flex",
         weekday:
-          "flex-1 select-none pb-1 text-ds-xxs font-bold text-muted-foreground",
+          "flex-1 select-none pb-1 text-ds-xs font-bold text-muted-foreground",
         weeks: "flex flex-col",
         week: "mt-1 flex w-full",
         day: "group/day relative flex-1 select-none p-0.5 text-center",
         day_button: cn(
-          "relative mx-auto flex size-10 items-center justify-center rounded-lg text-ds-xs font-medium text-foreground transition-colors",
+          "relative mx-auto flex size-12 items-center justify-center rounded-lg text-ds-xs font-bold text-foreground transition-colors",
           "hover:bg-secondary active:bg-bg-mint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
           // today (DayFlag on the cell): neutral-grey outline box
           "group-data-[today=true]/day:border-2 group-data-[today=true]/day:border-input group-data-[today=true]/day:font-bold",

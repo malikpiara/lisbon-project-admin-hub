@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 // primary: neutral-200 fill / neutral-500 border → selected white + brand-600 border/check.
 // secondary: brand-100 mint fill / brand-300 border → selected brand-500 border/check.
 const checkboxVariants = cva(
-  "peer size-6 shrink-0 rounded-sm border-2 outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive data-invalid:border-destructive",
+  "peer size-6 shrink-0 rounded-sm border-2 outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive data-invalid:border-destructive",
   {
     variants: {
       variant: {

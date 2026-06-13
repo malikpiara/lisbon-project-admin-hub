@@ -43,7 +43,7 @@ function CardTitle({
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
+        "font-heading text-ds-s leading-snug font-bold group-data-[size=sm]/card:text-ds-xs",
         className
       )}
       {...props} />
@@ -122,7 +122,7 @@ function CardService({
     <div
       data-slot="card-service"
       className={cn(
-        "flex min-w-[180px] items-center gap-4 rounded-xl border-2 border-border bg-card p-4 text-left",
+        "flex min-w-[180px] items-center gap-4 rounded-xl border-2 border-border bg-card p-4 text-left xl:p-6",
         className
       )}
       {...props}
@@ -165,14 +165,14 @@ function CardShortcut({
     <div
       data-slot="card-shortcut"
       className={cn(
-        "flex min-w-[280px] flex-col items-start gap-4 rounded-xl border-2 border-border bg-card p-4",
+        "flex min-w-[280px] flex-col items-start gap-4 rounded-xl border-2 border-border bg-card p-4 xl:p-6",
         className
       )}
       {...props}
     >
       <div className="flex w-full flex-col gap-0.5">
         {icon ? (
-          <span className="mb-2 flex items-center text-primary [&>svg]:size-12">
+          <span className="mb-2 flex items-center text-bg-mint [&>svg]:size-14">
             {icon}
           </span>
         ) : null}
@@ -206,7 +206,7 @@ function CardSchedule({
     <div
       data-slot="card-schedule"
       className={cn(
-        "flex min-w-[280px] flex-col gap-4 rounded-xl border-2 border-border bg-card p-4",
+        "flex min-w-[280px] flex-col gap-4 rounded-xl border-2 border-border bg-card p-4 xl:p-6",
         className
       )}
       {...props}

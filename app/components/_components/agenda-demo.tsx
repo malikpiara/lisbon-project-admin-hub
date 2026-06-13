@@ -51,6 +51,18 @@ export function AgendaDemo() {
       <div className="space-y-2">
         <p className="text-ds-xs font-bold text-foreground">Filter by Project</p>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setActive(new Set())}
+            className={cn(
+              "inline-flex h-8 items-center rounded-lg border-2 px-3 text-ds-xxs font-bold transition-colors",
+              active.size === 0
+                ? "border-primary bg-secondary text-primary"
+                : "border-border bg-card text-foreground hover:bg-secondary"
+            )}
+          >
+            All Projects
+          </button>
         {CATEGORIES.map((c) => {
           const on = active.has(c.key);
           return (
@@ -95,7 +107,7 @@ export function AgendaDemo() {
               return (
                 <div
                   key={i}
-                  className="flex items-stretch gap-3 rounded-xl border-2 border-border bg-card p-3"
+                  className="flex items-stretch gap-3 border-b-2 border-border py-3 last:border-b-0"
                 >
                   <span className="w-1 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
                   <div className="min-w-0">
