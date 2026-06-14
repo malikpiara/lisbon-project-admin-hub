@@ -9,14 +9,14 @@ export function CollapsibleSection({ title, subtitle, defaultOpen = false, child
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="mb-8">
-      <div className="border-b border-border">
+      <div className="border-b-2 border-border">
         <CollapsibleTrigger className="w-full flex items-center justify-between gap-4 py-3 text-left hover:opacity-80 transition-opacity">
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="font-heading text-ds-l font-bold text-foreground">{title}</h2>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={`h-4 w-4 shrink-0 text-primary transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </CollapsibleTrigger>
-        {subtitle && <p className="text-xs text-muted-foreground pb-3 -mt-1">{subtitle}</p>}
+        {subtitle && <p className="-mt-1 pb-3 text-ds-xxs font-medium text-muted-foreground">{subtitle}</p>}
       </div>
       <CollapsibleContent className="pt-4">{children}</CollapsibleContent>
     </Collapsible>
