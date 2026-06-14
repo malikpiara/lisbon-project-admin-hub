@@ -25,7 +25,7 @@ export function TopicsGrid({ topics, categorySlug }) {
               {topics.map((topic) => (
                 <div
                   key={topic.slug}
-                  className="flex flex-col rounded-3xl border-2 border-border bg-card p-6"
+                  className="flex flex-col rounded-lg border-2 border-border bg-card p-6"
                 >
                   <h3 className="font-heading text-ds-l font-bold text-foreground">
                     {topic.title}

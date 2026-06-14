@@ -13,7 +13,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-xl border-2 border-border bg-card py-4 text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 xl:py-6 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-4 overflow-hidden rounded-lg border-2 border-border bg-card py-4 text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 xl:py-6 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
         className
       )}
       {...props} />
@@ -28,7 +28,7 @@ function CardHeader({
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-4 xl:px-6 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-lg px-4 xl:px-6 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
         className
       )}
       {...props} />
@@ -97,7 +97,7 @@ function CardFooter({
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl px-4 pb-4 xl:px-6 xl:pb-6 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pb-3",
+        "flex items-center rounded-b-lg px-4 pb-4 xl:px-6 xl:pb-6 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pb-3",
         className
       )}
       {...props} />
@@ -122,7 +122,7 @@ function CardService({
     <div
       data-slot="card-service"
       className={cn(
-        "flex min-w-[180px] items-center gap-4 rounded-xl border-2 border-border bg-card p-4 text-left xl:p-6",
+        "flex min-w-[180px] items-center gap-4 rounded-lg border-2 border-border bg-card p-4 text-left xl:p-6",
         className
       )}
       {...props}
@@ -165,7 +165,7 @@ function CardShortcut({
     <div
       data-slot="card-shortcut"
       className={cn(
-        "flex min-w-[280px] flex-col items-start gap-4 rounded-xl border-2 border-border bg-card p-4 xl:p-6",
+        "flex min-w-[280px] flex-col items-start gap-4 rounded-lg border-2 border-border bg-card p-4 xl:p-6",
         className
       )}
       {...props}
@@ -206,7 +206,7 @@ function CardSchedule({
     <div
       data-slot="card-schedule"
       className={cn(
-        "flex min-w-[280px] flex-col gap-4 rounded-xl border-2 border-border bg-card p-4 xl:p-6",
+        "flex min-w-[280px] flex-col gap-4 rounded-lg border-2 border-border bg-card p-4 xl:p-6",
         className
       )}
       {...props}

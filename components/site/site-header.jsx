@@ -43,7 +43,7 @@ export function SiteHeader({ sticky = true } = {}) {
           <button
             type="button"
             aria-label="Open menu"
-            className={buttonVariants({ size: "icon" })}
+            className={buttonVariants({ variant: "ghost", size: "icon" })}
           >
             <Menu className="size-5" strokeWidth={1.9} />
           </button>

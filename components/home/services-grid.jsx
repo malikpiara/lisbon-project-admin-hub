@@ -31,10 +31,10 @@ export function ServicesGrid() {
                 <Link
                   key={service.slug}
                   href={`/services/${service.slug}`}
-                  className="group rounded-3xl focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
+                  className="group rounded-lg focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
                 >
-                  <div className="flex h-full items-start gap-4 rounded-3xl border-2 border-border bg-card p-5 transition-shadow group-hover:shadow-[0_16px_32px_rgba(7,24,23,0.07)]">
-                    <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
+                  <div className="flex h-full items-start gap-4 rounded-lg border-2 border-border bg-card p-5 transition-shadow group-hover:shadow-[0_16px_32px_rgba(7,24,23,0.07)]">
+                    <div className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                       <Icon className="size-5" strokeWidth={1.9} />
                     </div>
                     <div className="min-w-0 flex-1">

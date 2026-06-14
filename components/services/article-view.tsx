@@ -1,11 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Info } from "lucide-react";
+import { Info } from "lucide-react";
 
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
 const HERO_SUBHEAD =
@@ -92,8 +98,16 @@ function articleSections(topic: Topic) {
 }
 
 const faqs = [
-  "How do I register my child for public education?",
-  "What family benefits am I entitled to?",
+  {
+    question: "How do I register my child for public education?",
+    answer:
+      "In order to register, you need a valid LP profile in MyLP — you can create one in a few minutes. Registration is not first-come-first-served: it does not matter when you apply, as long as you do it within the required period. Our placement criteria help us prioritise families in more vulnerable situations.",
+  },
+  {
+    question: "What family benefits am I entitled to?",
+    answer:
+      "Depending on your income and household, you may be eligible for childcare subsidies, school meal support, and family allowances. Contact us or visit during opening hours and we'll help you identify which benefits apply to your situation.",
+  },
 ];
 
 export function ArticleView({
@@ -224,22 +238,14 @@ export function ArticleView({
               <p className="text-ds-m font-bold text-primary">
                 Find answers to common questions about family and childcare services.
               </p>
-              <div className="mt-6 divide-y-2 divide-border">
+              <Accordion defaultValue={[faqs[0].question]} className="mt-6">
                 {faqs.map((faq) => (
-                  <button
-                    key={faq}
-                    type="button"
-                    className="flex w-full items-center gap-4 py-4 text-left"
-                  >
-                    <span className="flex-1 text-ds-m font-bold text-primary">
-                      {faq}
-                    </span>
-                    <span className="grid size-11 place-items-center rounded-lg text-primary">
-                      <ChevronDown className="size-4" />
-                    </span>
-                  </button>
+                  <AccordionItem key={faq.question} value={faq.question}>
+                    <AccordionTrigger>{faq.question}</AccordionTrigger>
+                    <AccordionContent>{faq.answer}</AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             </div>
           </section>
         </div>

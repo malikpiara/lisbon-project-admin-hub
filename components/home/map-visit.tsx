@@ -21,7 +21,7 @@ export function MapVisit() {
         />
 
         <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-14">
-          <div className="relative -mt-32 grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-10 rounded-3xl border-2 border-border bg-card px-6 py-10 sm:px-10 lg:px-14 lg:py-14 min-[1680px]:gap-[88px]">
+          <div className="relative -mt-32 grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-10 rounded-lg border-2 border-border bg-card px-6 py-10 sm:px-10 lg:px-14 lg:py-14 min-[1680px]:gap-[88px]">
             {/* Where we are */}
             <div>
               <h3 className="font-heading text-ds-xl font-bold text-foreground">

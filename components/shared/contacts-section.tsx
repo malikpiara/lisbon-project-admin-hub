@@ -90,7 +90,7 @@ export function ContactsSection({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               aria-label="Filter by category"
-              className="h-11 w-full appearance-none rounded-2xl border-2 border-input bg-card pl-4 pr-10 text-ds-xs font-medium text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35"
+              className="h-11 w-full appearance-none rounded-lg border-2 border-input bg-card pl-4 pr-10 text-ds-xs font-medium text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35"
             >
               <option value="all">All Categories</option>
               {categoryFilters.map((c) => (

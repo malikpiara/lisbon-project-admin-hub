@@ -74,8 +74,8 @@
   /* DS radii (Settings + Breakpoint tokens) */
   --radius-sm: 0.25rem;  /* 4px  — checkbox */
   --radius-md: 0.5rem;   /* 8px */
-  --radius-lg: 1rem;     /* 16px — button, input, tag/badge */
-  --radius-xl: 1.5rem;   /* 24px — card */
+  --radius-lg: 1rem;     /* 16px — button, input, tag/badge, card */
+  --radius-xl: 1.5rem;   /* 24px */
   --radius-2xl: 2rem;    /* 32px — hero icon tile, photo gallery */
   --radius-3xl: 3.5rem;  /* 56px — section panel */
   --radius-4xl: 3.5rem;  /* 56px — cap */

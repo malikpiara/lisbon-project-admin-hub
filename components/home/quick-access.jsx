@@ -3,21 +3,23 @@
 import Link from "next/link";
 import {
   ChevronRight,
-  Globe2,
-  HeartHandshake,
-  LockKeyhole,
-  UserRoundCheck,
+  HandHeart,
+  Heart,
+  SquareArrowDownRight,
+  UserRoundPlus,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAdmin } from "@/lib/admin-store";
 
 // Per-card icon + call-to-action, keyed by the quick-access item id.
+// Icons match the Figma hero (outline glyphs): person+, hand-with-heart,
+// heart, and a framed diagonal "enter portal" arrow.
 const cardMeta = {
-  register: { icon: UserRoundCheck, cta: "Get Started" },
-  donate: { icon: HeartHandshake, cta: "Donate Now" },
-  "lp-website": { icon: Globe2, cta: "Visit Website" },
-  internal: { icon: LockKeyhole, cta: "Open Portal" },
+  register: { icon: UserRoundPlus, cta: "Get Started" },
+  donate: { icon: HandHeart, cta: "Donate Now" },
+  "lp-website": { icon: Heart, cta: "Visit Website" },
+  internal: { icon: SquareArrowDownRight, cta: "Open Portal" },
 };
 
 export function QuickAccess({ embedded = false }) {
