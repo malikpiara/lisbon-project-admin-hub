@@ -19,7 +19,7 @@ function RadioGroup({
   )
 }
 
-// DS radio-button: 24px circle, 2px border, white fill.
+// DS radio-button: 24px circle, 2px border, white fill, centered 12px dot.
 // default: neutral-500 border → hover: neutral-700 border / neutral-200 fill
 // selected: brand-600 border + brand-600 dot → error: destructive border
 function RadioGroupItem({
@@ -30,7 +30,7 @@ function RadioGroupItem({
     <RadioPrimitive.Root
       data-slot="radio-group-item"
       className={cn(
-        "peer size-6 shrink-0 rounded-full border-2 outline-none transition-colors",
+        "peer flex size-6 shrink-0 items-center justify-center rounded-full border-2 outline-none transition-colors",
         "border-[var(--neutral-500)] bg-card",
         "hover:border-[var(--neutral-700)] hover:bg-[var(--neutral-200)]",
         "active:border-[var(--neutral-800)] active:bg-[var(--neutral-400)]",
@@ -44,10 +44,8 @@ function RadioGroupItem({
     >
       <RadioPrimitive.Indicator
         data-slot="radio-group-indicator"
-        className="flex items-center justify-center"
-      >
-        <span className="size-2.5 rounded-full bg-brand-link" />
-      </RadioPrimitive.Indicator>
+        className="size-3 rounded-full bg-brand-link"
+      />
     </RadioPrimitive.Root>
   )
 }
