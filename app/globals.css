@@ -349,3 +349,14 @@
     @apply font-sans;
   }
 }
+
+/* Component-docs code highlighting (see lib/highlight-code.js). Light theme,
+   tuned to read calmly on the muted code-block background. */
+.tk-k { color: #c2255c; } /* keyword */
+.tk-s { color: #0b7285; } /* string */
+.tk-c { color: #94a3b8; font-style: italic; } /* comment */
+.tk-t { color: #157f5f; } /* JSX tag name */
+.tk-comp { color: #157f5f; } /* Capitalised identifier / component */
+.tk-a { color: #1d4ed8; } /* attribute name */
+.tk-n { color: #b45309; } /* number */
+.tk-p { color: #64748b; } /* tag punctuation < > /> */
