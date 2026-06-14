@@ -20,6 +20,7 @@ export function Field({
   type = "text",
   textarea = false,
   rows = 3,
+  hint,
   className = "",
 }) {
   return (
@@ -40,6 +41,11 @@ export function Field({
           placeholder={placeholder}
         />
       )}
+      {hint ? (
+        <span className="mt-1 block text-ds-xxs font-medium text-muted-foreground">
+          {hint}
+        </span>
+      ) : null}
     </label>
   );
 }

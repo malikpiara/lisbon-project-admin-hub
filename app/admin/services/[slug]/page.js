@@ -13,15 +13,16 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Field } from "@/components/admin/field";
 import { TonePicker } from "@/components/admin/tone-picker";
 import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
+import {
+  EditorRow,
+  EditorSkeleton,
+  EmptyState,
+  Section,
+} from "@/components/admin/editor-ui";
 import { getServiceIcon } from "@/lib/service-icons";
 import { toneHex } from "@/lib/admin-tones";
 import { useAdmin } from "@/lib/admin-store";
@@ -34,7 +35,6 @@ export default function ServiceDetailAdminPage({ params }) {
     updateService,
     removeService,
     resetService,
-    updateTopic,
     addTopic,
     removeTopic,
     updateContact,
@@ -193,6 +193,7 @@ export default function ServiceDetailAdminPage({ params }) {
         <Section
           title="Topics"
           count={service.topics.length}
+          description="Each topic is an article on this category's page. Open one to edit its content."
           action={
             <Button size="sm" onClick={() => addTopic(service.slug)}>
               <Plus className="size-3.5" />
@@ -209,43 +210,36 @@ export default function ServiceDetailAdminPage({ params }) {
           ) : (
             <div className="space-y-2">
               {service.topics.map((topic) => (
-                <EditorRow
+                <div
                   key={topic.slug}
-                  dot={topic.tone}
-                  title={topic.title || "Untitled topic"}
-                  subtitle={topic.description}
-                  defaultOpen={topic.title === "New topic"}
-                  onDelete={() => removeTopic(service.slug, topic.slug)}
+                  className="flex items-center gap-1 overflow-hidden rounded-lg border-2 border-border bg-card transition-colors hover:border-foreground/20"
                 >
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field
-                      label="Title"
-                      value={topic.title}
-                      onChange={(v) =>
-                        updateTopic(service.slug, topic.slug, { title: v })
-                      }
+                  <Link
+                    href={`/admin/services/${service.slug}/${topic.slug}`}
+                    className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
+                  >
+                    <span
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: toneHex(topic.tone) }}
                     />
-                    <TonePicker
-                      label="Tone"
-                      value={topic.tone}
-                      onChange={(v) =>
-                        updateTopic(service.slug, topic.slug, { tone: v })
-                      }
-                    />
-                    <Field
-                      className="sm:col-span-2"
-                      label="Description"
-                      value={topic.description}
-                      onChange={(v) =>
-                        updateTopic(service.slug, topic.slug, {
-                          description: v,
-                        })
-                      }
-                      textarea
-                      rows={2}
+                    <span className="min-w-0">
+                      <span className="block truncate text-ds-xs font-bold text-foreground">
+                        {topic.title || "Untitled topic"}
+                      </span>
+                      {topic.description ? (
+                        <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
+                          {topic.description}
+                        </span>
+                      ) : null}
+                    </span>
+                    <ChevronRight className="ml-auto size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                  <div className="pr-2">
+                    <DeleteButton
+                      onConfirm={() => removeTopic(service.slug, topic.slug)}
                     />
                   </div>
-                </EditorRow>
+                </div>
               ))}
             </div>
           )}
@@ -324,99 +318,6 @@ export default function ServiceDetailAdminPage({ params }) {
             </div>
           )}
         </Section>
-      </div>
-    </div>
-  );
-}
-
-function Section({ title, count, description, action, children }) {
-  return (
-    <section className="mt-12 first:mt-0">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-heading text-ds-l font-bold text-foreground">
-          {title}
-          {typeof count === "number" ? (
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
-              {count}
-            </span>
-          ) : null}
-        </h2>
-        {action}
-      </div>
-      {description ? (
-        <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-          {description}
-        </p>
-      ) : null}
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-// Collapsible editor row — a scannable summary that expands to the full fields.
-function EditorRow({ dot, title, subtitle, defaultOpen, onDelete, children }) {
-  return (
-    <Collapsible
-      defaultOpen={defaultOpen}
-      className="overflow-hidden rounded-lg border-2 border-border bg-card"
-    >
-      <div className="flex items-center gap-2 px-4 py-3">
-        <CollapsibleTrigger className="group/row flex min-w-0 flex-1 items-center gap-3 text-left outline-none">
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/row:rotate-90" />
-          {dot ? (
-            <span
-              className="size-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: toneHex(dot) }}
-            />
-          ) : null}
-          <span className="min-w-0">
-            <span className="block truncate text-ds-xs font-bold text-foreground">
-              {title}
-            </span>
-            {subtitle ? (
-              <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
-                {subtitle}
-              </span>
-            ) : null}
-          </span>
-        </CollapsibleTrigger>
-        <DeleteButton onConfirm={onDelete} />
-      </div>
-      <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
-        <div className="border-t-2 border-border p-4">{children}</div>
-      </CollapsibleContent>
-    </Collapsible>
-  );
-}
-
-function EmptyState({ icon: Icon, label, hint }) {
-  return (
-    <div className="rounded-lg border-2 border-dashed border-border px-6 py-10 text-center">
-      {Icon ? (
-        <Icon
-          className="mx-auto mb-2 size-6 text-muted-foreground"
-          strokeWidth={1.8}
-        />
-      ) : null}
-      <p className="text-ds-xs font-bold text-foreground">{label}</p>
-      {hint ? (
-        <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-          {hint}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function EditorSkeleton() {
-  return (
-    <div className="mx-auto max-w-5xl animate-pulse px-8 py-10">
-      <div className="h-3 w-28 rounded bg-muted" />
-      <div className="mt-4 h-7 w-64 rounded bg-muted" />
-      <div className="mt-10 space-y-2">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-12 rounded-lg bg-muted" />
-        ))}
       </div>
     </div>
   );
