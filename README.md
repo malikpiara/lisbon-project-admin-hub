@@ -66,8 +66,23 @@ expected traffic this is well under any Google Calendar API quota.
 ## Mock CMS
 
 `/admin` is a localStorage-backed editor for the Quick Access section, the
-14 services, and per-service topics/contacts. Isolated from the public site
-by design — nothing typed in `/admin` reaches the public pages.
+14 services, per-service topics/contacts, and each topic's full **article body
+and FAQ** (`/admin/services/[slug]/[topic]`). There is no backend; content lives
+in `localStorage["lp-admin-data-v1"]`.
+
+> **It is not isolated from the public site.** A single `AdminProvider` wraps the
+> whole app, so the public home/service/article pages read the same store. Edits
+> in `/admin` preview live on the public pages **in the same browser**; a fresh
+> browser or another visitor sees the seed defaults. See
+> [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow, the two seed
+> sources, the mock article model, and the design-system gotchas.
+
+## Architecture & known issues
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) documents how content flows, the
+non-standard radius scale, the `cn()`/tailwind-merge setup, how `tone` works,
+and the running list of known inconsistencies. Read it before changing data flow
+or the design system.
 
 ## Deploy on Vercel
 
