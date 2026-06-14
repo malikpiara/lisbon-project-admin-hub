@@ -160,7 +160,7 @@ export function ContactsSection({
                 <TableRow className="hover:bg-transparent">
                   <TableCell
                     colSpan={5}
-                    className="py-10 text-center text-sm text-muted-foreground"
+                    className="py-10 text-center text-ds-xs font-medium text-muted-foreground"
                   >
                     No contacts match your filters.
                   </TableCell>

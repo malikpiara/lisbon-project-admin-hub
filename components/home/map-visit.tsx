@@ -63,7 +63,7 @@ export function MapVisit() {
                   </div>
                 ))}
               </dl>
-              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-accent px-4 py-2.5 text-ds-xxs font-bold text-foreground">
+              <div className="mt-4 flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-ds-xxs font-bold text-foreground">
                 <Info className="size-4 text-primary" />
                 No appointment needed. Just walk in.
               </div>
