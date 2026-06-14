@@ -1,10 +1,11 @@
 "use client";
 
-import { Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/admin/field";
+import { DeleteButton } from "@/components/admin/delete-button";
 import { useAdmin } from "@/lib/admin-store";
 
 export default function QuickAccessAdminPage() {
@@ -80,15 +81,7 @@ export default function QuickAccessAdminPage() {
                   />
                   Opens in a new tab (external link)
                 </label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeQuickAccess(item.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 />
-                  Delete
-                </Button>
+                <DeleteButton onConfirm={() => removeQuickAccess(item.id)} />
               </div>
             </div>
           </Card>

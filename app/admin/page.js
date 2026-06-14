@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ListChecks, Sparkles } from "lucide-react";
+import { ArrowRight, ExternalLink, ListChecks, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAdmin } from "@/lib/admin-store";
 
@@ -12,16 +13,19 @@ export default function AdminDashboardPage() {
   const tiles = [
     {
       title: "Quick Access",
-      description: "The 4 link cards on the home page hero section.",
+      description: "Link cards in the home hero.",
       href: "/admin/quick-access",
       count: data.quickAccess.length,
+      noun: "card",
       icon: Sparkles,
     },
     {
       title: "Services & Information",
-      description: "The 14 service categories shown in the Services grid.",
+      description: "Categories in the Services grid.",
       href: "/admin/services",
       count: data.services.length,
+      noun: "category",
+      nounPlural: "categories",
       icon: ListChecks,
     },
   ];
@@ -33,23 +37,36 @@ export default function AdminDashboardPage() {
           <h1 className="font-heading text-ds-xxxl font-bold text-foreground">
             Content overview
           </h1>
-          <p className="mt-2 max-w-2xl text-ds-xs font-medium text-muted-foreground">
-            This is a mock CMS for prototyping the editor experience. Changes are
-            stored locally in your browser. The public site at / currently reads
-            static seed data.
+          <p className="mt-2 max-w-xl text-ds-xs font-medium text-muted-foreground">
+            Edit the home page content. Changes save in your browser — the live
+            site still reads seed data.
           </p>
         </div>
-        <Badge variant="outline">{hydrated ? "Local draft" : "Loading…"}</Badge>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
+            View live site
+            <ExternalLink className="size-3.5" />
+          </Link>
+          <Badge variant="outline">
+            {hydrated ? "Local draft" : "Loading…"}
+          </Badge>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {tiles.map((tile) => {
           const Icon = tile.icon;
+          const plural = tile.nounPlural ?? `${tile.noun}s`;
           return (
             <Link
               key={tile.href}
               href={tile.href}
-              className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="group rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             >
               <Card className="h-full transition-shadow group-hover:shadow-md">
                 <div className="flex flex-col gap-3 px-4 xl:px-6">
@@ -68,7 +85,7 @@ export default function AdminDashboardPage() {
                     </p>
                   </div>
                   <p className="text-ds-xs font-bold text-primary">
-                    {tile.count} item{tile.count === 1 ? "" : "s"}
+                    {tile.count} {tile.count === 1 ? tile.noun : plural}
                   </p>
                 </div>
               </Card>
