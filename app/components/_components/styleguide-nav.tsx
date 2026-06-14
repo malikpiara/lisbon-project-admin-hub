@@ -34,7 +34,7 @@ export function StyleguideNav({ groups }: { groups: StyleguideNavGroup[] }) {
                   key={item.slug}
                   href={href}
                   className={cn(
-                    "flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-ds-xs font-bold text-foreground transition-colors hover:bg-muted",
+                    "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-ds-xs font-bold text-foreground transition-colors hover:bg-muted",
                     active && "bg-muted text-primary"
                   )}
                 >
