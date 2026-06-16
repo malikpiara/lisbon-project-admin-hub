@@ -1,6 +1,6 @@
-import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
+  IconArrowRight,
   IconFacebook,
   IconInstagram,
   IconLinkedin,
@@ -55,7 +55,7 @@ export function SiteFooter() {
               className={buttonVariants({ className: "px-5" })}
             >
               Subscribe
-              <ChevronRight className="size-4" />
+              <IconArrowRight className="size-4" />
             </button>
           </div>
         </div>

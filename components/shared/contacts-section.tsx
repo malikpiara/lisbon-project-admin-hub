@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
@@ -14,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  IconArrowRight,
   IconInfo,
   IconMail,
   IconPhone,
@@ -176,7 +176,7 @@ export function ContactsSection({
                       className={buttonVariants()}
                     >
                       Get Directions
-                      <ChevronRight className="size-4" />
+                      <IconArrowRight className="size-4" />
                     </a>
                   </TableCell>
                 </TableRow>

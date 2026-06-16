@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { CardShortcut } from "@/components/ui/card";
 import {
+  IconArrowRight,
   IconHeartOpen,
   IconInternalLink,
   IconTip,
@@ -28,7 +28,7 @@ export function QuickAccess({ embedded = false }) {
   const content = (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
       {items.map((item) => {
-        const meta = cardMeta[item.id] ?? { icon: ChevronRight, cta: "Learn more" };
+        const meta = cardMeta[item.id] ?? { icon: IconArrowRight, cta: "Learn more" };
         const Icon = meta.icon;
         return (
           <CardShortcut
@@ -46,7 +46,7 @@ export function QuickAccess({ embedded = false }) {
                 className={buttonVariants({ className: "w-fit" })}
               >
                 {meta.cta}
-                <ChevronRight className="size-4" />
+                <IconArrowRight className="size-4" />
               </Link>
             }
           />
