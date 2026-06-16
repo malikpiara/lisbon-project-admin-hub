@@ -5,6 +5,7 @@ import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
 import { Minus, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Tag } from "@/components/ui/tag"
 
 function Accordion({
   className,
@@ -34,7 +35,7 @@ function AccordionItem({
 }
 
 // DS accordion header: number badge (brand-200 pill, teal) + teal title + optional
-// Label tag (brand-200 border, brand-800 text) + +/- toggle (brand-600).
+// DS <Tag> + +/- toggle (brand-600).
 function AccordionTrigger({
   className,
   number,
@@ -64,11 +65,7 @@ function AccordionTrigger({
           <span className="min-w-0 flex-1 text-ds-m font-bold text-primary">
             {children}
           </span>
-          {tag != null ? (
-            <span className="inline-flex min-h-8 shrink-0 items-center rounded-lg border-2 border-border px-3 text-ds-xxs font-bold text-brand-800">
-              {tag}
-            </span>
-          ) : null}
+          {tag != null ? <Tag>{tag}</Tag> : null}
         </span>
         <span className="flex min-h-11 shrink-0 items-center px-3 text-brand-link">
           <Plus
