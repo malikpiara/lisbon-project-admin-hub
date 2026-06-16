@@ -1,11 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Info, Mail, Phone, Search } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  IconInfo,
+  IconMail,
+  IconPhone,
+  IconSearch,
+} from "@/components/icons/ds-icons";
 import {
   Table,
   TableBody,
@@ -56,12 +69,22 @@ export function ContactsSection({
     });
   }, [contacts, query, category]);
 
+  // Base UI <SelectValue> resolves the label from this value→label map;
+  // without it the trigger shows the raw value ("all").
+  const categoryItems = useMemo(
+    () => ({
+      all: "All Categories",
+      ...Object.fromEntries(categoryFilters.map((c) => [c, c])),
+    }),
+    [categoryFilters]
+  );
+
   return (
     <section className="bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-20 sm:px-6 lg:px-14">
         <header className="ds-section-x-padding flex items-center gap-4">
           <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-            <Info className="size-5" strokeWidth={1.9} />
+            <IconInfo className="size-5" />
           </div>
           <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
             {title}
@@ -75,7 +98,7 @@ export function ContactsSection({
 
         <div className="ds-section-x-padding mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <IconSearch className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               value={query}
@@ -85,22 +108,26 @@ export function ContactsSection({
               className="pl-11"
             />
           </div>
-          <div className="relative sm:w-60">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+          <Select
+            value={category}
+            onValueChange={(v) => setCategory(v ?? "all")}
+            items={categoryItems}
+          >
+            <SelectTrigger
               aria-label="Filter by category"
-              className="h-11 w-full appearance-none rounded-lg border-2 border-input bg-card pl-4 pr-10 text-ds-xs font-medium text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/35"
+              className="w-full sm:w-60"
             >
-              <option value="all">All Categories</option>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
               {categoryFilters.map((c) => (
-                <option key={c} value={c}>
+                <SelectItem key={c} value={c}>
                   {c}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="ds-section-x-padding mt-4">
@@ -117,33 +144,31 @@ export function ContactsSection({
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.organization} className="border-border hover:bg-transparent">
-                  <TableCell className="max-w-48 py-5 align-top text-ds-xs font-bold whitespace-normal text-foreground">
+                  <TableCell className="max-w-48 py-5 align-top text-ds-m font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
-                  <TableCell className="max-w-56 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
+                  <TableCell className="max-w-56 py-5 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
                   </TableCell>
-                  <TableCell className="align-top">
+                  <TableCell className="py-5 align-top">
                     <div className="space-y-2">
                       <a
                         href={`mailto:${c.email}`}
                         className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
                       >
-                        <Mail className="size-4" />
+                        <IconMail className="size-4" />
                         {c.email}
                       </a>
                       <div className="flex items-center gap-2 text-ds-xxs font-bold text-primary">
-                        <Phone className="size-4" />
+                        <IconPhone className="size-4" />
                         {c.phone}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="align-top">
-                    <Badge variant="outline" className="px-3 py-1 font-normal">
-                      {c.category}
-                    </Badge>
+                  <TableCell className="py-5 align-top">
+                    <Tag>{c.category}</Tag>
                   </TableCell>
-                  <TableCell className="align-top">
+                  <TableCell className="py-5 align-top">
                     <a
                       href={mapsHref(c.organization)}
                       target="_blank"
