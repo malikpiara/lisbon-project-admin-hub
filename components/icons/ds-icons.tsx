@@ -426,3 +426,37 @@ export function IconShield({ className, ...props }: ComponentProps<"svg">) {
     </svg>
   );
 }
+
+// ── UI chrome icons (menu, arrows) ──
+
+// icon/menu
+export function IconMenu({ className, ...props }: ComponentProps<"svg">) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+      {...props}
+    >
+      <path d="M13.9873 12.0093C14.5394 12.0094 14.9872 12.4572 14.9873 13.0093C14.9873 13.5615 14.5395 14.0091 13.9873 14.0093H2.0127C1.46057 14.0091 1.0127 13.5614 1.0127 13.0093C1.01285 12.4572 1.46067 12.0095 2.0127 12.0093H13.9873ZM13.9873 7.11963C14.5395 7.11978 14.9873 7.56744 14.9873 8.11963C14.9873 8.67179 14.5394 9.11948 13.9873 9.11963H2.0127C1.4606 9.11944 1.01273 8.67176 1.0127 8.11963C1.0127 7.56746 1.46057 7.11982 2.0127 7.11963H13.9873ZM13.9873 1.99072C14.5395 1.99088 14.9873 2.43853 14.9873 2.99072C14.9871 3.54277 14.5394 3.99057 13.9873 3.99072H2.0127C1.46067 3.99053 1.01286 3.54275 1.0127 2.99072C1.0127 2.43856 1.46057 1.99091 2.0127 1.99072H13.9873Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+// icon/ui/arrow/right
+export function IconArrowRight({ className, ...props }: ComponentProps<"svg">) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+      {...props}
+    >
+      <path d="M5.38128 1.88769C5.72301 1.54641 6.27701 1.54616 6.61859 1.88769L12.1118 7.38085C12.4535 7.72256 12.4535 8.27742 12.1118 8.61913L6.61859 14.1123C6.27701 14.4538 5.72301 14.4536 5.38128 14.1123C5.03974 13.7706 5.03963 13.2157 5.38128 12.874L10.2553 7.99999L5.38128 3.12597C5.03957 2.78426 5.03957 2.22939 5.38128 1.88769Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd" />
+    </svg>
+  );
+}

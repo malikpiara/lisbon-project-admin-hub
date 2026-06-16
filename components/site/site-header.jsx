@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { IconMenu } from "@/components/icons/ds-icons";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ export function SiteHeader({ sticky = true } = {}) {
             aria-label="Open menu"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
           >
-            <Menu className="size-5" strokeWidth={1.9} />
+            <IconMenu className="size-5" />
           </button>
           <Link
             href="/donate"

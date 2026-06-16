@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Info } from "lucide-react";
+import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { buttonVariants } from "@/components/ui/button";
 
 export function TopicsGrid({ topics, categorySlug }) {
@@ -9,7 +9,7 @@ export function TopicsGrid({ topics, categorySlug }) {
         <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
           <header className="mb-10 flex items-center gap-4">
             <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-              <Info className="size-5" strokeWidth={1.9} />
+              <IconInfo className="size-5" />
             </div>
             <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
               Articles
@@ -38,7 +38,7 @@ export function TopicsGrid({ topics, categorySlug }) {
                     className={buttonVariants({ className: "mt-5 w-fit" })}
                   >
                     Read Article
-                    <ChevronRight className="size-4" />
+                    <IconArrowRight className="size-4" />
                   </Link>
                 </div>
               ))}

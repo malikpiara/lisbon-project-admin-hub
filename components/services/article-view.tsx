@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { IconInfo } from "@/components/icons/ds-icons";
 
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
@@ -133,7 +133,7 @@ export function ArticleView({
                 <div className="mx-auto max-w-[760px]">
                   <header className="mb-6 flex items-center gap-4">
                     <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-                      <Info className="size-5" strokeWidth={1.9} />
+                      <IconInfo className="size-5" />
                     </div>
                     <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
                       {s.heading}
@@ -177,7 +177,7 @@ export function ArticleView({
               <div className="mx-auto max-w-[760px]">
                 <header className="mb-6 flex items-center gap-4">
                   <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-                    <Info className="size-5" strokeWidth={1.9} />
+                    <IconInfo className="size-5" />
                   </div>
                   <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
                     Frequently Asked Questions

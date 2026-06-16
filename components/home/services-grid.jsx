@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Info } from "lucide-react";
+import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { useAdmin } from "@/lib/admin-store";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 
@@ -15,7 +15,7 @@ export function ServicesGrid() {
         <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
           <header className="mb-10 flex items-center gap-4">
             <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-              <Info className="size-5" strokeWidth={1.9} />
+              <IconInfo className="size-5" />
             </div>
             <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
               Services and Information
@@ -45,7 +45,7 @@ export function ServicesGrid() {
                         {service.shortDescription}
                       </p>
                     </div>
-                    <ChevronRight className="mt-1 size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                    <IconArrowRight className="mt-1 size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </Link>
               );
