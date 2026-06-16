@@ -7,7 +7,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { DeleteButton } from "@/components/admin/delete-button";
-import { toneHex } from "@/lib/admin-tones";
 
 // A titled editor section with an optional count pill and right-aligned action.
 export function Section({ title, count, description, action, children }) {
@@ -36,7 +35,6 @@ export function Section({ title, count, description, action, children }) {
 
 // Collapsible row — a scannable summary that expands to its full fields.
 export function EditorRow({
-  dot,
   title,
   subtitle,
   defaultOpen,
@@ -51,12 +49,6 @@ export function EditorRow({
       <div className="flex items-center gap-2 px-4 py-3">
         <CollapsibleTrigger className="group/row flex min-w-0 flex-1 items-center gap-3 text-left outline-none">
           <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/row:rotate-90" />
-          {dot ? (
-            <span
-              className="size-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: toneHex(dot) }}
-            />
-          ) : null}
           <span className="min-w-0">
             <span className="block truncate text-ds-xs font-bold text-foreground">
               {title}

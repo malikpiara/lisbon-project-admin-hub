@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ExternalLink, ListChecks, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAdmin } from "@/lib/admin-store";
@@ -52,9 +52,7 @@ export default function AdminDashboardPage() {
             View live site
             <ExternalLink className="size-3.5" />
           </Link>
-          <Badge variant="outline">
-            {hydrated ? "Local draft" : "Loading…"}
-          </Badge>
+          <Tag>{hydrated ? "Local draft" : "Loading…"}</Tag>
         </div>
       </div>
 

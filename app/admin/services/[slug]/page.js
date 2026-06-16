@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/admin/field";
-import { TonePicker } from "@/components/admin/tone-picker";
 import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import {
@@ -24,7 +23,6 @@ import {
   Section,
 } from "@/components/admin/editor-ui";
 import { getServiceIcon } from "@/lib/service-icons";
-import { toneHex } from "@/lib/admin-tones";
 import { useAdmin } from "@/lib/admin-store";
 
 export default function ServiceDetailAdminPage({ params }) {
@@ -49,7 +47,6 @@ export default function ServiceDetailAdminPage({ params }) {
 
   const introText = service.intro.join("\n\n");
   const Icon = getServiceIcon(service.iconKey);
-  const tint = toneHex(service.tone);
 
   return (
     <div>
@@ -67,10 +64,7 @@ export default function ServiceDetailAdminPage({ params }) {
 
           <div className="mt-3 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg"
-                style={{ backgroundColor: `${tint}1f`, color: tint }}
-              >
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                 <Icon className="size-5" strokeWidth={1.9} />
               </span>
               <div className="min-w-0">
@@ -151,12 +145,6 @@ export default function ServiceDetailAdminPage({ params }) {
               textarea
               rows={4}
             />
-            <TonePicker
-              className="sm:col-span-2"
-              label="Card colour"
-              value={service.tone}
-              onChange={(v) => updateService(service.slug, { tone: v })}
-            />
             <IconPicker
               className="sm:col-span-2"
               label="Icon"
@@ -218,10 +206,6 @@ export default function ServiceDetailAdminPage({ params }) {
                     href={`/admin/services/${service.slug}/${topic.slug}`}
                     className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
                   >
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: toneHex(topic.tone) }}
-                    />
                     <span className="min-w-0">
                       <span className="block truncate text-ds-xs font-bold text-foreground">
                         {topic.title || "Untitled topic"}

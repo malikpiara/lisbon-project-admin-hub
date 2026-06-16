@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/admin/field";
-import { TonePicker } from "@/components/admin/tone-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import {
   EditorRow,
@@ -21,7 +20,6 @@ import {
   Section,
 } from "@/components/admin/editor-ui";
 import { defaultArticle } from "@/lib/article-defaults";
-import { toneHex } from "@/lib/admin-tones";
 import { useAdmin } from "@/lib/admin-store";
 
 export default function TopicEditorPage({ params }) {
@@ -36,7 +34,6 @@ export default function TopicEditorPage({ params }) {
   if (!service || !topic) notFound();
 
   const article = topic.article ?? defaultArticle(topic);
-  const tint = toneHex(topic.tone);
 
   // Every edit writes the whole article back (materialising the default on first
   // change). Keeps the store API tiny; the immutable plumbing lives here.
@@ -89,10 +86,7 @@ export default function TopicEditorPage({ params }) {
 
           <div className="mt-3 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg"
-                style={{ backgroundColor: `${tint}1f`, color: tint }}
-              >
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                 <FileText className="size-5" strokeWidth={1.9} />
               </span>
               <div className="min-w-0">
@@ -147,11 +141,6 @@ export default function TopicEditorPage({ params }) {
               label="Title"
               value={topic.title}
               onChange={(v) => updateTopic(slug, topicSlug, { title: v })}
-            />
-            <TonePicker
-              label="Tone"
-              value={topic.tone}
-              onChange={(v) => updateTopic(slug, topicSlug, { tone: v })}
             />
             <Field
               className="sm:col-span-2"

@@ -5,7 +5,6 @@ import { ChevronRight, Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
-import { toneHex } from "@/lib/admin-tones";
 import { useAdmin } from "@/lib/admin-store";
 
 export default function ServicesAdminPage() {
@@ -44,7 +43,6 @@ export default function ServicesAdminPage() {
           const Icon = getServiceIcon(
             getServiceIconKey(service.slug, service.iconKey)
           );
-          const tint = toneHex(service.tone);
           return (
             <Link
               key={service.slug}
@@ -53,10 +51,7 @@ export default function ServicesAdminPage() {
             >
               <Card className="h-full transition-shadow group-hover:shadow-md">
                 <div className="flex items-start gap-4 px-4 xl:px-6">
-                  <span
-                    className="grid size-11 shrink-0 place-items-center rounded-lg"
-                    style={{ backgroundColor: `${tint}1f`, color: tint }}
-                  >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                     <Icon className="size-5" strokeWidth={1.9} />
                   </span>
                   <div className="min-w-0 flex-1">
