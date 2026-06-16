@@ -4,7 +4,7 @@ import { Check, ChevronRight, Clock, Info, Plus, Search } from "lucide-react";
 import { IconGallery } from "./icon-gallery";
 import { defaultAdminData } from "@/lib/admin-default-data";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,11 +23,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -132,7 +127,6 @@ const radii = [
 ] as const;
 
 const buttonVariants = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
-const badgeVariants = ["default", "secondary", "destructive", "outline", "ghost", "link"] as const;
 
 function ColorGrid() {
   return (
@@ -206,14 +200,12 @@ function ButtonMatrix() {
   );
 }
 
-function BadgeMatrix() {
+function TagRow() {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {badgeVariants.map((variant) => (
-        <Badge key={variant} variant={variant}>
-          {variant}
-        </Badge>
-      ))}
+      <Tag>Family Support</Tag>
+      <Tag>Childcare</Tag>
+      <Tag>Healthcare</Tag>
     </div>
   );
 }
@@ -354,35 +346,15 @@ function TableExample() {
         <TableRow>
           <TableCell>Housing</TableCell>
           <TableCell>Ana Silva</TableCell>
-          <TableCell><Badge variant="secondary">Active</Badge></TableCell>
+          <TableCell><Tag>Active</Tag></TableCell>
         </TableRow>
         <TableRow>
           <TableCell>Legal aid</TableCell>
           <TableCell>Joao Pereira</TableCell>
-          <TableCell><Badge variant="outline">Pending</Badge></TableCell>
+          <TableCell><Tag>Pending</Tag></TableCell>
         </TableRow>
       </TableBody>
     </Table>
-  );
-}
-
-function CollapsibleExample({ bordered = false }: { bordered?: boolean }) {
-  return (
-    <Collapsible defaultOpen>
-      <CollapsibleTrigger
-        className={cn(
-          "flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-ds-s font-bold text-primary",
-          bordered && "border-2 border-border bg-card"
-        )}
-      >
-        How do I register?
-        <ChevronRight className="size-4 rotate-90" />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 pb-4 pt-2 text-ds-s font-medium text-foreground">
-        Start with the support form and bring identification, proof of address,
-        and any documents related to the request.
-      </CollapsibleContent>
-    </Collapsible>
   );
 }
 
@@ -391,55 +363,66 @@ const sharedFoundationApi = [
   { name: "dark", type: "variant", defaultValue: "class scoped", description: "Dark mode variables are available through the local .dark scope." },
 ];
 
-function FormControlsDemo() {
-  // DS: a selected checkbox/radio turns its label brand-600 + bold (text/selected token).
-  const itemLabel =
-    "text-ds-s font-medium text-foreground peer-data-[checked]:font-bold peer-data-[checked]:text-brand-link";
+// DS: a selected checkbox/radio turns its label brand-600 + bold (text/selected token).
+const selectionLabel =
+  "text-ds-s font-medium text-foreground peer-data-[checked]:font-bold peer-data-[checked]:text-brand-link";
+
+function CheckboxDemo() {
   return (
-    <div className="flex flex-col gap-10 sm:flex-row sm:gap-20">
-      <div className="space-y-3">
-        <p className="text-ds-xs font-bold text-foreground">Checkbox</p>
-        <label className="flex items-center gap-2">
-          <Checkbox defaultChecked className="peer" />
-          <span className={itemLabel}>Email updates</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <Checkbox className="peer" />
-          <span className={itemLabel}>SMS reminders</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <Checkbox disabled className="peer" />
-          <span className={cn(itemLabel, "peer-disabled:opacity-50")}>
-            Disabled option
-          </span>
-        </label>
-        <label className="flex items-center gap-2">
-          <Checkbox aria-invalid="true" className="peer" />
-          <span className="text-ds-s font-medium text-destructive">
-            Required (error)
-          </span>
-        </label>
-      </div>
-      <div className="space-y-3">
-        <p className="text-ds-xs font-bold text-foreground">Radio</p>
-        <RadioGroup defaultValue="weekly" className="gap-3">
-          <label className="flex items-center gap-2">
-            <RadioGroupItem value="weekly" className="peer" />
-            <span className={itemLabel}>Weekly digest</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <RadioGroupItem value="monthly" className="peer" />
-            <span className={itemLabel}>Monthly digest</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <RadioGroupItem value="never" disabled className="peer" />
-            <span className={cn(itemLabel, "peer-disabled:opacity-50")}>
-              Never (disabled)
-            </span>
-          </label>
-        </RadioGroup>
-      </div>
+    <div className="space-y-3">
+      <p className="text-ds-xxs font-medium text-muted-foreground">Primary</p>
+      <label className="flex items-center gap-2">
+        <Checkbox defaultChecked className="peer" />
+        <span className={selectionLabel}>Email updates</span>
+      </label>
+      <label className="flex items-center gap-2">
+        <Checkbox className="peer" />
+        <span className={selectionLabel}>SMS reminders</span>
+      </label>
+      <p className="pt-1 text-ds-xxs font-medium text-muted-foreground">Secondary</p>
+      <label className="flex items-center gap-2">
+        <Checkbox variant="secondary" defaultChecked className="peer" />
+        <span className={selectionLabel}>Email updates</span>
+      </label>
+      <label className="flex items-center gap-2">
+        <Checkbox variant="secondary" className="peer" />
+        <span className={selectionLabel}>SMS reminders</span>
+      </label>
+      <p className="pt-1 text-ds-xxs font-medium text-muted-foreground">States</p>
+      <label className="flex items-center gap-2">
+        <Checkbox disabled className="peer" />
+        <span className={cn(selectionLabel, "peer-disabled:opacity-50")}>
+          Disabled option
+        </span>
+      </label>
+      <label className="flex items-center gap-2">
+        <Checkbox aria-invalid="true" className="peer" />
+        <span className="text-ds-s font-medium text-destructive">
+          Required (error)
+        </span>
+      </label>
     </div>
+  );
+}
+
+function RadioDemo() {
+  return (
+    <RadioGroup defaultValue="weekly" className="gap-3">
+      <label className="flex items-center gap-2">
+        <RadioGroupItem value="weekly" className="peer" />
+        <span className={selectionLabel}>Weekly digest</span>
+      </label>
+      <label className="flex items-center gap-2">
+        <RadioGroupItem value="monthly" className="peer" />
+        <span className={selectionLabel}>Monthly digest</span>
+      </label>
+      <label className="flex items-center gap-2">
+        <RadioGroupItem value="never" disabled className="peer" />
+        <span className={cn(selectionLabel, "peer-disabled:opacity-50")}>
+          Never (disabled)
+        </span>
+      </label>
+    </RadioGroup>
   );
 }
 
@@ -580,7 +563,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "colors",
     title: "Colors",
     category: "Foundations",
-    description: "Core Lisbon Project design tokens used for surfaces, text, controls, borders, and brand accents.",
+    description: "The brand palette, plus the surface, text, border, and control tokens built from it.",
     preview: <ColorGrid />,
     installation: "Color tokens are global foundations. They do not need a component import.",
     usage: "Use semantic tokens first: primary, secondary, border, input, bg-page, bg-mint, brand-dark, and foreground.",
@@ -648,7 +631,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "button",
     title: "Button",
     category: "Primitives",
-    description: "Action control with Lisbon Project color, radius, typography, icon, disabled, and size variants.",
+    description: "The main control for triggering an action — three priorities, optional icons, and two sizes.",
     preview: <ButtonMatrix />,
     installation: "Import Button from the local UI primitive.",
     importCode: `import { Button } from "@/components/ui/button"`,
@@ -706,36 +689,23 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     ],
   },
   {
-    slug: "badge",
-    title: "Badge",
+    slug: "tag",
+    title: "Tag",
     category: "Primitives",
-    description: "Small label used for statuses, categories, tags, and compact metadata.",
-    preview: <BadgeMatrix />,
-    installation: "Import Badge from the local UI primitive.",
-    importCode: `import { Badge } from "@/components/ui/badge"`,
-    usage: "Use badges inside tables, cards, and metadata rows where a short category needs visual separation.",
-    usageCode: `<Badge variant="outline">Family Support</Badge>`,
+    description: "A small pill that labels a category or piece of metadata. One variant, by design.",
+    preview: <TagRow />,
+    installation: "Import Tag from the local UI primitive.",
+    importCode: `import { Tag } from "@/components/ui/tag"`,
+    usage: "Use a Tag for a short category or status inside tables, cards, and metadata rows.",
+    usageCode: `<Tag>Family Support</Tag>`,
     composition: [
-      "Badges are 28px minimum height.",
-      "Use outline for contact categories.",
-      "Use secondary for active or positive states.",
+      "28px minimum height, fully-rounded pill.",
+      "2px brand-200 border with brand-800 text — one consistent style.",
+      "Keep the label to one or two words.",
     ],
-    examples: [
-      {
-        title: "Outline tag",
-        description: "The DS contact/category tag — a pill with a soft mint border.",
-        preview: <Badge variant="outline">Childcare</Badge>,
-        code: `<Badge variant="outline">Childcare</Badge>`,
-      },
-      {
-        title: "Secondary",
-        description: "Filled mint badge for active or positive states.",
-        preview: <Badge variant="secondary">Active</Badge>,
-        code: `<Badge variant="secondary">Active</Badge>`,
-      },
-    ],
+    examples: [],
     api: [
-      { name: "variant", type: "default | secondary | destructive | outline | ghost | link", defaultValue: "default", description: "Visual treatment." },
+      { name: "className", type: "string", defaultValue: "-", description: "Compose extra layout/spacing on the tag." },
     ],
   },
   {
@@ -762,7 +732,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "form-fields",
     title: "Form Fields",
     category: "Primitives",
-    description: "Input and textarea controls with DS height, border, radius, disabled, and invalid states.",
+    description: "Single-line inputs and multi-line textareas, with disabled and invalid states built in.",
     preview: <FormExamples />,
     installation: "Import Input and Textarea from local UI primitives.",
     importCode: `import { Input } from "@/components/ui/input"\nimport { Textarea } from "@/components/ui/textarea"`,
@@ -796,19 +766,19 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     ],
   },
   {
-    slug: "form-controls",
-    title: "Checkbox & Radio",
+    slug: "checkbox",
+    title: "Checkbox",
     category: "Primitives",
-    description: "Selection controls with 24px box/dial and DS states (default, hover, selected, disabled, error).",
-    preview: <FormControlsDemo />,
-    installation: "Import Checkbox and RadioGroup from local UI primitives.",
-    importCode: `import { Checkbox } from "@/components/ui/checkbox"\nimport { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"`,
-    usageCode: `<Checkbox defaultChecked />\n\n<RadioGroup defaultValue="weekly">\n  <RadioGroupItem value="weekly" />\n  <RadioGroupItem value="monthly" />\n</RadioGroup>`,
-    usage: "Use checkboxes for multi-select opt-ins and radios for single-choice settings.",
+    description: "Turns an option on or off — pick any number, independently.",
+    preview: <CheckboxDemo />,
+    installation: "Import Checkbox from the local UI primitive.",
+    importCode: `import { Checkbox } from "@/components/ui/checkbox"`,
+    usageCode: `<Checkbox defaultChecked />\n<Checkbox variant="secondary" />`,
+    usage: "Use checkboxes for multi-select opt-ins and standalone on/off settings.",
     composition: [
-      "Checkbox is a 24px box with 4px radius and 2px border; checked = white fill, brand-600 border + check.",
-      "Radio is a 24px dial; selected = brand-600 ring + brand-600 dot.",
-      "Both expose hover, disabled, and aria-invalid (error) states.",
+      "A 24px box with 4px radius and 2px border; checked = white fill, brand-600 border + check.",
+      "Two levels: primary (default) and a lighter secondary (brand-100 fill, brand-300 border).",
+      "Exposes hover, disabled, and aria-invalid (error) states.",
     ],
     examples: [
       {
@@ -821,6 +791,29 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
         ),
         code: `<label className="flex items-center gap-2">\n  <Checkbox defaultChecked />\n  Email updates\n</label>`,
       },
+    ],
+    api: [
+      { name: "defaultChecked", type: "boolean", defaultValue: "false", description: "Initial checked state (uncontrolled)." },
+      { name: "variant", type: "primary | secondary", defaultValue: "primary", description: "Selection level; secondary is the lighter mint treatment." },
+      { name: "aria-invalid", type: "boolean", defaultValue: "false", description: "Applies the destructive validation treatment." },
+    ],
+  },
+  {
+    slug: "radio",
+    title: "Radio",
+    category: "Primitives",
+    description: "Picks exactly one option from a short, mutually-exclusive set.",
+    preview: <RadioDemo />,
+    installation: "Import RadioGroup and RadioGroupItem from the local UI primitive.",
+    importCode: `import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"`,
+    usageCode: `<RadioGroup defaultValue="weekly">\n  <RadioGroupItem value="weekly" />\n  <RadioGroupItem value="monthly" />\n</RadioGroup>`,
+    usage: "Use radios for single-choice settings where every option should stay visible.",
+    composition: [
+      "A 24px dial; selected = brand-600 ring + brand-600 dot.",
+      "Wrap items in a RadioGroup so only one is active at a time.",
+      "Exposes hover, disabled, and aria-invalid (error) states.",
+    ],
+    examples: [
       {
         title: "Radio group",
         preview: (
@@ -839,16 +832,16 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       },
     ],
     api: [
-      { name: "defaultChecked", type: "boolean", defaultValue: "false", description: "Checkbox initial checked state (uncontrolled)." },
       { name: "value", type: "string", defaultValue: "-", description: "RadioGroupItem value within a RadioGroup." },
-      { name: "aria-invalid", type: "boolean", defaultValue: "false", description: "Applies destructive validation treatment." },
+      { name: "defaultValue", type: "string", defaultValue: "-", description: "Initially-selected value on the RadioGroup." },
+      { name: "aria-invalid", type: "boolean", defaultValue: "false", description: "Applies the destructive validation treatment." },
     ],
   },
   {
     slug: "breadcrumb",
     title: "Breadcrumb",
     category: "Primitives",
-    description: "Hierarchical navigation trail with interactive (brand-500) and current-page (brand-1000) labels.",
+    description: "Shows where a page sits in the hierarchy, with links back up the trail.",
     preview: <BreadcrumbDemo />,
     installation: "Import Breadcrumb parts from the local UI primitive.",
     importCode: `import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"`,
@@ -868,7 +861,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "list-item",
     title: "List Item",
     category: "Primitives",
-    description: "Icon + title/text row with a 2px brand-200 divider, for service and contact lists.",
+    description: "A single icon-and-text row with a divider, for service and contact lists.",
     preview: <ListItemDemo />,
     installation: "Import ListItem parts from the local UI primitive.",
     importCode: `import { ListItem, ListItemIcon, ListItemContent, ListItemTitle, ListItemText } from "@/components/ui/list-item"`,
@@ -887,7 +880,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "infobox",
     title: "Infobox",
     category: "Primitives",
-    description: "Inline callout with brand-200 fill and brand-600 border for tips, notices, and inline guidance.",
+    description: "An inline callout for tips, notices, and short pieces of guidance.",
     preview: <InfoboxDemo />,
     installation: "Import Infobox from the local UI primitive.",
     importCode: `import { Infobox } from "@/components/ui/infobox"`,
@@ -908,7 +901,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     slug: "text-block",
     title: "Text Block",
     category: "Primitives",
-    description: "Section-body content composition: category chip, brand-700 title, brand-500 lead, body copy.",
+    description: "The section-body layout: a category chip, a title, a lead line, and body copy.",
     preview: <TextBlockDemo />,
     installation: "Import TextBlock from the local UI primitive.",
     importCode: `import { TextBlock } from "@/components/ui/text-block"`,
@@ -1038,6 +1031,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       "Each item has a brand-200 number badge, teal title, and optional Label tag.",
       "The +/- toggle flips with the open state; rows are split by a 2px brand-200 divider.",
       "Single-open by default; pass openMultiple on the Root to allow several.",
+      "Built on a headless Collapsible primitive — the same base the admin editor rows use.",
     ],
     examples: [],
     api: [
@@ -1085,31 +1079,6 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     examples: [],
     api: [
       { name: "className", type: "string", defaultValue: "-", description: "Use min-w values for predictable mobile scrolling." },
-    ],
-  },
-  {
-    slug: "collapsible",
-    title: "Collapsible",
-    category: "Primitives",
-    description: "Disclosure primitive used for FAQ rows and dense expandable content.",
-    preview: <CollapsibleExample bordered />,
-    installation: "Import Collapsible primitives from the local UI wrapper.",
-    importCode: `import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"`,
-    usage: "Use Collapsible when content should be available without expanding the default page height.",
-    composition: [
-      "Trigger owns the visible row treatment.",
-      "Content should stay visually connected to the trigger.",
-      "Use defaultOpen for examples or primary FAQ answers.",
-    ],
-    examples: [
-      {
-        title: "Without border",
-        description: "The trigger owns the row treatment; pass bordered for the card style shown above.",
-        preview: <CollapsibleExample />,
-      },
-    ],
-    api: [
-      { name: "defaultOpen", type: "boolean", defaultValue: "false", description: "Initial open state." },
     ],
   },
   {
@@ -1303,11 +1272,14 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
 
 export const STYLEGUIDE_NAV_GROUPS = ["Foundations", "Primitives", "System components"].map((title) => ({
   title,
-  items: COMPONENT_DOCS.filter((doc) => doc.category === title).map((doc) => ({
-    slug: doc.slug,
-    title: doc.title,
-    status: doc.status,
-  })),
+  items: COMPONENT_DOCS.filter((doc) => doc.category === title)
+    .slice()
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .map((doc) => ({
+      slug: doc.slug,
+      title: doc.title,
+      status: doc.status,
+    })),
 }));
 
 export function getComponentDoc(slug: string) {

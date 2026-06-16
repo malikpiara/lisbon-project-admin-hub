@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
 import { Card, CardContent } from "@/components/ui/card";
 import { COMPONENT_DOCS, STYLEGUIDE_NAV_GROUPS } from "./_components/styleguide-docs";
 
@@ -9,13 +9,14 @@ export default function StyleguideIndexPage() {
   return (
     <div className="space-y-12">
       <header className="max-w-4xl space-y-4">
-        <Badge variant="outline">Living style guide</Badge>
+        <Tag>Living style guide</Tag>
         <h1 className="font-heading text-ds-xxxxl font-bold text-foreground">
           Lisbon Project component library
         </h1>
         <p className="text-ds-l font-medium text-muted-foreground">
-          A focused reference for building new pages and checking whether
-          existing surfaces still match the design system.
+          Every component, token, and pattern in the Lisbon Project app —
+          what each one is for, and how to keep your pages consistent with the
+          design.
         </p>
       </header>
 
@@ -39,13 +40,15 @@ export default function StyleguideIndexPage() {
           Components
         </h2>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {COMPONENT_DOCS.map((doc) => (
+          {[...COMPONENT_DOCS]
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .map((doc) => (
             <Link key={doc.slug} href={`/components/${doc.slug}`} className="group">
               <Card className="h-full py-0 transition-shadow group-hover:shadow-[0_18px_36px_rgba(7,24,23,0.08)]">
                 <CardContent className="flex h-full flex-col p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <Badge variant="outline">{doc.category}</Badge>
+                      <Tag>{doc.category}</Tag>
                       <h3 className="mt-4 font-heading text-ds-l font-bold text-foreground">
                         {doc.title}
                       </h3>

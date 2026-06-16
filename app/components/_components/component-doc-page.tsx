@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "./code-block";
 import type { ComponentDoc } from "./styleguide-docs";
@@ -80,8 +80,8 @@ export function ComponentDocPage({ doc }: { doc: ComponentDoc }) {
       <article className="min-w-0 space-y-14">
         <header className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{doc.category}</Badge>
-            {doc.status ? <Badge variant="secondary">{doc.status}</Badge> : null}
+            <Tag>{doc.category}</Tag>
+            {doc.status ? <Tag>{doc.status}</Tag> : null}
           </div>
           <h1 className="font-heading text-ds-xxxxl font-bold text-foreground">
             {doc.title}
