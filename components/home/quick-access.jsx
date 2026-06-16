@@ -1,25 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ChevronRight,
-  HandHeart,
-  Heart,
-  SquareArrowDownRight,
-  UserRoundPlus,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardShortcut } from "@/components/ui/card";
+import {
+  IconHeartOpen,
+  IconInternalLink,
+  IconTip,
+  IconUserPlus,
+} from "@/components/icons/ds-icons";
 import { useAdmin } from "@/lib/admin-store";
 
 // Per-card icon + call-to-action, keyed by the quick-access item id.
-// Icons match the Figma hero (outline glyphs): person+, hand-with-heart,
-// heart, and a framed diagonal "enter portal" arrow.
+// Icons are the actual DS glyphs exported from Figma (iconography page):
+// user/plus, tip (donor), heart-open, internal-link.
 const cardMeta = {
-  register: { icon: UserRoundPlus, cta: "Get Started" },
-  donate: { icon: HandHeart, cta: "Donate Now" },
-  "lp-website": { icon: Heart, cta: "Visit Website" },
-  internal: { icon: SquareArrowDownRight, cta: "Open Portal" },
+  register: { icon: IconUserPlus, cta: "Get Started" },
+  donate: { icon: IconTip, cta: "Donate Now" },
+  "lp-website": { icon: IconHeartOpen, cta: "Visit Website" },
+  internal: { icon: IconInternalLink, cta: "Open Portal" },
 };
 
 export function QuickAccess({ embedded = false }) {
@@ -31,38 +31,25 @@ export function QuickAccess({ embedded = false }) {
         const meta = cardMeta[item.id] ?? { icon: ChevronRight, cta: "Learn more" };
         const Icon = meta.icon;
         return (
-          <Card
+          <CardShortcut
             key={item.id}
-            className="py-0 transition-shadow hover:shadow-[0_18px_36px_rgba(7,24,23,0.08)]"
-          >
-            <CardContent className="flex h-full flex-col gap-4 p-6">
-              <Icon
-                className="size-14 text-primary"
-                strokeWidth={1.9}
-                aria-hidden
-              />
-              <div className="flex-1">
-                <h3 className="font-heading text-ds-l font-bold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-ds-s font-medium text-foreground">
-                  {item.description}
-                </p>
-              </div>
+            className="transition-shadow hover:shadow-[0_18px_36px_rgba(7,24,23,0.08)]"
+            icon={<Icon aria-hidden />}
+            title={item.title}
+            description={item.description}
+            action={
               <Link
                 href={item.href}
                 {...(item.external
                   ? { target: "_blank", rel: "noopener noreferrer" }
                   : {})}
-                className={buttonVariants({
-                  className: "mt-1 w-fit",
-                })}
+                className={buttonVariants({ className: "w-fit" })}
               >
                 {meta.cta}
                 <ChevronRight className="size-4" />
               </Link>
-            </CardContent>
-          </Card>
+            }
+          />
         );
       })}
     </div>
