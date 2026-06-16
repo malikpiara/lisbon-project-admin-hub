@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Info } from "lucide-react"
+import { IconInfo } from "@/components/icons/ds-icons"
 
 import { cn } from "@/lib/utils"
 
@@ -34,7 +34,7 @@ function Infobox({
         data-slot="infobox-icon"
         className="shrink-0 text-foreground/25 [&>svg]:size-4"
       >
-        {icon ?? <Info />}
+        {icon ?? <IconInfo />}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         {title ? (

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Eye, EyeOff, Search } from "lucide-react"
+import { IconEyeClosed, IconEyeOpen, IconSearch } from "@/components/icons/ds-icons"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@/lib/utils"
@@ -30,7 +30,7 @@ function InputSearch({
 }: React.ComponentProps<typeof InputPrimitive>) {
   return (
     <div className="relative w-full">
-      <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <IconSearch className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input type="search" className={cn("pl-11", className)} {...props} />
     </div>
   )
@@ -55,7 +55,7 @@ function InputPassword({
         aria-label={visible ? "Hide password" : "Show password"}
         className="absolute right-3 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+        {visible ? <IconEyeClosed className="size-4" /> : <IconEyeOpen className="size-4" />}
       </button>
     </div>
   )

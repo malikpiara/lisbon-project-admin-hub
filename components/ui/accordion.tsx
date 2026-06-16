@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
-import { Minus, Plus } from "lucide-react"
+import { IconMinus, IconPlus } from "@/components/icons/ds-icons"
 
 import { cn } from "@/lib/utils"
 import { Tag } from "@/components/ui/tag"
@@ -68,14 +68,8 @@ function AccordionTrigger({
           {tag != null ? <Tag>{tag}</Tag> : null}
         </span>
         <span className="flex min-h-11 shrink-0 items-center px-3 text-brand-link">
-          <Plus
-            className="size-4 group-data-[open]/item:hidden"
-            strokeWidth={2.5}
-          />
-          <Minus
-            className="hidden size-4 group-data-[open]/item:block"
-            strokeWidth={2.5}
-          />
+          <IconPlus className="size-4 group-data-[open]/item:hidden" />
+          <IconMinus className="hidden size-4 group-data-[open]/item:block" />
         </span>
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>

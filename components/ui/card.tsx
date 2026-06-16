@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronRight } from "lucide-react"
+import { IconArrowRight } from "@/components/icons/ds-icons"
 
 import { cn } from "@/lib/utils"
 
@@ -141,7 +141,7 @@ function CardService({
         ) : null}
       </div>
       {showChevron ? (
-        <ChevronRight className="size-4 shrink-0 text-primary" />
+        <IconArrowRight className="size-4 shrink-0 text-primary" />
       ) : null}
     </div>
   )

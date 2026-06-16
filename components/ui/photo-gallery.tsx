@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { IconArrowLeft, IconArrowRight } from "@/components/icons/ds-icons"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -53,7 +53,7 @@ function PhotoGallery({
             aria-label="Previous photo"
             onClick={() => go(-1)}
           >
-            <ChevronLeft />
+            <IconArrowLeft />
           </Button>
           <Button
             size="icon"
@@ -61,7 +61,7 @@ function PhotoGallery({
             aria-label="Next photo"
             onClick={() => go(1)}
           >
-            <ChevronRight />
+            <IconArrowRight />
           </Button>
         </div>
       ) : null}

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
-import { CheckIcon } from "lucide-react"
+import { IconCheck } from "@/components/icons/ds-icons"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -44,7 +44,7 @@ function Checkbox({
           variant === "secondary" ? "text-primary" : "text-brand-link"
         )}
       >
-        <CheckIcon className="size-4" strokeWidth={3} />
+        <IconCheck className="size-4" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { IconArrowLeft, IconArrowRight } from "@/components/icons/ds-icons"
 import { DayPicker } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -62,9 +62,9 @@ function Calendar({
       components={{
         Chevron: ({ orientation, className: cls, ...p }) =>
           orientation === "left" ? (
-            <ChevronLeft className={cn("size-4", cls)} {...p} />
+            <IconArrowLeft className={cn("size-4", cls)} {...p} />
           ) : (
-            <ChevronRight className={cn("size-4", cls)} {...p} />
+            <IconArrowRight className={cn("size-4", cls)} {...p} />
           ),
         // Render a teal dot under days carrying the custom `event` modifier.
         DayButton: ({ day: _day, modifiers, className: cls, children, ...rest }) => (
