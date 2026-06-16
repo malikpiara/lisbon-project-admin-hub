@@ -16,7 +16,7 @@ function Input({
       type={type}
       data-slot="input"
       className={cn(
-        "h-11 w-full min-w-0 rounded-lg border-2 border-input bg-card px-4 py-2 text-ds-xs font-bold text-[var(--text-secondary)] transition-colors outline-none hover:border-muted-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-[var(--neutral-500)] focus-visible:border-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-[var(--neutral-200)] disabled:bg-[var(--neutral-200)] disabled:text-[var(--neutral-500)] aria-invalid:border-destructive dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        "h-11 w-full min-w-0 rounded-lg border-2 border-input bg-card px-4 py-2 text-ds-xs font-bold text-[var(--text-secondary)] transition-colors outline-none hover:border-muted-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-ds-xs file:font-medium file:text-foreground placeholder:text-[var(--neutral-500)] focus-visible:border-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-[var(--neutral-200)] disabled:bg-[var(--neutral-200)] disabled:text-[var(--neutral-500)] aria-invalid:border-destructive dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props} />
