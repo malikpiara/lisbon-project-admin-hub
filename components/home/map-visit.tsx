@@ -1,4 +1,9 @@
-import { Bus, Info, Phone, TramFront } from "lucide-react";
+import {
+  IconBus,
+  IconInfo,
+  IconMetro,
+  IconPhone,
+} from "@/components/icons/ds-icons";
 
 const schedule = [
   { day: "Mon, Tue, Thu", hours: "10:00–12:30 & 14:00–17:30" },
@@ -37,11 +42,11 @@ export function MapVisit() {
               <p className="mt-5 text-ds-s font-bold text-brand-dark">How to Get Here</p>
               <ul className="mt-2 space-y-2 text-ds-xs font-medium text-brand-dark">
                 <li className="flex items-center gap-2">
-                  <TramFront className="size-4 text-primary" />
+                  <IconMetro className="size-4 shrink-0" />
                   Metro: Linha Verde (Green Line) - Intendente Station
                 </li>
                 <li className="flex items-center gap-2">
-                  <Bus className="size-4 text-primary" />
+                  <IconBus className="size-4 shrink-0" />
                   Bus: 708, 730, 742, 794
                 </li>
               </ul>
@@ -64,7 +69,7 @@ export function MapVisit() {
                 ))}
               </dl>
               <div className="mt-4 flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-ds-xxs font-bold text-foreground">
-                <Info className="size-4 text-primary" />
+                <IconInfo className="size-4 shrink-0 text-primary" />
                 No appointment needed. Just walk in.
               </div>
             </div>
@@ -78,7 +83,7 @@ export function MapVisit() {
                 href="tel:+351964809959"
                 className="mt-4 flex items-center gap-2 text-ds-s font-bold text-brand-link hover:underline"
               >
-                <Phone className="size-4" />
+                <IconPhone className="size-4 shrink-0" />
                 +351 964 809 959
               </a>
             </div>

@@ -1,37 +1,16 @@
-import { ChevronRight, Mail } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-
-// lucide-react v1 dropped brand glyphs, so the socials use inline SVGs.
-function FacebookIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
-      <path d="M13.5 21v-7h2.3l.4-2.9h-2.7V9.3c0-.8.3-1.4 1.5-1.4h1.3V5.3c-.6-.1-1.4-.2-2.3-.2-2.3 0-3.8 1.4-3.8 3.9v2.1H8v2.9h2.4V21h3.1Z" />
-    </svg>
-  );
-}
-
-function InstagramIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function LinkedinIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
-      <path d="M6.94 5a1.94 1.94 0 1 1-3.88 0 1.94 1.94 0 0 1 3.88 0ZM3.4 8.5h3.1V21H3.4V8.5Zm5.1 0h3v1.7h.05c.42-.8 1.45-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9V21h-3.1v-5.4c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21h-3.1V8.5Z" />
-    </svg>
-  );
-}
+import {
+  IconFacebook,
+  IconInstagram,
+  IconLinkedin,
+  IconMail,
+} from "@/components/icons/ds-icons";
 
 const socials = [
-  { label: "Facebook", icon: FacebookIcon, href: "#" },
-  { label: "Instagram", icon: InstagramIcon, href: "#" },
-  { label: "LinkedIn", icon: LinkedinIcon, href: "#" },
+  { label: "Facebook", icon: IconFacebook, href: "#" },
+  { label: "Instagram", icon: IconInstagram, href: "#" },
+  { label: "LinkedIn", icon: IconLinkedin, href: "#" },
 ];
 
 export function SiteFooter() {
@@ -41,11 +20,11 @@ export function SiteFooter() {
     <footer className="bg-bg-mint">
       <div className="mx-auto max-w-[1680px] px-4 pb-24 pt-14 sm:px-6 lg:px-14">
         <div className="flex items-center gap-2 text-foreground">
-          <Mail className="size-6" />
+          <IconMail className="size-6" />
           <h2 className="font-heading text-ds-xl font-bold">Newsletter</h2>
         </div>
 
-        <div className="mt-6 grid items-end gap-8 lg:grid-cols-[minmax(280px,400px)_1fr]">
+        <div className="mt-6 grid items-end gap-8 lg:grid-cols-[minmax(280px,400px)_1fr] lg:gap-x-[5.5rem]">
           <p className="max-w-sm font-heading text-ds-m font-bold text-brand-dark">
             Get monthly updates on events, programs, and community stories
           </p>
@@ -83,7 +62,7 @@ export function SiteFooter() {
 
         <hr className="mt-12 border-t-2 border-secondary" />
 
-        <div className="mt-6">
+        <div className="mt-12">
           <p className="text-ds-xs font-bold text-brand-deep">
             © {year} by Lisbon Project Association. Building community, one
             connection at a time.
