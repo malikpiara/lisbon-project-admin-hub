@@ -1,5 +1,5 @@
 import { JetBrains_Mono, Quicksand } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { AdminProvider } from "@/lib/admin-store";
 
 const jetBrainsMono = JetBrains_Mono({
