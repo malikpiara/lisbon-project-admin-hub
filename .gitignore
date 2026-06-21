@@ -43,3 +43,14 @@ next-env.d.ts
 
 # Claude Code per-user settings (permissions). Keep launch.json shared.
 .claude/settings.local.json
+
+# CMS evaluation
+# Sanity runtime cache
+.sanity/
+# Payload SQLite database (created by `pnpm payload migrate` / first run)
+*.db
+*.db-shm
+*.db-wal
+payload.db*
+# Payload media uploads (if an upload collection is added)
+/public/media
