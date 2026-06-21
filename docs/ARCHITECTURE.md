@@ -9,9 +9,17 @@ bitten us before.
 Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
 `shadcn` (base-nova). Static prototype, no backend.
 
-- `app/(site)` — the public site (home, services, article, calendar)
-- `app/admin` — the mock CMS
-- `app/components` — the design-system gallery
+- `app/(frontend)/(site)` — the public site (home, services, article, calendar)
+- `app/(frontend)/admin` — the mock CMS
+- `app/(frontend)/components` — the design-system gallery
+- `app/(studio)` — embedded Sanity Studio (`/studio`) — **evaluation spike**
+- `app/(payload)` — Payload admin + API (`/cms-admin`, `/api/*`) — **evaluation spike**
+
+The app lives under a `(frontend)` route group with its **own root layout**, so
+the `(studio)` and `(payload)` groups can each supply another root layout (Next
+16 allows multiple root layouts only when there is no top-level `app/layout.js`).
+All public URLs are unchanged. See [CMS-EVALUATION.md](./CMS-EVALUATION.md) for
+the Sanity-vs-Payload comparison those two groups exist to support.
 
 > Heed [AGENTS.md](../AGENTS.md): this is not the Next.js in your training data.
 > Read the relevant guide in `node_modules/next/dist/docs/` before writing
@@ -20,8 +28,9 @@ Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
 ## Data flow — read this first
 
 There is **one** content store. `AdminProvider` (`lib/admin-store.js`) wraps the
-**entire app** in the root layout (`app/layout.js`), so the public site and
-`/admin` share it.
+**entire `(frontend)` app** in its root layout (`app/(frontend)/layout.js`), so
+the public site and `/admin` share it. (The `(studio)` and `(payload)` CMS
+groups have their own root layouts and do **not** use this store.)
 
 - State seeds from `defaultAdminData` (`lib/admin-default-data.js`), persists to
   `localStorage["lp-admin-data-v1"]`, and is re-read on mount.

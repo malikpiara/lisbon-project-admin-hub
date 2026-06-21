@@ -77,6 +77,20 @@ in `localStorage["lp-admin-data-v1"]`.
 > [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow, the two seed
 > sources, the mock article model, and the design-system gotchas.
 
+## CMS evaluation (Sanity + Payload)
+
+Two real CMS integrations are installed **side by side** on this branch so we can
+compare them before replacing the mock CMS. Neither affects the existing app.
+
+- **Payload** runs fully locally (SQLite): set `PAYLOAD_SECRET`/`DATABASE_URI`
+  in `.env.local`, then `pnpm seed:payload` and open `/cms-admin` (admin) and
+  `/payload-demo` (read).
+- **Sanity** needs a free project id (`npx sanity init`); then `pnpm seed:sanity`
+  and open `/studio` (Studio) and `/sanity-demo` (read).
+
+Full setup, a content-model mapping, a feature-by-feature comparison, and a
+recommendation are in **[docs/CMS-EVALUATION.md](docs/CMS-EVALUATION.md)**.
+
 ## Architecture & known issues
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) documents how content flows, the
