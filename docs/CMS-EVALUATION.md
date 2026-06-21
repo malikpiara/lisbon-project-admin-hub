@@ -18,7 +18,7 @@ alongside, each isolated in its own route group.
 | Admin UI                | `/studio` (embedded)                        | `/cms-admin`                                            |
 | Read demo               | `/sanity-demo`                              | `/payload-demo`                                         |
 | API to read content     | GROQ (+ GraphQL)                            | Local API (no HTTP), REST, GraphQL                      |
-| Runs in this repo today | Needs a **free project id** (1 manual step) | ✅ **Runs fully locally** (SQLite), already seeded      |
+| Runs in this repo today | Needs a **free project id** (1 manual step) | ✅ **Runs fully locally** (SQLite); one seed command    |
 | `pnpm build`            | ✅ green                                     | ✅ green                                                 |
 | Self-hostable           | Studio yes; content store no (SaaS)         | ✅ entirely self-hosted                                  |
 | Cost at small scale     | Generous free tier, then per-seat/usage     | Free (OSS); you pay only for hosting + DB               |
