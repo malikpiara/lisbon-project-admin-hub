@@ -1,2 +1,27 @@
-/* Payload admin style overrides go here. Plain CSS (not SCSS) so no extra
-   toolchain is needed. */
+/*
+ * Lisbon Project branding for the Payload admin.
+ * Payload drives its accent (links, active nav, focus rings, info states)
+ * from the `--color-blue-*` ramp — we remap it to the brand green ramp from
+ * app/globals.css so the admin reads as ours. Plain CSS (no SCSS toolchain).
+ */
+:root {
+  --color-blue-50: #f2fcfc;
+  --color-blue-100: #e4f8f6;
+  --color-blue-150: #d9f7f5;
+  --color-blue-200: #c6f3f0;
+  --color-blue-250: #b3efeb;
+  --color-blue-300: #9ae8e2;
+  --color-blue-350: #6adcd5;
+  --color-blue-400: #44c2ba;
+  --color-blue-450: #2ba8a0;
+  --color-blue-500: #1f8e87; /* brand-500 — primary accent */
+  --color-blue-550: #16807a;
+  --color-blue-600: #0d635d; /* brand-600 — signature green */
+  --color-blue-650: #0b5852;
+  --color-blue-700: #0a4d48;
+  --color-blue-750: #094440;
+  --color-blue-800: #083b37;
+  --color-blue-850: #07302d;
+  --color-blue-900: #0a2422;
+  --color-blue-950: #071817;
+}

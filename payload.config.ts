@@ -19,7 +19,17 @@ export default buildConfig({
   routes: { admin: "/cms-admin" },
   admin: {
     user: Users.slug,
-    meta: { titleSuffix: " · Lisbon Project (Payload)" },
+    meta: {
+      title: "Lisbon Project",
+      titleSuffix: " · Lisbon Project",
+      description: "Content admin for the Lisbon Project site.",
+    },
+    components: {
+      graphics: {
+        Logo: "/payload/components/Graphics#Logo",
+        Icon: "/payload/components/Graphics#Icon",
+      },
+    },
   },
   collections: [Services, Topics, QuickAccess, Users],
   editor: lexicalEditor(),
