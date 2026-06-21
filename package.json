@@ -2,16 +2,22 @@
   "name": "admin-hub",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "parity": "node scripts/ds-parity.mjs",
-    "seed:sanity": "tsx scripts/seed-sanity.ts"
+    "payload": "payload",
+    "seed:sanity": "tsx scripts/seed-sanity.ts",
+    "seed:payload": "tsx scripts/seed-payload.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
+    "@payloadcms/db-sqlite": "^3.85.1",
+    "@payloadcms/next": "^3.85.1",
+    "@payloadcms/richtext-lexical": "^3.85.1",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^6.1.0",
     "class-variance-authority": "^0.7.1",
@@ -21,6 +27,7 @@
     "moment": "^2.30.1",
     "next": "16.2.6",
     "next-sanity": "^13.1.1",
+    "payload": "^3.85.1",
     "react": "19.2.4",
     "react-big-calendar": "^1.19.4",
     "react-day-picker": "^10.0.1",
