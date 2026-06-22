@@ -237,6 +237,45 @@ To go live on a CMS:
 The `/sanity-demo` and `/payload-demo` routes already demonstrate steps 1–2 end
 to end for the services list.
 
+## Decision matrix (all options considered)
+
+Legend: ✅ strong · ⚠️ workable with caveats · ❌ weak / not provided.
+Every option keeps the **public-site design identical** (the CMS only changes
+where data is fetched), and **PostHog** is app-level so it works the same with
+all of them — neither differentiates, so both are omitted from the table.
+
+| Option | Non-tech editor UX | Localization | Multi-user + roles | Cost | Maintenance | Lock-in |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Files + SSG** (no CMS) | ❌ devs edit via PRs | ⚠️ manual | ❌ git perms | Free | Very low | None |
+| **Keystatic** (git) | ⚠️ good; non-tech via Cloud | ⚠️ manual | ⚠️ basic (≤3 free) | Free (≤3) | Low | Low |
+| **TinaCMS** (git + visual) | ✅ visual, in-context | ⚠️ manual-ish | ⚠️ ≤2 free, then paid | Free ≤2 / $29+ | Low–Med | Low (+ Tina Cloud) |
+| **Sanity** (hosted) | ✅✅ best | ✅ mature (plugin) | ✅ 20 seats (roles paid) | Free tier; paid for roles/scale | Low (no DB) | Med–High (their cloud) |
+| **Payload** (self-host + DB) | ✅ very good | ✅✅ first-class | ✅✅ unlimited + roles, free | Free SW + DB hosting | Med–High (you run a DB) | Low–Med (your DB) |
+| **Supabase + your admin** (BYO) | ⚠️ = what you build | ⚠️ DIY | ⚠️ DIY (Auth + RLS) | Free¹ / ~$25/mo | High (you build the CMS) | Low–Med (Postgres) |
+
+SEO (Next SSR/SSG) is ✅ for every option — it's a migration step (move public
+pages off `localStorage` to a server fetch), not a property of the CMS.
+¹ Supabase free tier pauses after ~7 days idle.
+
+**Trajectory axes (monorepo, members, protected dashboards):**
+
+| Option | Monorepo / multi-site | Powers members + protected dashboards |
+| --- | --- | --- |
+| Files + SSG | ✅ trivial | ❌ no backend |
+| Keystatic / TinaCMS | ✅ shared content pkg | ❌ |
+| Sanity | ✅ one hub → many sites | ❌ content only (pair with Supabase) |
+| Payload | ✅ central API + multi-tenant plugin | ✅ auth + collections built in |
+| Supabase + your admin | ✅ shared backend | ✅✅ its core strength |
+
+**Reversibility:** Files/Keystatic/Tina are easiest to leave (content stays as
+files in your repo). Sanity needs an export. Payload/Supabase keep your data in
+a standard Postgres you own.
+
+**Status in this repo (now):** **Sanity is live** — project `8itayyvi`, seeded
+with the 14 services / 140 topics / 4 quick-access; `/sanity-demo` reads it.
+**Payload runs locally** — SQLite, seeded, branded admin at `/cms-admin`. The
+other four are evaluated but not built.
+
 ## Recommendation
 
 Both are safe choices; pick on **operating model**, not features.
