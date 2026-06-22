@@ -16,7 +16,7 @@
  */
 import { readFileSync } from "node:fs";
 
-import { createClient } from "@sanity/client";
+import { createClient } from "next-sanity";
 
 import { defaultAdminData } from "../lib/admin-default-data.js";
 import { defaultArticle } from "../lib/article-defaults.js";

@@ -15,7 +15,8 @@ import { StudioLogo } from "./sanity/components/StudioLogo";
 export default defineConfig({
   name: "lisbon-project",
   title: "Lisbon Project — Sanity",
-  basePath: "/studio",
+  // "/studio" when embedded in Next; "/" for a standalone `sanity deploy`.
+  basePath: process.env.SANITY_STUDIO_BASEPATH || "/studio",
   projectId,
   dataset,
   theme: lisbonTheme,

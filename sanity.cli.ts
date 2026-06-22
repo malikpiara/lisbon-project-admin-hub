@@ -6,5 +6,6 @@ import { dataset, projectId } from "./sanity/env";
 // so once NEXT_PUBLIC_SANITY_PROJECT_ID is set the CLI targets the same project.
 export default defineCliConfig({
   api: { projectId, dataset },
+  studioHost: "lisbon-project-lisboaux",
   autoUpdates: true,
 });
