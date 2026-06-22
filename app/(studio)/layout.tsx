@@ -1,4 +1,12 @@
 import type { ReactNode } from "react";
+import { Quicksand } from "next/font/google";
+
+// Brand font (matches the public site), so the Studio uses Quicksand too.
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata = {
   title: "Sanity Studio · Lisbon Project",
@@ -13,7 +21,7 @@ export const metadata = {
 // app/layout.js; see the (frontend) and (payload) groups.)
 export default function StudioRootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={quicksand.className}>
       <body style={{ margin: 0 }}>{children}</body>
     </html>
   );

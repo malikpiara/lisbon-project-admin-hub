@@ -10,8 +10,13 @@ const brand = {
   gray: "#5b6b69",
 };
 
+// Heading/sans font, matching the public site (--font-quicksand in globals.css).
+// The font itself is loaded in app/(studio)/layout.tsx.
+const quicksand =
+  'Quicksand, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+
 // Recolours the whole Studio to match the public site / admin dashboard.
-export const lisbonTheme = buildLegacyTheme({
+const base = buildLegacyTheme({
   "--black": brand.ink,
   "--white": brand.white,
   "--gray": brand.gray,
@@ -38,3 +43,17 @@ export const lisbonTheme = buildLegacyTheme({
 
   "--focus-color": brand.greenDeep,
 });
+
+// Layer the brand font on top of the colour theme (legacy theme is colours-only).
+// Cast back to the theme type: spreading widens `fonts.code` to optional, but
+// the runtime shape is unchanged (only the `family` strings differ).
+const f = base.fonts!;
+export const lisbonTheme = {
+  ...base,
+  fonts: {
+    ...f,
+    heading: { ...f.heading, family: quicksand },
+    text: { ...f.text, family: quicksand },
+    label: { ...f.label, family: quicksand },
+  },
+} as typeof base;

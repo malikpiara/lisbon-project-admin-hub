@@ -25,3 +25,12 @@
   --color-blue-900: #0a2422;
   --color-blue-950: #071817;
 }
+
+/* Form controls default to the UA font; make them inherit the brand font
+   (Quicksand) applied in app/(payload)/layout.tsx. */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+}
