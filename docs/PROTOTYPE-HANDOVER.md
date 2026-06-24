@@ -1,5 +1,13 @@
 # Prototype handover — run & evaluate the Sanity and Payload CMS spikes
 
+> **⚠️ Superseded (2026-06-23).** The evaluation is done: **Payload on Supabase
+> Postgres** was chosen, and the Sanity spike has been removed from the repo.
+> This file is kept as a historical record of the bake-off. For the current
+> setup see the **Decision** section of [CMS-EVALUATION.md](./CMS-EVALUATION.md)
+> and [`.env.example`](../.env.example). To run the app now: put `PAYLOAD_SECRET`
+> + a Supabase `DATABASE_URI` in `.env.local`, then `pnpm install` →
+> `pnpm seed:payload` → `pnpm dev`, and open `/cms-admin`.
+
 **Purpose:** let Malik run the two CMS prototypes locally and *feel* the editing
 experience before deciding. This file is both a human runbook and a handover for
 a fresh Claude Code session.

@@ -9,6 +9,31 @@ alongside, each isolated in its own route group.
 > This is a spike, not a finished migration. The goal is a fair, hands-on
 > comparison. The final decision is yours — see [Recommendation](#recommendation).
 
+## ✅ Decision (2026-06-23): Payload on Supabase Postgres
+
+**Chosen: Payload** (self-hosted) on **Supabase Postgres** (the `db-postgres`
+adapter). The admin is wired to Supabase and seeded (14 services / 140 topics /
+4 quick-access); `/payload-demo` reads from it. The **Sanity spike has been
+removed** from the repo (`sanity*`, `app/(studio)`, `sanity-demo`, its deps).
+
+- **Why Payload:** own the data in a standard Postgres we control (portable, low
+  lock-in), no per-seat cost, first-class localization + built-in auth/roles for
+  future member areas; it replaces the `/admin` mock directly.
+- **Why Supabase, not D1/Turso/Neon:** familiarity (we already run Supabase /
+  Vercel / Cloudflare). Stood up under its own nonprofit account
+  `lisbon.project@roundtwenty.com` for a clean free-project quota.
+  **Cloudflare D1 was evaluated and deferred** — its Payload template is frozen
+  on 3.82 and broken on 3.85 ([#16757](https://github.com/payloadcms/payload/issues/16757))
+  with open silent data-loss bugs ([#15070](https://github.com/payloadcms/payload/issues/15070),
+  [#15219](https://github.com/payloadcms/payload/issues/15219)); revisit when those close.
+- **Portability rule:** stay Payload-native (no Postgres-only RLS/extensions) so
+  the DB stays swappable (D1/Turso/Neon) and "leave Payload" stays cheap.
+- **Not yet done:** the public site still reads `localStorage` — the go-live
+  migration (wire public pages to Payload + restore SSG + on-publish
+  revalidation) is the next milestone.
+
+The comparison below is kept as the **record of how this decision was reached.**
+
 ## TL;DR
 
 |                         | **Sanity**                                  | **Payload**                                              |

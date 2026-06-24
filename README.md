@@ -77,19 +77,18 @@ in `localStorage["lp-admin-data-v1"]`.
 > [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow, the two seed
 > sources, the mock article model, and the design-system gotchas.
 
-## CMS evaluation (Sanity + Payload)
+## CMS — Payload on Supabase Postgres
 
-Two real CMS integrations are installed **side by side** on this branch so we can
-compare them before replacing the mock CMS. Neither affects the existing app.
+The CMS is **Payload** (admin at `/cms-admin`), running on **Supabase Postgres**.
+Set `PAYLOAD_SECRET` and a Supabase `DATABASE_URI` in `.env.local` (see
+[`.env.example`](.env.example)), then `pnpm seed:payload` and open `/cms-admin`
+(admin) and `/payload-demo` (server-rendered read).
 
-- **Payload** runs fully locally (SQLite): set `PAYLOAD_SECRET`/`DATABASE_URI`
-  in `.env.local`, then `pnpm seed:payload` and open `/cms-admin` (admin) and
-  `/payload-demo` (read).
-- **Sanity** needs a free project id (`npx sanity init`); then `pnpm seed:sanity`
-  and open `/studio` (Studio) and `/sanity-demo` (read).
-
-Full setup, a content-model mapping, a feature-by-feature comparison, and a
-recommendation are in **[docs/CMS-EVALUATION.md](docs/CMS-EVALUATION.md)**.
+> Decided 2026-06-23 after a hands-on bake-off (Payload vs Sanity vs a custom
+> Supabase admin); the Sanity spike has since been removed. The full comparison,
+> the decision, and the content-model mapping are in
+> **[docs/CMS-EVALUATION.md](docs/CMS-EVALUATION.md)**. The public site still
+> reads `localStorage` — wiring it to Payload is the next milestone.
 
 ## Architecture & known issues
 

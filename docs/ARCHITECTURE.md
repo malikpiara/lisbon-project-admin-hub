@@ -7,19 +7,20 @@ bitten us before.
 ## Stack
 
 Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
-`shadcn` (base-nova). Static prototype, no backend.
+`shadcn` (base-nova). The public site is still a localStorage prototype (below);
+the chosen CMS is **Payload on Supabase Postgres** (see CMS-EVALUATION.md).
 
 - `app/(frontend)/(site)` — the public site (home, services, article, calendar)
-- `app/(frontend)/admin` — the mock CMS
-- `app/(frontend)/components` — the design-system gallery
-- `app/(studio)` — embedded Sanity Studio (`/studio`) — **evaluation spike**
-- `app/(payload)` — Payload admin + API (`/cms-admin`, `/api/*`) — **evaluation spike**
+- `app/(frontend)/admin` — the mock CMS (localStorage; still feeds the public site)
+- `app/(frontend)/components` — the design-system gallery (`/components`)
+- `app/(frontend)/payload-demo` — server-rendered read demo (Payload Local API)
+- `app/(payload)` — **the CMS**: Payload admin + API (`/cms-admin`, `/api/*`), on Supabase Postgres
 
 The app lives under a `(frontend)` route group with its **own root layout**, so
-the `(studio)` and `(payload)` groups can each supply another root layout (Next
-16 allows multiple root layouts only when there is no top-level `app/layout.js`).
-All public URLs are unchanged. See [CMS-EVALUATION.md](./CMS-EVALUATION.md) for
-the Sanity-vs-Payload comparison those two groups exist to support.
+the `(payload)` group can supply another root layout (Next 16 allows multiple
+root layouts only when there is no top-level `app/layout.js`). All public URLs
+are unchanged. The Sanity evaluation spike (`(studio)`, `sanity-demo`) was
+removed after the decision — see [CMS-EVALUATION.md](./CMS-EVALUATION.md).
 
 > Heed [AGENTS.md](../AGENTS.md): this is not the Next.js in your training data.
 > Read the relevant guide in `node_modules/next/dist/docs/` before writing
@@ -29,8 +30,8 @@ the Sanity-vs-Payload comparison those two groups exist to support.
 
 There is **one** content store. `AdminProvider` (`lib/admin-store.js`) wraps the
 **entire `(frontend)` app** in its root layout (`app/(frontend)/layout.js`), so
-the public site and `/admin` share it. (The `(studio)` and `(payload)` CMS
-groups have their own root layouts and do **not** use this store.)
+the public site and `/admin` share it. (The `(payload)` group has its own root
+layout and does **not** use this store — Payload reads Supabase Postgres.)
 
 - State seeds from `defaultAdminData` (`lib/admin-default-data.js`), persists to
   `localStorage["lp-admin-data-v1"]`, and is re-read on mount.
@@ -81,11 +82,11 @@ Each topic can carry an `article`: `{ heroLead, sections[], faqLead, faqs[] }`.
   silently drops one (this once turned button labels dark). Keep the
   registration if you touch `cn`.
 - **`tone` is not rendered as colour on the public site.** Tones
-  (`rose`/`teal`/…) are Tailwind palette names stored per service/topic, but the
-  public service cards use a uniform mint tile (`bg-secondary`). The admin shows
-  tone as a colour swatch via a **separate hardcoded hex map**
-  (`lib/admin-tones.js`). Choosing a tone changes the admin swatch and small
-  dots, not the public card colour.
+  (`rose`/`teal`/…) are **standard Tailwind palette names** stored per
+  service/topic, but the public service cards use a uniform mint tile
+  (`bg-secondary`). They drive only the admin swatch/dots (used directly as
+  Tailwind colours) — there is **no** `lib/admin-tones.js` hex map (that file
+  does not exist). Choosing a tone changes the admin swatch, not the public card colour.
 
 ## Known inconsistencies / things to be aware of
 
