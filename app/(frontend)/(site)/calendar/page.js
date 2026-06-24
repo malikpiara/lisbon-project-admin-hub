@@ -1,7 +1,9 @@
 import { fetchUpcomingEvents, parseEventDate } from "@/lib/google-calendar";
 import { getCategory } from "@/lib/calendar-categories";
-import { BigCalendar } from "@/components/calendar/big-calendar";
-import { BigCalendarAdamastor } from "@/components/calendar/big-calendar-adamastor";
+import {
+  BigCalendar,
+  BigCalendarAdamastor,
+} from "@/components/calendar/big-calendars-lazy";
 import { CollapsibleSection } from "@/components/calendar/collapsible-section";
 
 export const metadata = { title: "Calendar — prototype" };
