@@ -11,6 +11,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
 import {
@@ -49,7 +50,15 @@ export default function TopicEditorPage({ params }) {
     writeArticle({
       sections: [
         ...article.sections,
-        { heading: "New section", lead: "", body: "", bullets: "", cta: "" },
+        {
+          heading: "New section",
+          lead: "",
+          body: "",
+          bullets: "",
+          ordered: false,
+          cta: "",
+          ctaHref: "",
+        },
       ],
     });
   const removeSection = (i) =>
@@ -218,12 +227,29 @@ export default function TopicEditorPage({ params }) {
                       textarea
                       rows={3}
                     />
+                    <label className="flex items-center gap-2 text-ds-xs font-medium text-foreground sm:col-span-2">
+                      <Checkbox
+                        checked={s.ordered === true}
+                        onCheckedChange={(checked) =>
+                          writeSection(i, { ordered: checked === true })
+                        }
+                      />
+                      Numbered list — show items as 1, 2, 3 instead of bullets
+                    </label>
                     <Field
                       className="sm:col-span-2"
                       label="Button label"
-                      hint="Optional. Adds a button linking to the category page; leave blank for none."
+                      hint="Optional. Adds a button to this section; leave blank for none."
                       value={s.cta}
                       onChange={(v) => writeSection(i, { cta: v })}
+                    />
+                    <Field
+                      className="sm:col-span-2"
+                      label="Button link"
+                      hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the category page."
+                      value={s.ctaHref ?? ""}
+                      onChange={(v) => writeSection(i, { ctaHref: v })}
+                      placeholder="/path or https://…"
                     />
                   </div>
                 </EditorRow>
