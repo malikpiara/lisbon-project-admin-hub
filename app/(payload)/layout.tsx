@@ -1,5 +1,5 @@
 import type { ServerFunctionClient } from "payload";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Quicksand } from "next/font/google";
 import config from "@payload-config";
@@ -30,7 +30,19 @@ const Layout = ({ children }: { children: ReactNode }) => (
     importMap={importMap}
     serverFunction={serverFunction}
   >
-    <div className={quicksand.className} style={{ display: "contents" }}>
+    <div
+      className={quicksand.className}
+      style={
+        {
+          display: "contents",
+          // Payload sets --font-body to a system stack and many of its components
+          // reference it explicitly, which beats the inherited Quicksand (so only
+          // the few elements forced to `inherit` actually picked it up). Re-point
+          // --font-body at Quicksand for the whole admin subtree.
+          "--font-body": quicksand.style.fontFamily,
+        } as CSSProperties
+      }
+    >
       {children}
     </div>
   </RootLayout>

@@ -100,12 +100,34 @@
 }
 
 /* Form controls default to the UA font; make them inherit the brand font
-   (Quicksand) applied in app/(payload)/layout.tsx. */
+   (Quicksand, re-pointed via --font-body in app/(payload)/layout.tsx). */
 input,
 button,
 textarea,
 select {
   font-family: inherit;
+}
+
+/* The DS sets the regular body weight to MEDIUM (500) — see app/globals.css
+   `body { font-weight: 500 }` (DS Settings: typography/font-weight-regular).
+   Payload defaults to 400, which reads as too thin next to the public site, so
+   match it. Headings/nav/labels that want a heavier weight set it explicitly. */
+body {
+  font-weight: 500;
+}
+/* Field labels are medium (components/admin/field.jsx `font-medium`). */
+.field-label {
+  font-weight: 500;
+}
+/* The DS renders button labels and input values BOLD (components/ui/button.tsx
+   and components/ui/input.tsx both use `font-bold`) — Quicksand's weights are
+   distinctive enough to carry it. Payload's 400 is what read as flat/light. */
+.btn,
+.form-submit button,
+input,
+textarea,
+select {
+  font-weight: 700;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -115,10 +137,51 @@ select {
    nav's teal/active colour.
    ───────────────────────────────────────────────────────────────────────────── */
 
+/* Match the DS sidebar's 240px width (Payload defaults to 275px). --nav-width
+   drives both the nav and the main content offset, so the layout stays in sync. */
+:root {
+  --nav-width: 240px;
+}
+
 /* Mint surface + 2px mint right border, like our DS sidebar. */
 .nav {
   background: #f2fcfc;
   border-right: 2px solid #d9f7f5; /* --border (brand-200) */
+}
+
+/* Always-open sidebar, like the DS shell (which has no collapse). Payload's
+   layout is a grid (.template-default) whose first column collapses to 0 until
+   the --nav-open class expands it to --nav-width; pin that column open, keep the
+   nav opaque (it fades to opacity:0 when closed), and remove both hamburgers and
+   the mobile close so the nav can't be dismissed. */
+.template-default {
+  grid-template-columns: var(--nav-width) 1fr !important;
+  /* Suppress Payload's open/close animation — it's the grid-column + opacity
+     transitions replaying the closed→open change on every reload that show up as
+     a layout shift / fade-in. The nav never toggles, so nothing needs to animate. */
+  transition: none !important;
+}
+.nav {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  transition: none !important;
+}
+.nav-toggler,
+.nav__mobile-close {
+  display: none !important;
+}
+
+/* Align the header, group labels and item icons to ONE left line, like the DS
+   sidebar. Payload's .nav__scroll adds 20px side padding and pills add their own
+   margin+padding on top, so the header (36px), labels (20px) and icons (40px) all
+   landed at different x. Trim the scroll padding to 8px; the label/header then get
+   the same 12px inset the link padding gives the icons → all three sit at 20px,
+   with the pill extending to the 8px edge for breathing room. */
+.nav__scroll {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Our DS sidebar shows the active state as a full mint pill, not Payload's
@@ -127,13 +190,16 @@ select {
   display: none;
 }
 
-/* Group labels → uppercase muted, matching the DS sidebar's group headers. */
+/* Group labels → uppercase muted, matching the DS sidebar's group headers
+   (text-ds-xxs 13px / 700, muted-foreground #666). The 12px inset lines the
+   label text up with the item icons (see .nav__scroll note above). */
 .nav-group__label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 11px;
+  padding-left: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #999999; /* neutral-500 */
+  color: #666666; /* --muted-foreground (text-tertiary) */
 }
 
 /* Nav links → rounded pills, teal label, mint hover; active = mint + primary teal. */
@@ -141,10 +207,10 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 2px 8px;
+  margin: 2px 0; /* pill sits at the .nav__scroll edge (8px); icon lands at 20px */
   border-radius: 16px; /* DS rounded-lg */
-  padding: 9px 12px;
-  font-size: 14px;
+  padding: 8px 12px; /* DS px-3 py-2 */
+  font-size: 15px; /* DS text-ds-xs */
   font-weight: 700;
   color: #0d635d; /* brand-link */
 }
@@ -243,4 +309,33 @@ div.nav__link {
 .card-users .icon--plus {
   -webkit-mask: url("/icons/users-group.svg") center / contain no-repeat;
   mask: url("/icons/users-group.svg") center / contain no-repeat;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Login → DS card. Payload's "minimal" login template centers the brand + form
+   in .template-minimal__wrap; give that wrap our card surface (white, 2px mint
+   border, rounded-lg) so the form reads as a panel instead of floating. The
+   heading + subtitle above the fields come from the beforeLogin slot
+   (payload/components/LoginIntro).
+   ───────────────────────────────────────────────────────────────────────────── */
+.login .template-minimal__wrap {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  background: #ffffff; /* DS card surface (bg-secondary / white) */
+  border: 2px solid #d9f7f5; /* brand-200 mint border */
+  border-radius: 16px; /* DS rounded-lg */
+  box-shadow: 0 1px 2px rgba(10, 36, 34, 0.05);
+}
+.login__brand {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.login__brand img {
+  margin: 0 auto;
+}
+/* Mute Payload's rose required asterisk to a calm neutral — the only warm accent
+   on an otherwise mint/teal screen, and "required" doesn't need to shout. */
+.login .field-label .required {
+  color: #b0b0b0; /* neutral-400 */
 }

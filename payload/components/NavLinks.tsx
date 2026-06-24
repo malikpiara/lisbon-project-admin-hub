@@ -28,11 +28,12 @@ export function NavLinks() {
       <span
         style={{
           marginBottom: 4,
-          fontSize: 11,
+          paddingLeft: 12, // align with the CONTENT/ADMIN group labels (20px)
+          fontSize: 13, // DS text-ds-xxs, matching the other group labels
           fontWeight: 700,
           letterSpacing: "0.04em",
           textTransform: "uppercase",
-          color: "var(--theme-elevation-500)",
+          color: "#666666", // muted-foreground
         }}
       >
         Workspace
@@ -45,10 +46,10 @@ export function NavLinks() {
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            padding: "6px 0",
-            fontSize: 14,
-            fontWeight: 600,
-            color: "var(--theme-elevation-800)",
+            padding: "6px 0 6px 12px", // align text with the nav items (20px)
+            fontSize: 15, // DS text-ds-xs, matching the nav items
+            fontWeight: 700,
+            color: "#0d635d", // brand-link, matching the nav items
             textDecoration: "none",
           }}
         >
