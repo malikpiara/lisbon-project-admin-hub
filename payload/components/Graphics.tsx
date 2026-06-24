@@ -2,46 +2,39 @@
 
 // Brand graphics for the Payload admin (login screen + nav), registered via
 // app/(payload)/cms-admin/importMap.js and referenced in payload.config.ts.
+//
+// Uses the real Lisbon Project marks instead of an "LP" placeholder:
+//  - Logo: the canonical wordmark from /public/lisbon-project-logo.svg.
+//  - Icon: the brand swirl symbol (same path as app/icon.svg), in brand teal.
 
+// Swirl mark — copied from app/icon.svg (viewBox 0 0 112.84 114.6).
+const MARK =
+  "M92.76 114.6H77.41a16.52 16.52 0 0 1-8.85-2.55A246.11 246.11 0 0 1 40.2 91.24C25.6 78.56 18.5 67.9 18.5 58.66 18.5 45.28 29.74 37 40.15 37c6.91 0 12.32 3.42 15.89 6.65A23.12 23.12 0 0 1 72.46 37a22.3 22.3 0 0 1 14.35 5.5 21.06 21.06 0 0 1 7.3 16.15c0 8.86-6.87 19.49-20.41 31.6a5.5 5.5 0 1 1-7.34-8.2C77 72.55 83.11 64 83.11 58.66c0-7.53-6.94-10.66-10.65-10.66a12.9 12.9 0 0 0-11.21 6.64 5.5 5.5 0 0 1-9.58.54S46.89 48 40.15 48c-3.47 0-10.65 2.6-10.65 10.65 0 9.38 18.06 27.1 44.94 44.1a5.57 5.57 0 0 0 3 .84h15.32a4 4 0 0 0 4-3.71l5-59.36a2.07 2.07 0 0 0-1-1.93l-42.52-27a3.63 3.63 0 0 0-3.86 0L12 38.6a2 2 0 0 0-1 1.93l5.26 61.73a5.5 5.5 0 0 1-11 .93L.05 41.46a13 13 0 0 1 6-12.14l42.52-27a14.64 14.64 0 0 1 15.67 0l42.52 27.05a13 13 0 0 1 6 12.14l-5 59.36a15.13 15.13 0 0 1-15 13.73Z";
+
+// Small square mark — collapsed nav + favicon-style slot.
 export function Icon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 22 22" role="img" aria-label="Lisbon Project">
-      <rect width="22" height="22" rx="6" fill="#0D635D" />
-      <text
-        x="11"
-        y="15"
-        textAnchor="middle"
-        fontSize="11"
-        fontWeight="800"
-        fill="#ffffff"
-        fontFamily="system-ui, sans-serif"
-      >
-        LP
-      </text>
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 112.84 114.6"
+      role="img"
+      aria-label="Lisbon Project"
+    >
+      <path d={MARK} fill="#00B6AA" />
     </svg>
   );
 }
 
+// Full lockup — login screen + expanded nav header. Uses the canonical brand
+// asset so it stays in sync with the public site.
 export function Logo() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <svg width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="Lisbon Project">
-        <rect width="40" height="40" rx="11" fill="#0D635D" />
-        <text
-          x="20"
-          y="27"
-          textAnchor="middle"
-          fontSize="18"
-          fontWeight="800"
-          fill="#ffffff"
-          fontFamily="system-ui, sans-serif"
-        >
-          LP
-        </text>
-      </svg>
-      <span style={{ fontSize: 22, fontWeight: 700, color: "#0A2422", letterSpacing: "-0.01em" }}>
-        Lisbon Project
-      </span>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/lisbon-project-logo.svg"
+      alt="Lisbon Project"
+      style={{ height: 30, width: "auto", display: "block" }}
+    />
   );
 }

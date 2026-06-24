@@ -26,6 +26,79 @@
   --color-blue-950: #071817;
 }
 
+/* DS radius scale (app/globals.css: --radius-sm 4 / --radius-md 8 / --radius-lg 16).
+   Note: Payload's scale doesn't map 1:1 onto the DS — `--style-radius-s` is the
+   workhorse (inputs, buttons AND checkboxes all share it, ~100 elements), so we
+   can't give inputs the DS's full 16px without also rounding the checkboxes. We
+   lift the shared token to 8px (a friendly LP step), and the larger tiers to the
+   DS's 12/16px for the surfaces that use them (cards, popups). */
+:root {
+  --style-radius-s: 8px;
+  --style-radius-m: 12px;
+  --style-radius-l: 16px;
+}
+
+/* A whisper of brand mint (brand-100 #F2FCFC) on the page surface so the shell
+   feels like the product. Light mode only — Payload's dark theme keeps its own
+   neutral background. White cards/fields still sit on top for contrast. */
+[data-theme="light"] {
+  --theme-bg: #f4fbfa;
+}
+
+/* Primary actions (Login, Save, Create new, Publish) use the signature green
+   instead of Payload's default charcoal — the strongest "this is ours" signal.
+   The button reads its colours from these custom props (see Button/index.scss). */
+.btn--style-primary {
+  --bg-color: #0d635d;   /* brand-600 — matches the LP logo */
+  --hover-bg: #0a4d48;   /* brand-700 — darken on hover */
+  --color: #ffffff;
+  --hover-color: #ffffff;
+}
+
+/* Secondary buttons → DS button-secondary: white, brand-300 border, teal label. */
+.btn--style-secondary {
+  --color: #0d635d;                       /* brand-600 */
+  --hover-color: #0a4d48;                  /* brand-700 */
+  --btn-border: 2px solid #b3efeb;        /* brand-300 */
+  --hover-btn-border: 2px solid #6adcd5;  /* brand-400 */
+}
+
+/* The "Create new" / list pills → brand mint instead of Payload's flat grey. */
+.btn--style-pill {
+  --bg-color: #d9f7f5;   /* brand-200 */
+  --color: #0a4d48;      /* brand-700 */
+  --hover-bg: #b3efeb;   /* brand-300 */
+}
+
+/* Dashboard collection cards → match the DS card (components/ui/card.tsx):
+   a white surface with a 2px brand-200 mint border and 16px radius, instead of
+   Payload's grey elevation-50 tile with a 1px border. */
+.card {
+  background: #ffffff;            /* --card (bg-secondary / white) */
+  border: 2px solid #d9f7f5;     /* --border = brand-200 mint */
+  border-radius: 16px;           /* DS rounded-lg */
+}
+.card--has-onclick:hover {
+  border-color: #6adcd5;         /* brand-400 — deepen the mint on hover */
+  background: #f2fcfc;           /* brand-100 — faint mint wash */
+}
+
+/* Select fields (react-select) → hover/highlight states use the DS select
+   accent (components/ui/select.tsx): brand-200 mint fill + brand-500 text for
+   the focused option, and a neutral-200 wash on the control. */
+.rs__option--is-focused {
+  background-color: #d9f7f5;     /* --accent = brand-200 (light mint) */
+  color: #1f8e87;                /* --accent-foreground = brand-500 */
+}
+.rs__option--is-selected {
+  background-color: #b3efeb;     /* brand-300 — deeper mint, not Payload's grey */
+  color: #0a4d48;                /* brand-700 */
+}
+.rs__control:hover {
+  border-color: #999999;         /* neutral-500 — darken the border */
+  background-color: #f5f5f5;     /* --neutral-200 */
+}
+
 /* Form controls default to the UA font; make them inherit the brand font
    (Quicksand) applied in app/(payload)/layout.tsx. */
 input,
@@ -33,4 +106,141 @@ button,
 textarea,
 select {
   font-family: inherit;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Sidebar → match the DS team sidebar (mint surface, rounded items, DS icons),
+   and swap Payload's "+" glyph for the DS plus. Icons are masked from the real
+   /public/icons/*.svg files and filled with currentColor so they pick up the
+   nav's teal/active colour.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Mint surface + 2px mint right border, like our DS sidebar. */
+.nav {
+  background: #f2fcfc;
+  border-right: 2px solid #d9f7f5; /* --border (brand-200) */
+}
+
+/* Our DS sidebar shows the active state as a full mint pill, not Payload's
+   left indicator bar — hide it. */
+.nav__link-indicator {
+  display: none;
+}
+
+/* Group labels → uppercase muted, matching the DS sidebar's group headers. */
+.nav-group__label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 700;
+  color: #999999; /* neutral-500 */
+}
+
+/* Nav links → rounded pills, teal label, mint hover; active = mint + primary teal. */
+.nav__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 8px;
+  border-radius: 16px; /* DS rounded-lg */
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d635d; /* brand-link */
+}
+.nav__link:hover {
+  background: rgba(217, 247, 245, 0.6); /* bg-secondary/60 mint */
+}
+/* The active item is rendered as a <div> (no href) — style it mint + primary teal. */
+div.nav__link {
+  background: #d9f7f5; /* mint */
+  color: #1f8e87; /* primary teal */
+}
+
+/* DS icon before each collection link — target the stable id so the active
+   <div> keeps its icon too. Masks the real /public/icons SVG with currentColor. */
+#nav-services::before,
+#nav-topics::before,
+#nav-quick-access::before,
+#nav-users::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--lp-icon) center / contain no-repeat;
+  mask: var(--lp-icon) center / contain no-repeat;
+}
+#nav-services {
+  --lp-icon: url("/icons/checklist.svg");
+}
+#nav-topics {
+  --lp-icon: url("/icons/notes.svg");
+}
+#nav-quick-access {
+  --lp-icon: url("/icons/star.svg");
+}
+#nav-users {
+  --lp-icon: url("/icons/users-group.svg");
+}
+
+/* Replace Payload's "+" with the DS plus icon everywhere it appears. */
+.icon--plus > * {
+  display: none;
+}
+.icon--plus {
+  background-color: currentColor;
+  -webkit-mask: url("/icons/plus.svg") center / contain no-repeat;
+  mask: url("/icons/plus.svg") center / contain no-repeat;
+}
+
+/* Dashboard collection cards → DS card-service treatment (components/ui/card.tsx
+   CardService): the create control becomes a mint icon tile with the collection's
+   OWN DS icon (not a bare "+"), sitting to the left of the title. */
+.card.card--has-onclick {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+}
+.card.card--has-onclick .card__title {
+  width: auto;
+}
+.card.card--has-onclick .card__actions {
+  order: -1; /* icon tile before the title, like CardService */
+  margin: 0;
+}
+.card.card--has-onclick .card__actions .btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  box-shadow: none;
+  border-radius: 16px; /* DS rounded-lg */
+  background: #f2fcfc; /* brand-100 mint tile */
+}
+.card.card--has-onclick .card__actions .btn--icon:hover {
+  background: #d9f7f5; /* brand-200 */
+}
+.card.card--has-onclick .icon--plus {
+  width: 24px;
+  height: 24px;
+  background-color: #1f8e87; /* primary teal */
+}
+.card-services .icon--plus {
+  -webkit-mask: url("/icons/checklist.svg") center / contain no-repeat;
+  mask: url("/icons/checklist.svg") center / contain no-repeat;
+}
+.card-topics .icon--plus {
+  -webkit-mask: url("/icons/notes.svg") center / contain no-repeat;
+  mask: url("/icons/notes.svg") center / contain no-repeat;
+}
+.card-quick-access .icon--plus {
+  -webkit-mask: url("/icons/star.svg") center / contain no-repeat;
+  mask: url("/icons/star.svg") center / contain no-repeat;
+}
+.card-users .icon--plus {
+  -webkit-mask: url("/icons/users-group.svg") center / contain no-repeat;
+  mask: url("/icons/users-group.svg") center / contain no-repeat;
 }

@@ -1,7 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { sqliteAdapter } from "@payloadcms/db-sqlite";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
@@ -19,6 +19,10 @@ export default buildConfig({
   routes: { admin: "/cms-admin" },
   admin: {
     user: Users.slug,
+    // The design system is light-only, so lock the admin to light too. Otherwise
+    // it follows the OS into Payload's unbranded dark theme (our branding in
+    // app/(payload)/custom.css is scoped to [data-theme="light"]).
+    theme: "light",
     meta: {
       title: "Lisbon Project",
       titleSuffix: " · Lisbon Project",
@@ -29,13 +33,18 @@ export default buildConfig({
         Logo: "/payload/components/Graphics#Logo",
         Icon: "/payload/components/Graphics#Icon",
       },
+      // "Admin Hub" header at the top of the nav (mirrors the DS sidebar header).
+      beforeNavLinks: ["/payload/components/NavHeader#NavHeader"],
+      // Reverse links back to the DS team workspace (/insights, /admin). The
+      // admin can't share the DS sidebar, so this bridges navigation both ways.
+      afterNavLinks: ["/payload/components/NavLinks#NavLinks"],
     },
   },
   collections: [Services, Topics, QuickAccess, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
-  db: sqliteAdapter({
-    client: { url: process.env.DATABASE_URI || "file:./payload.db" },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URI },
   }),
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
 });
