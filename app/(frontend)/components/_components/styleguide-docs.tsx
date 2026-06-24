@@ -58,6 +58,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AllContacts } from "@/components/home/all-contacts";
+import { TopicsViewedChart } from "@/components/analytics/topics-viewed-chart";
 import { Hero } from "@/components/home/hero";
 import { MapVisit } from "@/components/home/map-visit";
 import { QuickAccess } from "@/components/home/quick-access";
@@ -352,6 +353,66 @@ function TableExample() {
           <TableCell>Legal aid</TableCell>
           <TableCell>Joao Pereira</TableCell>
           <TableCell><Tag>Pending</Tag></TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+}
+
+// Two-column reference layout: a label/category column paired with a bulleted
+// content column. Adapted from the "Documents Required" (Article 98) layout —
+// the kind of dense reference content that doesn't fit a flat data grid.
+function ReferenceTableExample() {
+  return (
+    <Table className="min-w-[680px]">
+      <TableHeader>
+        <TableRow>
+          <TableHead
+            colSpan={2}
+            className="h-auto whitespace-normal bg-secondary/50 py-3 text-center text-ds-s font-bold uppercase tracking-wide text-primary"
+          >
+            Documents Required
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell className="w-1/4 border-r-2 border-border px-3 py-4 align-top font-bold whitespace-normal text-foreground">
+            Article 98 n.1 — family outside national territory
+          </TableCell>
+          <TableCell className="px-3 py-4 align-top whitespace-normal text-brand-deep">
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>Residence permit of the individual residing in Portugal.</li>
+              <li>Authenticated copy of the passport of the family member to be reunited.</li>
+              <li>Properly authenticated evidence of the claimed family ties.</li>
+              <li>Proof of means of subsistence.</li>
+              <li>Criminal record from the country of nationality, duly authenticated.</li>
+            </ul>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell className="w-1/4 border-r-2 border-border px-3 py-4 align-top font-bold whitespace-normal text-foreground">
+            Article 98 n.2 — family in national territory
+          </TableCell>
+          <TableCell className="px-3 py-4 align-top whitespace-normal text-brand-deep">
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>Residence permit of the individual residing in national territory.</li>
+              <li>Valid passport or another valid travel document.</li>
+              <li>Proof of legal entry into Portugal.</li>
+              <li>
+                Declaration of the residential address. The form can be found{" "}
+                <a href="#" className="font-bold text-primary underline">
+                  here
+                </a>
+                .
+                <ul className="mt-1.5 list-[circle] space-y-1.5 pl-5">
+                  <li>If you are the owner, provide a land registry certificate.</li>
+                  <li>If you are a tenant, a declaration from the landlord or hosting entity.</li>
+                </ul>
+              </li>
+              <li>Proof of means of subsistence.</li>
+            </ul>
+          </TableCell>
         </TableRow>
       </TableBody>
     </Table>
@@ -1076,7 +1137,15 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       "Rows and headers use 2px DS dividers.",
       "Set min-width on the table for mobile scrollers.",
     ],
-    examples: [],
+    examples: [
+      {
+        title: "Two-column reference table",
+        description:
+          "A bold label column paired with a bulleted content column — for documents-required and comparison layouts. Supports nested bullets and inline links.",
+        preview: <ReferenceTableExample />,
+        fullWidth: true,
+      },
+    ],
     api: [
       { name: "className", type: "string", defaultValue: "-", description: "Use min-w values for predictable mobile scrolling." },
     ],
@@ -1266,6 +1335,27 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     examples: [],
     api: [
       { name: "children", type: "none", defaultValue: "-", description: "Footer is currently static." },
+    ],
+  },
+  {
+    slug: "topics-viewed-chart",
+    title: "Topics Viewed Chart",
+    category: "System components",
+    description: "Horizontal bar chart of topic views on the DS Card, built with the shadcn chart primitives in the brand primary colour. Sample data shown; pass `data` for live counts.",
+    preview: <TopicsViewedChart />,
+    installation: "Import the analytics chart and pass topic-view data.",
+    importCode: `import { TopicsViewedChart } from "@/components/analytics/topics-viewed-chart"`,
+    usage: "Use on the protected team insights route; feed it counts from the `topic_viewed` PostHog insight.",
+    composition: [
+      "Bars use var(--primary) (DS teal); in-bar labels use --primary-foreground (white).",
+      "Wrapped in the DS Card; chart rendered via @/components/ui/chart (recharts).",
+      "Reuses the `topic_viewed` event taxonomy — see docs/ANALYTICS.md.",
+    ],
+    examples: [],
+    api: [
+      { name: "data", type: "{ topic: string; views: number }[]", defaultValue: "SAMPLE_DATA", description: "Topic view counts; wire to the topic_viewed insight for live data." },
+      { name: "title", type: "string", defaultValue: '"Which topics have been seen the most?"', description: "Card title." },
+      { name: "description", type: "string", defaultValue: '"Unique views per topic · last 30 days"', description: "Card subtitle." },
     ],
   },
 ];

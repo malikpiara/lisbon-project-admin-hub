@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
+  Database,
   ExternalLink,
   LayoutDashboard,
   ListChecks,
@@ -12,13 +14,22 @@ import {
 import { SaveStatus } from "@/components/admin/save-status";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
+// Shared sidebar for the team workspace — used by both /admin (content editor)
+// and /insights (analytics). The Payload CMS lives in its own app at /cms-admin
+// (separate root layout, no design system), so it's a link out, not a shared route.
+const navGroups = [
   {
-    href: "/admin/services",
-    label: "Services & Information",
-    icon: ListChecks,
+    title: "Content",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
+      { href: "/admin/services", label: "Services & Information", icon: ListChecks },
+      { href: "/cms-admin", label: "CMS (Payload)", icon: Database },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [{ href: "/insights", label: "Insights", icon: BarChart3 }],
   },
 ];
 
@@ -31,38 +42,44 @@ export function AdminSidebar() {
           Admin Hub
         </p>
         <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-          Content editor
+          Team workspace
         </p>
       </div>
 
-      <nav className="space-y-1">
-        {nav.map((item) => {
-          const Icon = item.icon;
-          const active =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-ds-xs font-bold transition-colors",
-                active
-                  ? "bg-secondary text-primary"
-                  : "text-brand-link hover:bg-secondary/60"
-              )}
-            >
-              <Icon className="size-4" strokeWidth={2} />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="space-y-5">
+        {navGroups.map((group) => (
+          <div key={group.title} className="space-y-1">
+            <p className="px-3 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
+              {group.title}
+            </p>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const active = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-ds-xs font-bold transition-colors",
+                    active
+                      ? "bg-secondary text-primary"
+                      : "text-brand-link hover:bg-secondary/60"
+                  )}
+                >
+                  <Icon className="size-4" strokeWidth={2} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="mt-auto space-y-3 px-2 pt-6">
-        <SaveStatus />
+        {pathname.startsWith("/admin") ? <SaveStatus /> : null}
         <Link
           href="/"
           target="_blank"
