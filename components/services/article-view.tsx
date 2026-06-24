@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
 import { IconInfo } from "@/components/icons/ds-icons";
 
@@ -24,7 +26,9 @@ type ArticleSection = {
   lead: string;
   body: string;
   bullets: string;
+  ordered?: boolean;
   cta: string;
+  ctaHref?: string;
 };
 type Faq = { question: string; answer: string };
 type Article = {
@@ -59,6 +63,19 @@ export function ArticleView({
   };
   const service = data.services.find((s) => s.slug === slug);
   const topic = service?.topics.find((t) => t.slug === topicSlug);
+
+  // Analytics: `topic_viewed` (object-action, past tense) — the "information"
+  // half of "services & information people visit most". See docs/ANALYTICS.md.
+  const posthog = usePostHog();
+  useEffect(() => {
+    if (!service || !topic) return;
+    posthog?.capture("topic_viewed", {
+      service_slug: service.slug,
+      service_name: service.title,
+      topic_slug: topic.slug,
+      topic_name: topic.title,
+    });
+  }, [service?.slug, topic?.slug, posthog]);
 
   if (!service || !topic) {
     if (!hydrated) return null;
@@ -122,6 +139,10 @@ export function ArticleView({
             const paragraphs = splitParagraphs(s.body);
             const bullets = splitLines(s.bullets);
             const panel = index % 2 === 0;
+            const ListTag = s.ordered ? "ol" : "ul";
+            const listClass = s.ordered ? "list-decimal" : "list-disc";
+            const ctaHref = s.ctaHref?.trim() || `/services/${service.slug}`;
+            const ctaExternal = /^https?:/i.test(ctaHref);
             return (
               <article
                 key={`${s.heading}-${index}`}
@@ -151,21 +172,32 @@ export function ArticleView({
                         <p key={i}>{p}</p>
                       ))}
                       {bullets.length ? (
-                        <ul className="list-disc space-y-1 pl-6">
+                        <ListTag className={cn(listClass, "space-y-1 pl-6")}>
                           {bullets.map((b, i) => (
                             <li key={i}>{b}</li>
                           ))}
-                        </ul>
+                        </ListTag>
                       ) : null}
                     </div>
                   ) : null}
                   {s.cta ? (
-                    <Link
-                      href={`/services/${service.slug}`}
-                      className={buttonVariants({ className: "mt-6 w-fit" })}
-                    >
-                      {s.cta}
-                    </Link>
+                    ctaExternal ? (
+                      <a
+                        href={ctaHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonVariants({ className: "mt-6 w-fit" })}
+                      >
+                        {s.cta}
+                      </a>
+                    ) : (
+                      <Link
+                        href={ctaHref}
+                        className={buttonVariants({ className: "mt-6 w-fit" })}
+                      >
+                        {s.cta}
+                      </Link>
+                    )
                   ) : null}
                 </div>
               </article>

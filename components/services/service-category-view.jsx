@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
 import { ServiceHero } from "@/components/services/service-hero";
 import { TopicsGrid } from "@/components/services/topics-grid";
@@ -11,6 +13,18 @@ import { getServiceIconKey } from "@/lib/service-icons";
 export function ServiceCategoryView({ slug }) {
   const { data, hydrated } = useAdmin();
   const service = data.services.find((s) => s.slug === slug);
+
+  // Analytics: `service_viewed` (object-action, past tense) — the semantic event
+  // for "which services people visit", robust to URL changes (no $pathname
+  // parsing). No-op until PostHog is configured. See docs/ANALYTICS.md.
+  const posthog = usePostHog();
+  useEffect(() => {
+    if (!service) return;
+    posthog?.capture("service_viewed", {
+      service_slug: service.slug,
+      service_name: service.title,
+    });
+  }, [service?.slug, posthog]);
 
   if (!service) {
     if (!hydrated) return null;

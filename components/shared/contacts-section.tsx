@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { usePostHog } from "posthog-js/react";
 import { buttonVariants } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,26 @@ export function ContactsSection({
       );
     });
   }, [contacts, query, category]);
+
+  // Analytics: `contacts_searched` (object-action, past tense) — what people search
+  // for in the contacts table. Debounced 800ms so we log completed searches, not
+  // keystrokes. `results_count` surfaces zero-result searches — the gaps worth
+  // learning from. No-op until PostHog is configured (usePostHog() is null without
+  // the provider). See docs/ANALYTICS.md for the tracking plan.
+  const posthog = usePostHog();
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) return;
+    const timer = setTimeout(() => {
+      posthog?.capture("contacts_searched", {
+        search_query: q.toLowerCase(),
+        results_count: filtered.length,
+        category_filter: category,
+        list_name: title,
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [query, category, filtered.length, title, posthog]);
 
   // Base UI <SelectValue> resolves the label from this value→label map;
   // without it the trigger shows the raw value ("all").
