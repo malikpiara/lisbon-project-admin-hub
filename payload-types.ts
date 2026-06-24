@@ -71,6 +71,7 @@ export interface Config {
     topics: Topic;
     'quick-access': QuickAccess;
     users: User;
+    'audit-log': AuditLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
     topics: TopicsSelect<false> | TopicsSelect<true>;
     'quick-access': QuickAccessSelect<false> | QuickAccessSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -189,8 +191,36 @@ export interface Service {
    * Order in the home grid
    */
   order?: number | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -226,7 +256,15 @@ export interface Topic {
                 id?: string | null;
               }[]
             | null;
+          /**
+           * Render the bullet list as a numbered list (1, 2, 3)
+           */
+          ordered?: boolean | null;
           cta?: string | null;
+          /**
+           * /path internal or https://… external; blank links to the category page
+           */
+          ctaHref?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -239,6 +277,8 @@ export interface Topic {
         }[]
       | null;
   };
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -253,34 +293,30 @@ export interface QuickAccess {
   href: string;
   external?: boolean | null;
   order?: number | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "audit-log".
  */
-export interface User {
+export interface AuditLog {
   id: number;
-  name?: string | null;
+  action: 'created' | 'updated' | 'deleted';
+  /**
+   * services | topics | quick-access
+   */
+  collectionSlug: string;
+  docId?: string | null;
+  /**
+   * Title snapshot — survives even if the doc is deleted
+   */
+  docTitle?: string | null;
+  user?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -321,6 +357,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'audit-log';
+        value: number | AuditLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -400,6 +440,8 @@ export interface ServicesSelect<T extends boolean = true> {
         id?: T;
       };
   order?: T;
+  createdBy?: T;
+  updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -430,7 +472,9 @@ export interface TopicsSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
+              ordered?: T;
               cta?: T;
+              ctaHref?: T;
               id?: T;
             };
         faqLead?: T;
@@ -442,6 +486,8 @@ export interface TopicsSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  createdBy?: T;
+  updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -455,6 +501,8 @@ export interface QuickAccessSelect<T extends boolean = true> {
   href?: T;
   external?: T;
   order?: T;
+  createdBy?: T;
+  updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -480,6 +528,19 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  action?: T;
+  collectionSlug?: T;
+  docId?: T;
+  docTitle?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

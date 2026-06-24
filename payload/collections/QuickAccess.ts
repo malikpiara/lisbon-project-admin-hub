@@ -1,5 +1,7 @@
 import type { CollectionConfig } from "payload";
 
+import { auditFields } from "../fields/audit";
+
 // Mirrors quickAccess[] in lib/admin-default-data.js.
 export const QuickAccess: CollectionConfig = {
   slug: "quick-access",
@@ -22,5 +24,6 @@ export const QuickAccess: CollectionConfig = {
       label: "Opens an external site",
     },
     { name: "order", type: "number" },
+    ...auditFields,
   ],
 };

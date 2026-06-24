@@ -9,6 +9,7 @@ import { Services } from "./payload/collections/Services";
 import { Topics } from "./payload/collections/Topics";
 import { QuickAccess } from "./payload/collections/QuickAccess";
 import { Users } from "./payload/collections/Users";
+import { AuditLog } from "./payload/collections/AuditLog";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -33,6 +34,8 @@ export default buildConfig({
         Logo: "/payload/components/Graphics#Logo",
         Icon: "/payload/components/Graphics#Icon",
       },
+      // Heading + subtitle above the login form (mirrors the DS admin header).
+      beforeLogin: ["/payload/components/LoginIntro#LoginIntro"],
       // "Admin Hub" header at the top of the nav (mirrors the DS sidebar header).
       beforeNavLinks: ["/payload/components/NavHeader#NavHeader"],
       // Reverse links back to the DS team workspace (/insights, /admin). The
@@ -40,7 +43,7 @@ export default buildConfig({
       afterNavLinks: ["/payload/components/NavLinks#NavLinks"],
     },
   },
-  collections: [Services, Topics, QuickAccess, Users],
+  collections: [Services, Topics, QuickAccess, Users, AuditLog],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   db: postgresAdapter({

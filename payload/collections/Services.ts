@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 
 import { iconOptions, toneOptions } from "../../lib/admin-default-data";
+import { auditFields } from "../fields/audit";
 
 // Mirrors a service category from lib/admin-default-data.js. Contacts are
 // embedded (no page of their own); topics live in their own collection and
@@ -8,6 +9,11 @@ import { iconOptions, toneOptions } from "../../lib/admin-default-data";
 // the string lists (intro, categoryFilters) become arrays of { text }/{ value }.
 export const Services: CollectionConfig = {
   slug: "services",
+  // PROTOTYPE (#2): full version history. Payload snapshots the whole doc on
+  // every save → enables the version timeline + one-click restore in the editor.
+  // Capped per doc to bound storage. Enabled on Services only for now to evaluate
+  // the UX before rolling out to Topics/Quick Access.
+  versions: { maxPerDoc: 25 },
   // Public website content: anyone can read; writes still require auth.
   access: { read: () => true },
   labels: { singular: "Service", plural: "Services" },
@@ -75,5 +81,6 @@ export const Services: CollectionConfig = {
       type: "number",
       admin: { description: "Order in the home grid" },
     },
+    ...auditFields,
   ],
 };

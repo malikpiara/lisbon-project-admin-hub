@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 
 import { toneOptions } from "../../lib/admin-default-data";
+import { auditFields } from "../fields/audit";
 
 // Mirrors a service.topics[] entry, with the article embedded as a group.
 // `body` is a plain textarea (blank-line paragraphs) to match the existing
@@ -65,7 +66,24 @@ export const Topics: CollectionConfig = {
               labels: { singular: "Bullet", plural: "Bullets" },
               fields: [{ name: "text", type: "text", required: true }],
             },
+            {
+              name: "ordered",
+              type: "checkbox",
+              defaultValue: false,
+              admin: {
+                description: "Render the bullet list as a numbered list (1, 2, 3)",
+              },
+            },
             { name: "cta", type: "text", label: "CTA button label" },
+            {
+              name: "ctaHref",
+              type: "text",
+              label: "CTA button link",
+              admin: {
+                description:
+                  "/path internal or https://… external; blank links to the category page",
+              },
+            },
           ],
         },
         { name: "faqLead", type: "textarea" },
@@ -80,5 +98,6 @@ export const Topics: CollectionConfig = {
         },
       ],
     },
+    ...auditFields,
   ],
 };
