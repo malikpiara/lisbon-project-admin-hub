@@ -1,12 +1,30 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Copy } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { DeleteButton } from "@/components/admin/delete-button";
+
+// Compact ghost icon button for row actions (reorder / duplicate). Visible
+// inline rather than hidden in a "⋮" popup like Payload — recognition over
+// recall (Nielsen #6), and keyboard-accessible by default.
+function RowAction({ icon: Icon, label, onClick, disabled }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+    >
+      <Icon className="size-4" strokeWidth={2} />
+    </button>
+  );
+}
 
 // A titled editor section with an optional count pill and right-aligned action.
 export function Section({ title, count, description, action, children }) {
@@ -39,6 +57,11 @@ export function EditorRow({
   subtitle,
   defaultOpen,
   onDelete,
+  onMoveUp,
+  onMoveDown,
+  onDuplicate,
+  isFirst,
+  isLast,
   children,
 }) {
   return (
@@ -60,7 +83,28 @@ export function EditorRow({
             ) : null}
           </span>
         </CollapsibleTrigger>
-        {onDelete ? <DeleteButton onConfirm={onDelete} /> : null}
+        <div className="flex shrink-0 items-center gap-0.5">
+          {onMoveUp ? (
+            <RowAction
+              icon={ArrowUp}
+              label="Move up"
+              onClick={onMoveUp}
+              disabled={isFirst}
+            />
+          ) : null}
+          {onMoveDown ? (
+            <RowAction
+              icon={ArrowDown}
+              label="Move down"
+              onClick={onMoveDown}
+              disabled={isLast}
+            />
+          ) : null}
+          {onDuplicate ? (
+            <RowAction icon={Copy} label="Duplicate" onClick={onDuplicate} />
+          ) : null}
+          {onDelete ? <DeleteButton onConfirm={onDelete} /> : null}
+        </div>
       </div>
       <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
         <div className="border-t-2 border-border p-4">{children}</div>

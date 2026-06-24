@@ -21,11 +21,19 @@ export function Field({
   textarea = false,
   rows = 3,
   hint,
+  required = false,
   className = "",
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className={labelClass}>{label}</span>
+      <span className={labelClass}>
+        {label}
+        {required ? (
+          <span className="ml-0.5 text-destructive" aria-hidden>
+            *
+          </span>
+        ) : null}
+      </span>
       {textarea ? (
         <Textarea
           value={value ?? ""}

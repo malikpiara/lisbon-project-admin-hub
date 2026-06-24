@@ -1,0 +1,491 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Contact,
+  ExternalLink,
+  FileText,
+  History,
+  Plus,
+  RotateCcw,
+} from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Field } from "@/components/admin/field";
+import { IconPicker } from "@/components/admin/icon-picker";
+import { DeleteButton } from "@/components/admin/delete-button";
+import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
+import {
+  deleteService,
+  restoreServiceVersion,
+  saveService,
+} from "../actions";
+import { createTopic } from "../../topics/actions";
+
+// Map Payload's stored shape <-> the editor draft. The string lists are arrays
+// of { text } in Payload (a named subfield is required); the editor treats intro
+// as a blank-line-separated textarea, like the /admin prototype.
+function fromPayload(s) {
+  return {
+    title: s.title ?? "",
+    breadcrumb: s.breadcrumb ?? "",
+    shortDescription: s.shortDescription ?? "",
+    intro: (s.intro ?? []).map((p) => p.text).join("\n\n"),
+    iconKey: s.iconKey ?? "",
+    contactsTitle: s.contactsTitle ?? "",
+    contactsSubtitle: s.contactsSubtitle ?? "",
+    contacts: (s.contacts ?? []).map((c) => ({
+      organization: c.organization ?? "",
+      service: c.service ?? "",
+      phone: c.phone ?? "",
+      email: c.email ?? "",
+      category: c.category ?? "",
+    })),
+  };
+}
+
+function toPayload(d) {
+  return {
+    title: d.title,
+    breadcrumb: d.breadcrumb,
+    shortDescription: d.shortDescription,
+    intro: d.intro
+      .split(/\n\s*\n/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .map((text) => ({ text })),
+    iconKey: d.iconKey,
+    contactsTitle: d.contactsTitle,
+    contactsSubtitle: d.contactsSubtitle,
+    contacts: d.contacts,
+  };
+}
+
+export function ServiceEditor({ service, topics, audit, versions = [] }) {
+  const [draft, setDraft] = useState(() => fromPayload(service));
+  const [status, setStatus] = useState("saved"); // saved | dirty | saving | error
+  const [isPending, startTransition] = useTransition();
+
+  const set = (patch) => {
+    setDraft((d) => ({ ...d, ...patch }));
+    setStatus("dirty");
+  };
+  const setContact = (i, patch) => {
+    setDraft((d) => ({
+      ...d,
+      contacts: d.contacts.map((c, idx) => (idx === i ? { ...c, ...patch } : c)),
+    }));
+    setStatus("dirty");
+  };
+  const addContact = () => {
+    setDraft((d) => ({
+      ...d,
+      contacts: [
+        ...d.contacts,
+        { organization: "New organization", service: "", phone: "", email: "", category: "" },
+      ],
+    }));
+    setStatus("dirty");
+  };
+  const removeContact = (i) => {
+    setDraft((d) => ({ ...d, contacts: d.contacts.filter((_, idx) => idx !== i) }));
+    setStatus("dirty");
+  };
+  const moveContact = (i, dir) => {
+    setDraft((d) => {
+      const arr = [...d.contacts];
+      const j = i + dir;
+      if (j < 0 || j >= arr.length) return d;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { ...d, contacts: arr };
+    });
+    setStatus("dirty");
+  };
+  const duplicateContact = (i) => {
+    setDraft((d) => {
+      const arr = [...d.contacts];
+      arr.splice(i + 1, 0, { ...arr[i] });
+      return { ...d, contacts: arr };
+    });
+    setStatus("dirty");
+  };
+
+  const save = () =>
+    startTransition(async () => {
+      setStatus("saving");
+      try {
+        await saveService(service.id, toPayload(draft));
+        setStatus("saved");
+      } catch {
+        setStatus("error");
+      }
+    });
+
+  // PROTOTYPE (#2): restore a past version, then reload so the editor re-reads
+  // the restored document.
+  const restore = (versionId) =>
+    startTransition(async () => {
+      await restoreServiceVersion(versionId, service.id);
+      window.location.reload();
+    });
+
+  const Icon = getServiceIcon(getServiceIconKey(service.slug, draft.iconKey));
+
+  return (
+    <div>
+      <UnsavedChangesGuard when={status === "dirty"} />
+      <div className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto max-w-5xl px-8 py-4">
+          <Link
+            href="/studio/services"
+            className="inline-flex items-center gap-1.5 text-ds-xxs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" />
+            All categories
+          </Link>
+
+          <div className="mt-3 flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                <Icon className="size-5" strokeWidth={1.9} />
+              </span>
+              <div className="min-w-0">
+                <h1 className="truncate font-heading text-ds-xl font-bold text-foreground">
+                  {draft.title || "Untitled category"}
+                </h1>
+                <p className="truncate font-mono text-ds-xxs text-muted-foreground">
+                  /services/{service.slug}
+                </p>
+                {audit && (audit.modified || audit.created) ? (
+                  <p className="text-ds-xxs font-medium text-muted-foreground">
+                    {audit.modified ? <>Last modified {audit.modified}</> : null}
+                    {audit.modified && audit.created ? " · " : null}
+                    {audit.created ? <>Created {audit.created}</> : null}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <SaveState status={status} />
+              <Button
+                size="sm"
+                onClick={save}
+                disabled={status === "saved" || status === "saving" || isPending}
+              >
+                Save
+              </Button>
+              <Link
+                href={`/services/${service.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ variant: "secondary", size: "sm" })}
+              >
+                View on site
+                <ExternalLink className="size-3.5" />
+              </Link>
+              <DeleteButton
+                onConfirm={() =>
+                  startTransition(async () => {
+                    await deleteService(service.id);
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-8 py-10">
+        <Section
+          title="Basics"
+          description="How this category appears on the home grid and its own page."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Title"
+              required
+              value={draft.title}
+              onChange={(v) => set({ title: v })}
+              hint="Shown on the home grid card and the category page."
+            />
+            <Field
+              label="Breadcrumb label"
+              value={draft.breadcrumb}
+              onChange={(v) => set({ breadcrumb: v })}
+              hint="Short label for the breadcrumb trail."
+            />
+            <Field
+              className="sm:col-span-2"
+              label="Short description"
+              value={draft.shortDescription}
+              onChange={(v) => set({ shortDescription: v })}
+              textarea
+              rows={2}
+              hint="Copy for the home grid card."
+            />
+            <Field
+              className="sm:col-span-2"
+              label="Intro paragraphs"
+              value={draft.intro}
+              onChange={(v) => set({ intro: v })}
+              textarea
+              rows={4}
+              hint="Paragraphs separated by a blank line."
+            />
+            <IconPicker
+              className="sm:col-span-2"
+              label="Icon"
+              value={draft.iconKey}
+              onChange={(v) => set({ iconKey: v })}
+            />
+          </div>
+        </Section>
+
+        <Section
+          title="Contacts page header"
+          description="Heading shown above the contacts table on this category's page."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Section title"
+              value={draft.contactsTitle}
+              onChange={(v) => set({ contactsTitle: v })}
+            />
+            <Field
+              label="Section subtitle"
+              value={draft.contactsSubtitle}
+              onChange={(v) => set({ contactsSubtitle: v })}
+            />
+          </div>
+        </Section>
+
+        <Section
+          title="Topics"
+          count={topics.length}
+          description="Each topic is an article on this category's page. Open one to edit its content."
+          action={
+            <form action={createTopic.bind(null, service.id)}>
+              <Button size="sm" type="submit">
+                <Plus className="size-3.5" />
+                Add topic
+              </Button>
+            </form>
+          }
+        >
+          {topics.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              label="No topics yet"
+              hint="Topics become the article cards on this category's page."
+            />
+          ) : (
+            <div className="space-y-2">
+              {topics.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/studio/topics/${t.id}`}
+                  className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-ds-xs font-bold text-foreground">
+                      {t.title || "Untitled topic"}
+                    </span>
+                    {t.description ? (
+                      <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
+                        {t.description}
+                      </span>
+                    ) : null}
+                  </span>
+                  <ChevronRight className="ml-auto size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section
+          title="Contacts"
+          count={draft.contacts.length}
+          action={
+            <Button size="sm" onClick={addContact}>
+              <Plus className="size-3.5" />
+              Add contact
+            </Button>
+          }
+        >
+          {draft.contacts.length === 0 ? (
+            <EmptyState
+              icon={Contact}
+              label="No contacts yet"
+              hint="Contacts appear in the table on this category's page."
+            />
+          ) : (
+            <div className="space-y-2">
+              {draft.contacts.map((contact, i) => (
+                <EditorRow
+                  key={i}
+                  title={contact.organization || "New organization"}
+                  subtitle={[contact.category, contact.service]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  defaultOpen={contact.organization === "New organization"}
+                  onDelete={() => removeContact(i)}
+                  onMoveUp={() => moveContact(i, -1)}
+                  onMoveDown={() => moveContact(i, 1)}
+                  onDuplicate={() => duplicateContact(i)}
+                  isFirst={i === 0}
+                  isLast={i === draft.contacts.length - 1}
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field
+                      label="Organization"
+                      required
+                      value={contact.organization}
+                      onChange={(v) => setContact(i, { organization: v })}
+                    />
+                    <Field
+                      label="Category"
+                      value={contact.category}
+                      onChange={(v) => setContact(i, { category: v })}
+                    />
+                    <Field
+                      className="sm:col-span-2"
+                      label="Service description"
+                      value={contact.service}
+                      onChange={(v) => setContact(i, { service: v })}
+                    />
+                    <Field
+                      label="Phone"
+                      value={contact.phone}
+                      onChange={(v) => setContact(i, { phone: v })}
+                    />
+                    <Field
+                      label="Email"
+                      type="email"
+                      value={contact.email}
+                      onChange={(v) => setContact(i, { email: v })}
+                    />
+                  </div>
+                </EditorRow>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section
+          title="Version history"
+          count={versions.length}
+          description="Every save is snapshotted. Restore brings a past version back as the current content."
+        >
+          {versions.length === 0 ? (
+            <EmptyState
+              icon={History}
+              label="No versions yet"
+              hint="Each save will appear here as a restorable snapshot."
+            />
+          ) : (
+            <div className="space-y-2">
+              {versions.map((v, i) => (
+                <div
+                  key={v.id}
+                  className="rounded-lg border-2 border-border bg-card px-4 py-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-ds-xs font-bold text-foreground">
+                        {v.at}
+                        {i === 0 ? (
+                          <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
+                            current
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
+                        by {v.who}
+                      </p>
+                    </div>
+                    {i === 0 ? null : (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => restore(v.id)}
+                        disabled={isPending}
+                      >
+                        <RotateCcw className="size-3.5" />
+                        Restore
+                      </Button>
+                    )}
+                  </div>
+                  <VersionChanges changes={v.changes} />
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+function SaveState({ status }) {
+  const map = {
+    saved: { label: "Saved", cls: "text-muted-foreground" },
+    dirty: { label: "Unsaved changes", cls: "text-brand-link" },
+    saving: { label: "Saving…", cls: "text-muted-foreground" },
+    error: { label: "Save failed — retry", cls: "text-destructive" },
+  };
+  const s = map[status] ?? map.saved;
+  return <span className={`text-ds-xxs font-medium ${s.cls}`}>{s.label}</span>;
+}
+
+function clip(value) {
+  return value.length > 48 ? `${value.slice(0, 47)}…` : value;
+}
+
+// What a save changed — the diff that makes the version history actually useful.
+function VersionChanges({ changes }) {
+  if (changes === null) {
+    return (
+      <p className="mt-2 border-t-2 border-border pt-2 text-ds-xxs font-medium text-muted-foreground">
+        First tracked version.
+      </p>
+    );
+  }
+  if (changes.length === 0) {
+    return (
+      <p className="mt-2 border-t-2 border-border pt-2 text-ds-xxs font-medium text-muted-foreground">
+        No content changes.
+      </p>
+    );
+  }
+  return (
+    <ul className="mt-2 space-y-1 border-t-2 border-border pt-2">
+      {changes.map((c, ci) => (
+        <li
+          key={ci}
+          className="text-ds-xxs font-medium leading-relaxed text-muted-foreground"
+        >
+          <span className="font-bold text-foreground">{c.label}:</span>{" "}
+          {c.from != null ? (
+            <>
+              <span className="rounded bg-destructive/10 px-1 text-destructive line-through">
+                {clip(c.from) || "(empty)"}
+              </span>{" "}
+              &rarr;{" "}
+              <span className="rounded bg-secondary px-1 text-primary">
+                {clip(c.to) || "(empty)"}
+              </span>
+            </>
+          ) : (
+            <span className="text-foreground">{c.to}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
