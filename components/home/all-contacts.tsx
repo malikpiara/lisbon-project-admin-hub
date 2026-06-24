@@ -18,14 +18,16 @@ export function AllContacts() {
     data.services[0];
 
   return (
-    <ContactsSection
-      title="All Contacts"
-      subtitle={
-        service?.contactsSubtitle ??
-        "Key contact information for family and childcare services in Lisbon"
-      }
-      contacts={service?.contacts ?? []}
-      categoryFilters={service?.categoryFilters ?? []}
-    />
+    <section id="contacts" className="scroll-mt-24">
+      <ContactsSection
+        title="All Contacts"
+        subtitle={
+          service?.contactsSubtitle ??
+          "Key contact information for family and childcare services in Lisbon"
+        }
+        contacts={service?.contacts ?? []}
+        categoryFilters={service?.categoryFilters ?? []}
+      />
+    </section>
   );
 }

@@ -10,7 +10,7 @@ export function ServicesGrid() {
   const services = data.services;
 
   return (
-    <section className="bg-bg-page">
+    <section id="services" className="scroll-mt-24 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
         <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
           <header className="mb-10 flex items-center gap-4">

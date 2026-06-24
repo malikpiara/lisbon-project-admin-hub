@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { IconMenu } from "@/components/icons/ds-icons";
 import { buttonVariants } from "@/components/ui/button";
+import { SiteNav } from "@/components/site/site-nav";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader({ sticky = true } = {}) {
@@ -40,13 +40,7 @@ export function SiteHeader({ sticky = true } = {}) {
         </Link>
 
         <nav className="flex items-center gap-3 sm:gap-4">
-          <button
-            type="button"
-            aria-label="Open menu"
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <IconMenu className="size-5" />
-          </button>
+          <SiteNav />
           <Link
             href="/donate"
             className={buttonVariants({
