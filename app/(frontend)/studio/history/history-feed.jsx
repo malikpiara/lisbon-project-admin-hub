@@ -17,11 +17,13 @@ const TYPE_LABEL = {
   services: "category",
   topics: "topic",
   "quick-access": "quick access card",
+  users: "team member",
 };
 
 function docHref(slug, id) {
   if (slug === "services") return `/studio/services/${id}`;
   if (slug === "topics") return `/studio/topics/${id}`;
+  if (slug === "users") return "/studio/users";
   return "/studio/quick-access";
 }
 

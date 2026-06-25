@@ -8,9 +8,11 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
+import { MoveControls } from "@/components/admin/editor-ui";
 import {
   createQuickAccessItem,
   deleteQuickAccessItem,
+  reorderQuickAccessItems,
   saveQuickAccessItem,
 } from "./actions";
 
@@ -23,6 +25,17 @@ import {
 export function QuickAccessEditor({ initialItems, userEmail }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const move = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= initialItems.length) return;
+    const ids = initialItems.map((it) => it.id);
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    startTransition(async () => {
+      await reorderQuickAccessItems(ids);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
@@ -59,11 +72,16 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
       </p>
 
       <div className="mt-6 space-y-4">
-        {initialItems.map((item) => (
+        {initialItems.map((item, i) => (
           <QuickAccessCardEditor
             key={item.id}
             item={item}
             onDeleted={() => router.refresh()}
+            onMoveUp={() => move(i, -1)}
+            onMoveDown={() => move(i, 1)}
+            isFirst={i === 0}
+            isLast={i === initialItems.length - 1}
+            reordering={isPending}
           />
         ))}
         {initialItems.length === 0 ? (
@@ -76,7 +94,15 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
   );
 }
 
-function QuickAccessCardEditor({ item, onDeleted }) {
+function QuickAccessCardEditor({
+  item,
+  onDeleted,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+  reordering,
+}) {
   const [draft, setDraft] = useState({
     title: item.title ?? "",
     href: item.href ?? "",
@@ -138,6 +164,13 @@ function QuickAccessCardEditor({ item, onDeleted }) {
             Opens in a new tab (external link)
           </label>
           <div className="flex items-center gap-3">
+            <MoveControls
+              onMoveUp={onMoveUp}
+              onMoveDown={onMoveDown}
+              isFirst={isFirst}
+              isLast={isLast}
+              disabled={reordering}
+            />
             <SaveState status={status} />
             <Button
               size="sm"

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ChevronRight,
@@ -11,12 +12,19 @@ import {
   History,
   Plus,
   RotateCcw,
+  X,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Field } from "@/components/admin/field";
 import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
-import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
+import {
+  EditorRow,
+  EmptyState,
+  MoveControls,
+  Section,
+} from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import {
@@ -24,7 +32,7 @@ import {
   restoreServiceVersion,
   saveService,
 } from "../actions";
-import { createTopic } from "../../topics/actions";
+import { createTopic, reorderTopics } from "../../topics/actions";
 
 // Map Payload's stored shape <-> the editor draft. The string lists are arrays
 // of { text } in Payload (a named subfield is required); the editor treats intro
@@ -38,6 +46,7 @@ function fromPayload(s) {
     iconKey: s.iconKey ?? "",
     contactsTitle: s.contactsTitle ?? "",
     contactsSubtitle: s.contactsSubtitle ?? "",
+    categoryFilters: (s.categoryFilters ?? []).map((c) => c.value ?? ""),
     contacts: (s.contacts ?? []).map((c) => ({
       organization: c.organization ?? "",
       service: c.service ?? "",
@@ -61,14 +70,31 @@ function toPayload(d) {
     iconKey: d.iconKey,
     contactsTitle: d.contactsTitle,
     contactsSubtitle: d.contactsSubtitle,
+    categoryFilters: d.categoryFilters
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .map((value) => ({ value })),
     contacts: d.contacts,
   };
 }
 
 export function ServiceEditor({ service, topics, audit, versions = [] }) {
+  const router = useRouter();
   const [draft, setDraft] = useState(() => fromPayload(service));
   const [status, setStatus] = useState("saved"); // saved | dirty | saving | error
   const [isPending, startTransition] = useTransition();
+  const [reordering, startReorder] = useTransition();
+
+  const moveTopic = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= topics.length) return;
+    const ids = topics.map((t) => t.id);
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    startReorder(async () => {
+      await reorderTopics(ids, service.id);
+      router.refresh();
+    });
+  };
 
   const set = (patch) => {
     setDraft((d) => ({ ...d, ...patch }));
@@ -111,6 +137,24 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
       arr.splice(i + 1, 0, { ...arr[i] });
       return { ...d, contacts: arr };
     });
+    setStatus("dirty");
+  };
+  const setCategoryFilter = (i, v) => {
+    setDraft((d) => ({
+      ...d,
+      categoryFilters: d.categoryFilters.map((c, idx) => (idx === i ? v : c)),
+    }));
+    setStatus("dirty");
+  };
+  const addCategoryFilter = () => {
+    setDraft((d) => ({ ...d, categoryFilters: [...d.categoryFilters, ""] }));
+    setStatus("dirty");
+  };
+  const removeCategoryFilter = (i) => {
+    setDraft((d) => ({
+      ...d,
+      categoryFilters: d.categoryFilters.filter((_, idx) => idx !== i),
+    }));
     setStatus("dirty");
   };
 
@@ -265,6 +309,46 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         </Section>
 
         <Section
+          title="Contact categories"
+          count={draft.categoryFilters.length}
+          description="Filter chips above the contacts table. Each contact's Category should match one of these."
+          action={
+            <Button size="sm" onClick={addCategoryFilter}>
+              <Plus className="size-3.5" />
+              Add category
+            </Button>
+          }
+        >
+          {draft.categoryFilters.length === 0 ? (
+            <EmptyState
+              icon={Contact}
+              label="No categories yet"
+              hint="Add categories so visitors can filter the contacts table."
+            />
+          ) : (
+            <div className="space-y-2">
+              {draft.categoryFilters.map((value, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    value={value}
+                    onChange={(e) => setCategoryFilter(i, e.target.value)}
+                    placeholder="e.g. Housing"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remove category"
+                    onClick={() => removeCategoryFilter(i)}
+                    className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section
           title="Topics"
           count={topics.length}
           description="Each topic is an article on this category's page. Open one to edit its content."
@@ -285,24 +369,37 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
             />
           ) : (
             <div className="space-y-2">
-              {topics.map((t) => (
-                <Link
+              {topics.map((t, i) => (
+                <div
                   key={t.id}
-                  href={`/studio/topics/${t.id}`}
-                  className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
+                  className="flex items-center gap-1 overflow-hidden rounded-lg border-2 border-border bg-card transition-colors hover:border-foreground/20"
                 >
-                  <span className="min-w-0">
-                    <span className="block truncate text-ds-xs font-bold text-foreground">
-                      {t.title || "Untitled topic"}
-                    </span>
-                    {t.description ? (
-                      <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
-                        {t.description}
+                  <Link
+                    href={`/studio/topics/${t.id}`}
+                    className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-ds-xs font-bold text-foreground">
+                        {t.title || "Untitled topic"}
                       </span>
-                    ) : null}
-                  </span>
-                  <ChevronRight className="ml-auto size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-                </Link>
+                      {t.description ? (
+                        <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
+                          {t.description}
+                        </span>
+                      ) : null}
+                    </span>
+                    <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                  <div className="pr-2">
+                    <MoveControls
+                      onMoveUp={() => moveTopic(i, -1)}
+                      onMoveDown={() => moveTopic(i, 1)}
+                      isFirst={i === 0}
+                      isLast={i === topics.length - 1}
+                      disabled={reordering}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           )}

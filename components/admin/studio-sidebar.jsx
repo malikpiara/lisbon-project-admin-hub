@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Sparkles,
+  Users2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -34,6 +35,10 @@ const navGroups = [
       { href: "/insights", label: "Insights", icon: BarChart3 },
       { href: "/studio/history", label: "History", icon: History },
     ],
+  },
+  {
+    title: "Admin",
+    items: [{ href: "/studio/users", label: "Team", icon: Users2 }],
   },
 ];
 

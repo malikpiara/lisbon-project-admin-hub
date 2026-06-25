@@ -69,6 +69,18 @@ export async function createQuickAccessItem() {
   return created.id;
 }
 
+// Persist a new order for the hero cards (order = position).
+export async function reorderQuickAccessItems(ids) {
+  const { payload } = await authedPayload();
+  await Promise.all(
+    ids.map((id, index) =>
+      payload.update({ collection: "quick-access", id, data: { order: index } })
+    )
+  );
+  revalidatePath("/studio/quick-access");
+  revalidatePath("/");
+}
+
 export async function deleteQuickAccessItem(id) {
   const { payload, user } = await authedPayload();
   const doc = await payload

@@ -66,6 +66,18 @@ export async function createService() {
   redirect(`/studio/services/${created.id}`);
 }
 
+// Persist a new display order (order = position in the home grid).
+export async function reorderServices(ids) {
+  const { payload } = await authedPayload();
+  await Promise.all(
+    ids.map((id, index) =>
+      payload.update({ collection: "services", id, data: { order: index } })
+    )
+  );
+  revalidatePath("/studio/services");
+  revalidatePath("/");
+}
+
 // PROTOTYPE (#2): restore a past version as the current document.
 export async function restoreServiceVersion(versionId, serviceId) {
   const { payload, user } = await authedPayload();

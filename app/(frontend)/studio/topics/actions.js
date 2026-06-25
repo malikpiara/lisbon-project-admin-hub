@@ -68,6 +68,19 @@ export async function createTopic(serviceId) {
   redirect(`/studio/topics/${created.id}`);
 }
 
+// Persist a new order for a service's topics (order = position on the page).
+export async function reorderTopics(ids, serviceId) {
+  const { payload } = await authedPayload();
+  await Promise.all(
+    ids.map((id, index) =>
+      payload.update({ collection: "topics", id, data: { order: index } })
+    )
+  );
+  if (serviceId) revalidatePath(`/studio/services/${serviceId}`);
+  revalidatePath("/studio/topics");
+  revalidatePath("/");
+}
+
 export async function deleteTopic(id, serviceId) {
   const { payload, user } = await authedPayload();
   const doc = await payload

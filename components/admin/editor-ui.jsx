@@ -26,6 +26,26 @@ function RowAction({ icon: Icon, label, onClick, disabled }) {
   );
 }
 
+// Reusable move-up / move-down pair for reordering list items.
+export function MoveControls({ onMoveUp, onMoveDown, isFirst, isLast, disabled }) {
+  return (
+    <div className="flex shrink-0 items-center gap-0.5">
+      <RowAction
+        icon={ArrowUp}
+        label="Move up"
+        onClick={onMoveUp}
+        disabled={isFirst || disabled}
+      />
+      <RowAction
+        icon={ArrowDown}
+        label="Move down"
+        onClick={onMoveDown}
+        disabled={isLast || disabled}
+      />
+    </div>
+  );
+}
+
 // A titled editor section with an optional count pill and right-aligned action.
 export function Section({ title, count, description, action, children }) {
   return (
