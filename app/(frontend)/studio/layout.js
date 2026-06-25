@@ -16,7 +16,7 @@ export default async function StudioLayout({ children }) {
 
   return (
     <div className="flex min-h-dvh">
-      <StudioSidebar />
+      <StudioSidebar userEmail={user.email} />
       <div className="min-w-0 flex-1 bg-background">{children}</div>
     </div>
   );

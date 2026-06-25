@@ -42,10 +42,10 @@ const navGroups = [
   },
 ];
 
-export function StudioSidebar() {
+export function StudioSidebar({ userEmail }) {
   const pathname = usePathname();
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r-2 border-border bg-bg-page px-4 py-6">
+    <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-bg-page px-4 py-6">
       <div className="mb-6 px-2">
         <p className="font-heading text-ds-s font-bold text-brand-dark">
           Admin Hub
@@ -88,6 +88,12 @@ export function StudioSidebar() {
       </nav>
 
       <div className="mt-auto space-y-3 px-2 pt-6">
+        {userEmail ? (
+          <p className="truncate text-ds-xxs font-medium text-muted-foreground">
+            Signed in as{" "}
+            <span className="font-bold text-foreground">{userEmail}</span>
+          </p>
+        ) : null}
         <Link
           href="/admin"
           className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground hover:text-foreground"

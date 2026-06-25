@@ -28,7 +28,7 @@ export function TopicsList({ topics }) {
           Topics
         </h1>
         <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-          {topics.length} articles across all categories · Payload-backed
+          {topics.length} articles across all categories.
         </p>
       </header>
 

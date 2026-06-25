@@ -58,7 +58,7 @@ export default async function StudioDashboard() {
           Content studio
         </h1>
         <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-          Payload-backed editor · saved to Postgres · signed in as {user.email}
+          Everything the public site shows — edit it here.
         </p>
       </header>
 

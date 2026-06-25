@@ -9,6 +9,7 @@ import { Field } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { AuditMeta } from "@/components/admin/audit-meta";
 import { deleteTopic, saveTopic } from "../actions";
 import { ArticlePreview } from "./article-preview";
 
@@ -200,13 +201,6 @@ export function TopicEditor({ topic, service, audit }) {
                 <p className="truncate font-mono text-ds-xxs text-muted-foreground">
                   /services/{serviceSlug}/{topic.slug}
                 </p>
-                {audit && (audit.modified || audit.created) ? (
-                  <p className="text-ds-xxs font-medium text-muted-foreground">
-                    {audit.modified ? <>Last modified {audit.modified}</> : null}
-                    {audit.modified && audit.created ? " · " : null}
-                    {audit.created ? <>Created {audit.created}</> : null}
-                  </p>
-                ) : null}
               </div>
             </div>
 
@@ -241,6 +235,14 @@ export function TopicEditor({ topic, service, audit }) {
           </div>
         </div>
       </div>
+
+      {audit && (audit.modified || audit.created) ? (
+        <div className="border-b-2 border-border bg-card">
+          <div className="mx-auto max-w-6xl px-8 py-4">
+            <AuditMeta audit={audit} />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mx-auto grid max-w-6xl gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <div className="min-w-0">

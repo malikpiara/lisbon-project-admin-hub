@@ -45,7 +45,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
             Quick Access cards
           </h1>
           <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-            Payload-backed · saved to Postgres · signed in as {userEmail}
+            Link cards shown in the home-page hero.
           </p>
         </div>
         <Button
