@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],
       "port": 3000
+    },
+    {
+      "name": "verify-3100",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--port", "3100"],
+      "port": 3100
     }
   ]
 }
