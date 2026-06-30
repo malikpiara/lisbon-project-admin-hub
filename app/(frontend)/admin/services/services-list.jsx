@@ -54,7 +54,7 @@ export function ServicesList({ services, userEmail }) {
           return (
             <Card key={service.id} className="h-full">
               <Link
-                href={`/studio/services/${service.id}`}
+                href={`/admin/services/${service.id}`}
                 className="group flex flex-1 items-start gap-4 px-4 outline-none xl:px-6"
               >
                 <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">

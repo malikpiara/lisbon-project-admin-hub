@@ -21,10 +21,10 @@ const TYPE_LABEL = {
 };
 
 function docHref(slug, id) {
-  if (slug === "services") return `/studio/services/${id}`;
-  if (slug === "topics") return `/studio/topics/${id}`;
-  if (slug === "users") return "/studio/users";
-  return "/studio/quick-access";
+  if (slug === "services") return `/admin/services/${id}`;
+  if (slug === "topics") return `/admin/topics/${id}`;
+  if (slug === "users") return "/admin/users";
+  return "/admin/quick-access";
 }
 
 export function HistoryFeed({ entries }) {
@@ -49,7 +49,7 @@ export function HistoryFeed({ entries }) {
           History
         </h1>
         <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-          Every change made in the Studio — who, what, and when.
+          Every change made in the Admin Hub — who, what, and when.
         </p>
       </header>
 

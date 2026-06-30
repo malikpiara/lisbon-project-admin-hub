@@ -1,22 +1,16 @@
-import { headers as nextHeaders } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
+import { notFound } from "next/navigation";
 
+import { authedPayload } from "@/lib/admin-auth";
 import { auditLabels } from "@/lib/format-audit";
 import { TopicEditor } from "./topic-editor";
 
 export const metadata = {
-  title: "Edit topic · Studio (Payload)",
+  title: "Edit topic · Admin",
 };
 
-export default async function StudioTopicEditPage({ params }) {
+export default async function AdminTopicEditPage({ params }) {
   const { id } = await params;
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) {
-    redirect("/cms-admin/login");
-  }
+  const { payload } = await authedPayload();
 
   let topic;
   try {

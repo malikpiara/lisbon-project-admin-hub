@@ -1,95 +1,116 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowRight, ExternalLink, ListChecks, Sparkles } from "lucide-react";
-import { Tag } from "@/components/ui/tag";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight, BarChart3, FileText, ListChecks, Sparkles } from "lucide-react";
+
 import { Card } from "@/components/ui/card";
-import { useAdmin } from "@/lib/admin-store";
+import { authedPayload } from "@/lib/admin-auth";
 
-export default function AdminDashboardPage() {
-  const { data, hydrated } = useAdmin();
+export const metadata = {
+  title: "Admin · Lisbon Project",
+};
 
-  const tiles = [
+export default async function AdminDashboard() {
+  const { payload } = await authedPayload();
+
+  const [quickAccess, services, topics] = await Promise.all([
+    payload.find({ collection: "quick-access", limit: 0, depth: 0 }),
+    payload.find({ collection: "services", limit: 0, depth: 0 }),
+    payload.find({ collection: "topics", limit: 0, depth: 0 }),
+  ]);
+
+  const cards = [
     {
-      title: "Quick Access",
-      description: "Link cards in the home hero.",
       href: "/admin/quick-access",
-      count: data.quickAccess.length,
-      noun: "card",
       icon: Sparkles,
+      label: "Quick Access",
+      count: quickAccess.totalDocs,
+      noun: "cards",
+      hint: "Link cards in the home hero.",
     },
     {
-      title: "Services & Information",
-      description: "Categories in the Services grid.",
       href: "/admin/services",
-      count: data.services.length,
-      noun: "category",
-      nounPlural: "categories",
       icon: ListChecks,
+      label: "Services & Information",
+      count: services.totalDocs,
+      noun: "categories",
+      hint: "Categories on the home grid.",
+    },
+    {
+      href: "/admin/topics",
+      icon: FileText,
+      label: "Topics",
+      count: topics.totalDocs,
+      noun: "articles",
+      hint: "Articles across all categories.",
     },
   ];
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-ds-xxxl font-bold text-foreground">
-            Content overview
-          </h1>
-          <p className="mt-2 max-w-xl text-ds-xs font-medium text-muted-foreground">
-            Edit the home page content. Changes save in your browser — the live
-            site still reads seed data.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: "secondary", size: "sm" })}
-          >
-            View live site
-            <ExternalLink className="size-3.5" />
-          </Link>
-          <Tag>{hydrated ? "Local draft" : "Loading…"}</Tag>
-        </div>
-      </div>
+      <header>
+        <h1 className="font-heading text-ds-xxl font-bold text-foreground">
+          Admin Hub
+        </h1>
+        <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          Everything the public site shows — edit it here.
+        </p>
+      </header>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {tiles.map((tile) => {
-          const Icon = tile.icon;
-          const plural = tile.nounPlural ?? `${tile.noun}s`;
+        {cards.map((c) => {
+          const Icon = c.icon;
           return (
             <Link
-              key={tile.href}
-              href={tile.href}
+              key={c.href}
+              href={c.href}
               className="group rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             >
               <Card className="h-full transition-shadow group-hover:shadow-md">
-                <div className="flex flex-col gap-3 px-4 xl:px-6">
-                  <div className="flex items-center justify-between">
-                    <span className="grid size-14 place-items-center rounded-lg bg-brand-100 text-primary">
-                      <Icon className="size-6" strokeWidth={1.9} />
-                    </span>
-                    <ArrowRight className="size-4 text-primary transition-transform group-hover:translate-x-0.5" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading text-ds-l font-bold text-foreground">
-                      {tile.title}
+                <div className="flex items-start gap-4 px-4 xl:px-6">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                    <Icon className="size-5" strokeWidth={1.9} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-heading text-ds-s font-bold text-foreground">
+                      {c.label}
                     </h2>
                     <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-                      {tile.description}
+                      {c.hint}
+                    </p>
+                    <p className="mt-3 text-ds-xxs font-bold text-primary">
+                      {c.count} {c.noun}
                     </p>
                   </div>
-                  <p className="text-ds-xs font-bold text-primary">
-                    {tile.count} {tile.count === 1 ? tile.noun : plural}
-                  </p>
+                  <ArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Card>
             </Link>
           );
         })}
+
+        <Link
+          href="/admin/insights"
+          className="group rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          <Card className="h-full transition-shadow group-hover:shadow-md">
+            <div className="flex items-start gap-4 px-4 xl:px-6">
+              <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                <BarChart3 className="size-5" strokeWidth={1.9} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-heading text-ds-s font-bold text-foreground">
+                  Insights
+                </h2>
+                <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+                  What visitors view and search for.
+                </p>
+                <p className="mt-3 text-ds-xxs font-bold text-primary">
+                  Team analytics
+                </p>
+              </div>
+              <ArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+            </div>
+          </Card>
+        </Link>
       </div>
     </div>
   );

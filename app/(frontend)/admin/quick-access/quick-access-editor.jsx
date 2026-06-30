@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { MoveControls } from "@/components/admin/editor-ui";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 import {
   createQuickAccessItem,
   deleteQuickAccessItem,
@@ -16,15 +17,23 @@ import {
   saveQuickAccessItem,
 } from "./actions";
 
-// Payload-backed Quick Access editor (the Studio twin of
-// app/(frontend)/admin/quick-access/page.js). Same DS components; data flows
-// through Payload server actions instead of the localStorage store. Two ideas
-// borrowed from the Payload teardown: field hints, and a visible save state
-// (the DB write is async, so — unlike the auto-saved prototype — the editor
-// needs to show "Unsaved changes → Saving → Saved").
+// Payload-backed Quick Access editor. Same DS components; data flows through
+// Payload server actions instead of the localStorage store. Two ideas borrowed
+// from the Payload teardown: field hints, and a visible save state (the DB
+// write is async, so the editor needs to show "Unsaved changes → Saving →
+// Saved").
 export function QuickAccessEditor({ initialItems, userEmail }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // Each card tracks its own save state; aggregate them so the guard fires while
+  // ANY card has unsaved edits. reportDirty is stable (useCallback) so the cards'
+  // effects don't re-run on every render, and the setter bails when unchanged.
+  const [dirtyMap, setDirtyMap] = useState({});
+  const reportDirty = useCallback((id, dirty) => {
+    setDirtyMap((m) => (Boolean(m[id]) === dirty ? m : { ...m, [id]: dirty }));
+  }, []);
+  const anyDirty = Object.values(dirtyMap).some(Boolean);
 
   const move = (i, dir) => {
     const j = i + dir;
@@ -39,6 +48,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
+      <UnsavedChangesGuard when={anyDirty} />
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
@@ -63,20 +73,13 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
         </Button>
       </div>
 
-      <p className="mt-3 text-ds-xxs font-medium text-muted-foreground">
-        Comparison: the localStorage prototype is at{" "}
-        <a className="text-brand-link underline" href="/admin/quick-access">
-          /admin/quick-access
-        </a>
-        .
-      </p>
-
       <div className="mt-6 space-y-4">
         {initialItems.map((item, i) => (
           <QuickAccessCardEditor
             key={item.id}
             item={item}
             onDeleted={() => router.refresh()}
+            onDirtyChange={reportDirty}
             onMoveUp={() => move(i, -1)}
             onMoveDown={() => move(i, 1)}
             isFirst={i === 0}
@@ -97,6 +100,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
 function QuickAccessCardEditor({
   item,
   onDeleted,
+  onDirtyChange,
   onMoveUp,
   onMoveDown,
   isFirst,
@@ -111,6 +115,14 @@ function QuickAccessCardEditor({
   });
   const [status, setStatus] = useState("saved"); // saved | dirty | saving | error
   const [isPending, startTransition] = useTransition();
+
+  // Report this card's unsaved state up to the editor (which renders the guard).
+  // Clear it on unmount so a deleted card doesn't leave a stale "dirty" flag.
+  const isDirty = status === "dirty";
+  useEffect(() => {
+    onDirtyChange(item.id, isDirty);
+    return () => onDirtyChange(item.id, false);
+  }, [item.id, isDirty, onDirtyChange]);
 
   const patch = (p) => {
     setDraft((d) => ({ ...d, ...p }));

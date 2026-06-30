@@ -1,8 +1,4 @@
-import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
-
+import { authedPayload } from "@/lib/admin-auth";
 import { TopicsViewedChart } from "@/components/analytics/topics-viewed-chart";
 import { ContactsSearchesTable } from "@/components/analytics/contacts-searches-table";
 
@@ -10,18 +6,14 @@ export const metadata = {
   title: "Insights · Lisbon Project",
 };
 
-// Team-only analytics. Gated by Payload auth — reads the same session cookie as
-// /cms-admin, so only signed-in team members can view it. Lives in the
-// (frontend) route group (NOT the Payload admin) so globals.css / Tailwind / the
-// design system are available to render the DS-styled chart. Wire the chart's
-// `data` prop to the `topic_viewed` PostHog insight for live counts.
+// Team-only analytics, now under the /admin group — so it inherits the admin
+// layout's Payload-auth gate and the shared sidebar. It re-checks auth itself
+// too (defense in depth), reading the same session cookie as /cms-admin. Kept in
+// the (frontend) group (not the Payload admin app) so the design system is
+// available to render the DS-styled charts. Wire the chart's `data` prop to the
+// `topic_viewed` PostHog insight for live counts.
 export default async function InsightsPage() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-
-  if (!user) {
-    redirect("/cms-admin/login");
-  }
+  const { user } = await authedPayload();
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">

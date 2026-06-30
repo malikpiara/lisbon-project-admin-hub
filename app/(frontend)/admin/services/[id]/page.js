@@ -1,8 +1,6 @@
-import { headers as nextHeaders } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
+import { notFound } from "next/navigation";
 
+import { authedPayload } from "@/lib/admin-auth";
 import { auditLabels } from "@/lib/format-audit";
 import { diffSnapshots } from "@/lib/diff-versions";
 import { ServiceEditor } from "./service-editor";
@@ -21,16 +19,12 @@ const DIFF_FIELDS = [
 ];
 
 export const metadata = {
-  title: "Edit service · Studio (Payload)",
+  title: "Edit service · Admin",
 };
 
-export default async function StudioServiceEditPage({ params }) {
+export default async function AdminServiceEditPage({ params }) {
   const { id } = await params;
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) {
-    redirect("/cms-admin/login");
-  }
+  const { payload } = await authedPayload();
 
   let service;
   try {

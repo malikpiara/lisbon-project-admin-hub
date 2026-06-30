@@ -4,19 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
-  Database,
   ExternalLink,
+  FileText,
+  History,
   LayoutDashboard,
   ListChecks,
   Sparkles,
+  Users2,
 } from "lucide-react";
 
-import { SaveStatus } from "@/components/admin/save-status";
 import { cn } from "@/lib/utils";
 
-// Shared sidebar for the team workspace — used by both /admin (content editor)
-// and /insights (analytics). The Payload CMS lives in its own app at /cms-admin
-// (separate root layout, no design system), so it's a link out, not a shared route.
+// The unified team-workspace sidebar for the /admin group — content editor
+// (Quick Access / Services / Topics), analytics (Insights / History) and team
+// management. The Payload CMS lives in its own app at /cms-admin (separate root
+// layout), so it's reached directly, not from here.
 const navGroups = [
   {
     title: "Content",
@@ -24,19 +26,26 @@ const navGroups = [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
       { href: "/admin/services", label: "Services & Information", icon: ListChecks },
-      { href: "/cms-admin", label: "CMS (Payload)", icon: Database },
+      { href: "/admin/topics", label: "Topics", icon: FileText },
     ],
   },
   {
     title: "Analytics",
-    items: [{ href: "/insights", label: "Insights", icon: BarChart3 }],
+    items: [
+      { href: "/admin/insights", label: "Insights", icon: BarChart3 },
+      { href: "/admin/history", label: "History", icon: History },
+    ],
+  },
+  {
+    title: "Admin",
+    items: [{ href: "/admin/users", label: "Team", icon: Users2 }],
   },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ userEmail }) {
   const pathname = usePathname();
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r-2 border-border bg-bg-page px-4 py-6">
+    <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-bg-page px-4 py-6">
       <div className="mb-6 px-2">
         <p className="font-heading text-ds-s font-bold text-brand-dark">
           Admin Hub
@@ -79,7 +88,12 @@ export function AdminSidebar() {
       </nav>
 
       <div className="mt-auto space-y-3 px-2 pt-6">
-        {pathname.startsWith("/admin") ? <SaveStatus /> : null}
+        {userEmail ? (
+          <p className="truncate text-ds-xxs font-medium text-muted-foreground">
+            Signed in as{" "}
+            <span className="font-bold text-foreground">{userEmail}</span>
+          </p>
+        ) : null}
         <Link
           href="/"
           target="_blank"

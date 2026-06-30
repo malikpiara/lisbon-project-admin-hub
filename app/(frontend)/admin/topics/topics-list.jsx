@@ -50,7 +50,7 @@ export function TopicsList({ topics }) {
         {filtered.map((t) => (
           <Link
             key={t.id}
-            href={`/studio/topics/${t.id}`}
+            href={`/admin/topics/${t.id}`}
             className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
           >
             <span className="min-w-0">

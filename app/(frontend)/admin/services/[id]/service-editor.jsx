@@ -186,7 +186,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
       <div className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
           <Link
-            href="/studio/services"
+            href="/admin/services"
             className="inline-flex items-center gap-1.5 text-ds-xxs font-medium text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="size-3.5" />
@@ -377,7 +377,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                   className="flex items-center gap-1 overflow-hidden rounded-lg border-2 border-border bg-card transition-colors hover:border-foreground/20"
                 >
                   <Link
-                    href={`/studio/topics/${t.id}`}
+                    href={`/admin/topics/${t.id}`}
                     className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
                   >
                     <span className="min-w-0">

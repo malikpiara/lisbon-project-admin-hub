@@ -1,19 +1,10 @@
 "use server";
 
-import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getPayload } from "payload";
-import config from "@payload-config";
 
 import { logAudit } from "@/lib/audit-log";
-
-async function authedPayload() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) redirect("/cms-admin/login");
-  return { payload, user };
-}
+import { authedPayload } from "@/lib/admin-auth";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs). `data` is already mapped to Payload's shape by the editor; tone/order/
@@ -33,7 +24,7 @@ export async function saveTopic(id, data) {
     docTitle: data.title,
     userId: user.id,
   });
-  revalidatePath(`/studio/topics/${id}`);
+  revalidatePath(`/admin/topics/${id}`);
   revalidatePath("/"); // article pages — live once the public site reads Payload
 }
 
@@ -63,9 +54,9 @@ export async function createTopic(serviceId) {
     docTitle: created.title,
     userId: user.id,
   });
-  revalidatePath(`/studio/services/${serviceId}`);
-  revalidatePath("/studio/topics");
-  redirect(`/studio/topics/${created.id}`);
+  revalidatePath(`/admin/services/${serviceId}`);
+  revalidatePath("/admin/topics");
+  redirect(`/admin/topics/${created.id}`);
 }
 
 // Persist a new order for a service's topics (order = position on the page).
@@ -76,8 +67,8 @@ export async function reorderTopics(ids, serviceId) {
       payload.update({ collection: "topics", id, data: { order: index } })
     )
   );
-  if (serviceId) revalidatePath(`/studio/services/${serviceId}`);
-  revalidatePath("/studio/topics");
+  if (serviceId) revalidatePath(`/admin/services/${serviceId}`);
+  revalidatePath("/admin/topics");
   revalidatePath("/");
 }
 
@@ -94,7 +85,7 @@ export async function deleteTopic(id, serviceId) {
     docTitle: doc?.title,
     userId: user.id,
   });
-  revalidatePath("/studio/services");
-  revalidatePath("/studio/topics");
-  redirect(serviceId ? `/studio/services/${serviceId}` : "/studio/services");
+  revalidatePath("/admin/services");
+  revalidatePath("/admin/topics");
+  redirect(serviceId ? `/admin/services/${serviceId}` : "/admin/services");
 }

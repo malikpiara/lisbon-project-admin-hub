@@ -1,20 +1,12 @@
-import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
-
+import { authedPayload } from "@/lib/admin-auth";
 import { TopicsList } from "./topics-list";
 
 export const metadata = {
-  title: "Topics · Studio (Payload)",
+  title: "Topics · Admin",
 };
 
-export default async function StudioTopicsPage() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) {
-    redirect("/cms-admin/login");
-  }
+export default async function AdminTopicsPage() {
+  const { payload } = await authedPayload();
 
   // Light fetch (no article bodies) + a service-id → title map for display.
   const [{ docs: topics }, { docs: services }] = await Promise.all([

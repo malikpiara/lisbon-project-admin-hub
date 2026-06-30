@@ -171,14 +171,14 @@ export function TopicEditor({ topic, service, audit }) {
       <div className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
           <nav className="text-ds-xxs font-medium text-muted-foreground">
-            <Link href="/studio/services" className="hover:text-foreground">
+            <Link href="/admin/services" className="hover:text-foreground">
               Services
             </Link>
             <span className="mx-1.5">/</span>
             {service ? (
               <>
                 <Link
-                  href={`/studio/services/${service.id}`}
+                  href={`/admin/services/${service.id}`}
                   className="hover:text-foreground"
                 >
                   {service.title}

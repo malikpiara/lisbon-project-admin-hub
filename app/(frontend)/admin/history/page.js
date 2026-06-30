@@ -1,20 +1,12 @@
-import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
-
+import { authedPayload } from "@/lib/admin-auth";
 import { HistoryFeed } from "./history-feed";
 
 export const metadata = {
-  title: "History · Studio (Payload)",
+  title: "History · Admin",
 };
 
-export default async function StudioHistoryPage() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) {
-    redirect("/cms-admin/login");
-  }
+export default async function AdminHistoryPage() {
+  const { payload } = await authedPayload();
 
   const { docs } = await payload.find({
     collection: "audit-log",

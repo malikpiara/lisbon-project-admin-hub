@@ -1,24 +1,15 @@
 "use server";
 
-import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getPayload } from "payload";
-import config from "@payload-config";
 
 import { logAudit } from "@/lib/audit-log";
+import { authedPayload } from "@/lib/admin-auth";
 
-// Tracer-bullet WRITE path. The Studio editor reaches Payload's Local API
-// (Postgres on Supabase) through these server actions, instead of the
-// localStorage store the /admin prototype uses. Each action re-checks auth
-// (defense in depth — the page already gates) and revalidates the affected
-// routes so the next read reflects the change.
-async function authedPayload() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) redirect("/cms-admin/login");
-  return { payload, user };
-}
+// WRITE path. The admin editor reaches Payload's Local API (Postgres on
+// Supabase) through these server actions, instead of the localStorage store
+// that still powers the public site. Each action re-checks auth via
+// authedPayload (defense in depth — the page already gates) and revalidates the
+// affected routes so the next read reflects the change.
 
 export async function saveQuickAccessItem(id, data) {
   const { payload, user } = await authedPayload();
@@ -34,7 +25,7 @@ export async function saveQuickAccessItem(id, data) {
     docTitle: data.title,
     userId: user.id,
   });
-  revalidatePath("/studio/quick-access");
+  revalidatePath("/admin/quick-access");
   revalidatePath("/"); // home hero — becomes live once the public site reads Payload
 }
 
@@ -65,7 +56,7 @@ export async function createQuickAccessItem() {
     docTitle: created.title,
     userId: user.id,
   });
-  revalidatePath("/studio/quick-access");
+  revalidatePath("/admin/quick-access");
   return created.id;
 }
 
@@ -77,7 +68,7 @@ export async function reorderQuickAccessItems(ids) {
       payload.update({ collection: "quick-access", id, data: { order: index } })
     )
   );
-  revalidatePath("/studio/quick-access");
+  revalidatePath("/admin/quick-access");
   revalidatePath("/");
 }
 
@@ -94,6 +85,6 @@ export async function deleteQuickAccessItem(id) {
     docTitle: doc?.title,
     userId: user.id,
   });
-  revalidatePath("/studio/quick-access");
+  revalidatePath("/admin/quick-access");
   revalidatePath("/");
 }

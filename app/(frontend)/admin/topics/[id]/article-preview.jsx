@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 // Live preview of the article, rendered from the editor draft. A scaled-down but
 // faithful echo of components/services/article-view.tsx — the whole point of the
-// Studio (and the #1 lesson from the Payload teardown): the editor should SEE the
+// admin (and the #1 lesson from the Payload teardown): the editor should SEE the
 // page as they write it, not author into blind form fields. Updates on every
 // keystroke because it reads the same draft state the form mutates.
 export function ArticlePreview({ draft, topicTitle }) {

@@ -1,19 +1,10 @@
 "use server";
 
-import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getPayload } from "payload";
-import config from "@payload-config";
 
 import { logAudit } from "@/lib/audit-log";
-
-async function authedPayload() {
-  const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) redirect("/cms-admin/login");
-  return { payload, user };
-}
+import { authedPayload } from "@/lib/admin-auth";
 
 // Saves the whole service doc (basics + intro + contacts). `data` is already
 // mapped to Payload's shape by the editor; fields we don't send (slug, tone,
@@ -33,8 +24,8 @@ export async function saveService(id, data) {
     docTitle: data.title,
     userId: user.id,
   });
-  revalidatePath("/studio/services");
-  revalidatePath(`/studio/services/${id}`);
+  revalidatePath("/admin/services");
+  revalidatePath(`/admin/services/${id}`);
   revalidatePath("/"); // home grid — live once the public site reads Payload
 }
 
@@ -62,8 +53,8 @@ export async function createService() {
     docTitle: created.title,
     userId: user.id,
   });
-  revalidatePath("/studio/services");
-  redirect(`/studio/services/${created.id}`);
+  revalidatePath("/admin/services");
+  redirect(`/admin/services/${created.id}`);
 }
 
 // Persist a new display order (order = position in the home grid).
@@ -74,7 +65,7 @@ export async function reorderServices(ids) {
       payload.update({ collection: "services", id, data: { order: index } })
     )
   );
-  revalidatePath("/studio/services");
+  revalidatePath("/admin/services");
   revalidatePath("/");
 }
 
@@ -93,8 +84,8 @@ export async function restoreServiceVersion(versionId, serviceId) {
     docTitle: restored?.title,
     userId: user.id,
   });
-  revalidatePath("/studio/services");
-  revalidatePath(`/studio/services/${serviceId}`);
+  revalidatePath("/admin/services");
+  revalidatePath(`/admin/services/${serviceId}`);
   revalidatePath("/");
 }
 
@@ -111,6 +102,6 @@ export async function deleteService(id) {
     docTitle: doc?.title,
     userId: user.id,
   });
-  revalidatePath("/studio/services");
-  redirect("/studio/services");
+  revalidatePath("/admin/services");
+  redirect("/admin/services");
 }
