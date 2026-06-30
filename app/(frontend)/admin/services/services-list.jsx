@@ -1,41 +1,103 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MoveControls } from "@/components/admin/editor-ui";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { SaveBar } from "@/components/admin/save-bar";
+import { useFlip } from "@/lib/use-flip";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { createService, reorderServices } from "./actions";
 
 export function ServicesList({ services, userEmail }) {
-  const router = useRouter();
-  const [reordering, startReorder] = useTransition();
+  const [phase, setPhase] = useState("idle"); // idle | saving | error
+  const [, startTransition] = useTransition();
+  const flipRef = useFlip();
+
+  const byId = Object.fromEntries(services.map((s) => [s.id, s]));
+  const serverIds = services.map((s) => s.id);
+  const serverKey = serverIds.join("|");
+
+  // Deferred reorder: local working order (rendered), persisted on Save — so the
+  // cards slide, the moved one pulses + stays marked, and the order isn't written
+  // until the editor confirms. A card is "moved" when its index differs from the
+  // last-saved baseline.
+  const [order, setOrder] = useState(serverIds);
+  const [savedOrder, setSavedOrder] = useState(serverIds);
+  const [syncKey, setSyncKey] = useState(serverKey);
+  const [flashId, setFlashId] = useState(null);
+
+  // Re-sync to server membership on add/delete (adjust during render, preserving
+  // any pending local reorder of the cards that remain).
+  if (syncKey !== serverKey) {
+    setSyncKey(serverKey);
+    setSavedOrder(serverIds);
+    setOrder((prev) => {
+      const kept = prev.filter((id) => serverIds.includes(id));
+      const added = serverIds.filter((id) => !kept.includes(id));
+      return [...kept, ...added];
+    });
+  }
+
+  const orderDirty = order.join("|") !== savedOrder.join("|");
+  const reorderedCount = order.reduce(
+    (n, id, i) => n + (savedOrder.indexOf(id) !== i ? 1 : 0),
+    0
+  );
 
   const move = (i, dir) => {
     const j = i + dir;
-    if (j < 0 || j >= services.length) return;
-    const ids = services.map((s) => s.id);
-    [ids[i], ids[j]] = [ids[j], ids[i]];
-    startReorder(async () => {
-      await reorderServices(ids);
-      router.refresh();
+    if (j < 0 || j >= order.length) return;
+    const movedId = order[i];
+    setOrder((prev) => {
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
     });
+    setFlashId(movedId);
+    setTimeout(() => setFlashId((c) => (c === movedId ? null : c)), 700);
+  };
+
+  const save = () =>
+    startTransition(async () => {
+      setPhase("saving");
+      try {
+        await reorderServices(order);
+        setSavedOrder(order);
+        setPhase("idle");
+      } catch {
+        setPhase("error");
+      }
+    });
+
+  const discard = () => {
+    setOrder(savedOrder);
+    setPhase("idle");
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
+      <UnsavedChangesGuard when={orderDirty} />
+      <SaveBar
+        dirty={orderDirty}
+        count={reorderedCount}
+        saving={phase === "saving"}
+        error={phase === "error"}
+        onSave={save}
+        onDiscard={discard}
+      />
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Services &amp; Information
           </h1>
           <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-            {services.length} categories, in the order they appear on the home
-            page.
+            {order.length} categories, in the order they appear on the home page.
           </p>
         </div>
         <form action={createService}>
@@ -47,12 +109,23 @@ export function ServicesList({ services, userEmail }) {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {services.map((service, i) => {
+        {order.map((id, i) => {
+          const service = byId[id];
+          if (!service) return null;
           const Icon = getServiceIcon(
             getServiceIconKey(service.slug, service.iconKey)
           );
+          const moved = savedOrder.indexOf(id) !== i;
           return (
-            <Card key={service.id} className="h-full">
+            <Card
+              key={id}
+              ref={flipRef(id)}
+              className={cn(
+                "h-full",
+                moved && "border-brand-300 bg-muted",
+                flashId === id && "reorder-flash"
+              )}
+            >
               <Link
                 href={`/admin/services/${service.id}`}
                 className="group flex flex-1 items-start gap-4 px-4 outline-none xl:px-6"
@@ -79,13 +152,19 @@ export function ServicesList({ services, userEmail }) {
                 <span className="text-ds-xxs font-bold text-muted-foreground">
                   #{i + 1}
                 </span>
-                <MoveControls
-                  onMoveUp={() => move(i, -1)}
-                  onMoveDown={() => move(i, 1)}
-                  isFirst={i === 0}
-                  isLast={i === services.length - 1}
-                  disabled={reordering}
-                />
+                <div className="flex items-center gap-3">
+                  {moved ? (
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
+                      Moved
+                    </span>
+                  ) : null}
+                  <MoveControls
+                    onMoveUp={() => move(i, -1)}
+                    onMoveDown={() => move(i, 1)}
+                    isFirst={i === 0}
+                    isLast={i === order.length - 1}
+                  />
+                </div>
               </div>
             </Card>
           );

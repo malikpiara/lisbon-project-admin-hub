@@ -5,13 +5,23 @@ import Link from "next/link";
 import { ExternalLink, FileText, HelpCircle, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field } from "@/components/admin/field";
+import { Field, DirtyDot } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { SaveBar } from "@/components/admin/save-bar";
+import { countChanges } from "@/lib/count-changes";
+import { useFlip } from "@/lib/use-flip";
+import { cn } from "@/lib/utils";
 import { AuditMeta } from "@/components/admin/audit-meta";
 import { deleteTopic, saveTopic } from "../actions";
 import { ArticlePreview } from "./article-preview";
+
+// Stable client-only keys per section/FAQ row so reordering can animate (FLIP)
+// and mark the moved row by identity. toPayload reconstructs explicit fields, so
+// `_k` is naturally dropped before saving.
+let _rowKeySeq = 0;
+const nextRowKey = () => `r${_rowKeySeq++}`;
 
 // Payload <-> editor mapping. The big reconciliation is `bullets`: Payload models
 // it as an array of { text }, the editor (and the public renderer) treat it as a
@@ -23,6 +33,7 @@ function fromPayload(topic) {
     description: topic.description ?? "",
     heroLead: a.heroLead ?? "",
     sections: (a.sections ?? []).map((s) => ({
+      _k: nextRowKey(),
       heading: s.heading ?? "",
       lead: s.lead ?? "",
       body: s.body ?? "",
@@ -33,6 +44,7 @@ function fromPayload(topic) {
     })),
     faqLead: a.faqLead ?? "",
     faqs: (a.faqs ?? []).map((f) => ({
+      _k: nextRowKey(),
       question: f.question ?? "",
       answer: f.answer ?? "",
     })),
@@ -66,99 +78,133 @@ function toPayload(d) {
 
 export function TopicEditor({ topic, service, audit }) {
   const [draft, setDraft] = useState(() => fromPayload(topic));
-  const [status, setStatus] = useState("saved"); // saved | dirty | saving | error
+  // Share draft's initial object so section/FAQ `_k`s match the baseline (separate
+  // fromPayload calls would assign different keys and read as dirty on load).
+  const [saved, setSaved] = useState(() => draft);
+  const [phase, setPhase] = useState("idle"); // idle | saving | error
   const [isPending, startTransition] = useTransition();
+  const sectionFlip = useFlip();
+  const faqFlip = useFlip();
+  const [flashSectionKey, setFlashSectionKey] = useState(null);
+  const [flashFaqKey, setFlashFaqKey] = useState(null);
+
+  // Reorder by identity (`_k`): a row is "moved" when its key sits at a different
+  // index than in the saved baseline. Wash/count compare by key too, so moving an
+  // unedited row doesn't light up its fields.
+  const savedSectionKeys = saved.sections.map((s) => s._k);
+  const savedSectionByK = Object.fromEntries(
+    saved.sections.map((s) => [s._k, s])
+  );
+  const reorderedSectionCount = draft.sections.reduce((n, s, i) => {
+    const si = savedSectionKeys.indexOf(s._k);
+    return n + (si !== -1 && si !== i ? 1 : 0);
+  }, 0);
+  const savedFaqKeys = saved.faqs.map((f) => f._k);
+  const savedFaqByK = Object.fromEntries(saved.faqs.map((f) => [f._k, f]));
+  const reorderedFaqCount = draft.faqs.reduce((n, f, i) => {
+    const si = savedFaqKeys.indexOf(f._k);
+    return n + (si !== -1 && si !== i ? 1 : 0);
+  }, 0);
+
+  // Honest diff: dirty derived from draft-vs-snapshot, so reverting clears it.
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const changeCount =
+    countChanges(draft, saved) + reorderedSectionCount + reorderedFaqCount;
+  const fieldDirty = (a, b) => (a ?? "") !== (b ?? "");
 
   const set = (patch) => {
     setDraft((d) => ({ ...d, ...patch }));
-    setStatus("dirty");
   };
   const setSection = (i, patch) => {
     setDraft((d) => ({
       ...d,
       sections: d.sections.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
     }));
-    setStatus("dirty");
   };
   const addSection = () => {
     setDraft((d) => ({
       ...d,
       sections: [
         ...d.sections,
-        { heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "" },
+        { _k: nextRowKey(), heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "" },
       ],
     }));
-    setStatus("dirty");
   };
   const removeSection = (i) => {
     setDraft((d) => ({ ...d, sections: d.sections.filter((_, idx) => idx !== i) }));
-    setStatus("dirty");
   };
   const moveSection = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= draft.sections.length) return;
+    const movedKey = draft.sections[i]._k;
     setDraft((d) => {
       const arr = [...d.sections];
-      const j = i + dir;
-      if (j < 0 || j >= arr.length) return d;
       [arr[i], arr[j]] = [arr[j], arr[i]];
       return { ...d, sections: arr };
     });
-    setStatus("dirty");
+    setFlashSectionKey(movedKey);
+    setTimeout(() => setFlashSectionKey((c) => (c === movedKey ? null : c)), 700);
   };
   const duplicateSection = (i) => {
     setDraft((d) => {
       const arr = [...d.sections];
-      arr.splice(i + 1, 0, { ...arr[i] });
+      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
       return { ...d, sections: arr };
     });
-    setStatus("dirty");
   };
   const setFaq = (i, patch) => {
     setDraft((d) => ({
       ...d,
       faqs: d.faqs.map((f, idx) => (idx === i ? { ...f, ...patch } : f)),
     }));
-    setStatus("dirty");
   };
   const addFaq = () => {
     setDraft((d) => ({
       ...d,
-      faqs: [...d.faqs, { question: "New question", answer: "" }],
+      faqs: [...d.faqs, { _k: nextRowKey(), question: "New question", answer: "" }],
     }));
-    setStatus("dirty");
   };
   const removeFaq = (i) => {
     setDraft((d) => ({ ...d, faqs: d.faqs.filter((_, idx) => idx !== i) }));
-    setStatus("dirty");
   };
   const moveFaq = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= draft.faqs.length) return;
+    const movedKey = draft.faqs[i]._k;
     setDraft((d) => {
       const arr = [...d.faqs];
-      const j = i + dir;
-      if (j < 0 || j >= arr.length) return d;
       [arr[i], arr[j]] = [arr[j], arr[i]];
       return { ...d, faqs: arr };
     });
-    setStatus("dirty");
+    setFlashFaqKey(movedKey);
+    setTimeout(() => setFlashFaqKey((c) => (c === movedKey ? null : c)), 700);
   };
   const duplicateFaq = (i) => {
     setDraft((d) => {
       const arr = [...d.faqs];
-      arr.splice(i + 1, 0, { ...arr[i] });
+      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
       return { ...d, faqs: arr };
     });
-    setStatus("dirty");
   };
 
-  const save = () =>
+  const save = () => {
+    const snapshot = draft;
     startTransition(async () => {
-      setStatus("saving");
+      setPhase("saving");
       try {
-        await saveTopic(topic.id, toPayload(draft));
-        setStatus("saved");
+        await saveTopic(topic.id, toPayload(snapshot));
+        setSaved(snapshot); // advance the baseline so dirty clears
+        setPhase("idle");
       } catch {
-        setStatus("error");
+        setPhase("error");
       }
     });
+  };
+
+  const discard = () => {
+    setDraft(saved);
+    setPhase("idle");
+  };
 
   const serviceSlug = service?.slug ?? "";
   const publicHref = serviceSlug
@@ -167,8 +213,16 @@ export function TopicEditor({ topic, service, audit }) {
 
   return (
     <div>
-      <UnsavedChangesGuard when={status === "dirty"} />
-      <div className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
+      <UnsavedChangesGuard when={dirty} />
+      <SaveBar
+        dirty={dirty}
+        count={changeCount}
+        saving={phase === "saving"}
+        error={phase === "error"}
+        onSave={save}
+        onDiscard={discard}
+      />
+      <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
           <nav className="text-ds-xxs font-medium text-muted-foreground">
             <Link href="/admin/services" className="hover:text-foreground">
@@ -205,14 +259,6 @@ export function TopicEditor({ topic, service, audit }) {
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              <SaveState status={status} />
-              <Button
-                size="sm"
-                onClick={save}
-                disabled={status === "saved" || status === "saving" || isPending}
-              >
-                Save
-              </Button>
               {publicHref ? (
                 <Link
                   href={publicHref}
@@ -244,7 +290,7 @@ export function TopicEditor({ topic, service, audit }) {
         </div>
       ) : null}
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+      <div className="mx-auto grid max-w-6xl gap-8 px-8 pt-10 pb-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <div className="min-w-0">
         <Section
           title="Basics"
@@ -256,6 +302,7 @@ export function TopicEditor({ topic, service, audit }) {
               required
               value={draft.title}
               onChange={(v) => set({ title: v })}
+              dirty={fieldDirty(draft.title, saved.title)}
             />
             <Field
               className="sm:col-span-2"
@@ -263,6 +310,7 @@ export function TopicEditor({ topic, service, audit }) {
               hint="Shown on the category card and reused as the intro line."
               value={draft.description}
               onChange={(v) => set({ description: v })}
+              dirty={fieldDirty(draft.description, saved.description)}
               textarea
               rows={2}
             />
@@ -272,6 +320,7 @@ export function TopicEditor({ topic, service, audit }) {
               hint="The bold line under the title at the top of the article."
               value={draft.heroLead}
               onChange={(v) => set({ heroLead: v })}
+              dirty={fieldDirty(draft.heroLead, saved.heroLead)}
             />
           </div>
         </Section>
@@ -294,77 +343,92 @@ export function TopicEditor({ topic, service, audit }) {
             />
           ) : (
             <div className="space-y-2">
-              {draft.sections.map((s, i) => (
-                <EditorRow
-                  key={i}
-                  title={s.heading || "Untitled section"}
-                  subtitle={s.lead}
-                  defaultOpen={s.heading === "New section"}
-                  onDelete={() => removeSection(i)}
-                  onMoveUp={() => moveSection(i, -1)}
-                  onMoveDown={() => moveSection(i, 1)}
-                  onDuplicate={() => duplicateSection(i)}
-                  isFirst={i === 0}
-                  isLast={i === draft.sections.length - 1}
-                >
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field
-                      label="Heading"
-                      required
-                      value={s.heading}
-                      onChange={(v) => setSection(i, { heading: v })}
-                    />
-                    <Field
-                      label="Lead"
-                      hint="Teal intro line above the body."
-                      value={s.lead}
-                      onChange={(v) => setSection(i, { lead: v })}
-                    />
-                    <Field
-                      className="sm:col-span-2"
-                      label="Body"
-                      hint="Paragraphs — separate them with a blank line."
-                      value={s.body}
-                      onChange={(v) => setSection(i, { body: v })}
-                      textarea
-                      rows={4}
-                    />
-                    <Field
-                      className="sm:col-span-2"
-                      label="Bullet list"
-                      hint="One item per line. Leave blank for no list."
-                      value={s.bullets}
-                      onChange={(v) => setSection(i, { bullets: v })}
-                      textarea
-                      rows={3}
-                    />
-                    <label className="flex items-center gap-2 text-ds-xs font-medium text-foreground sm:col-span-2">
-                      <Checkbox
-                        checked={s.ordered === true}
-                        onCheckedChange={(checked) =>
-                          setSection(i, { ordered: checked === true })
-                        }
-                      />
-                      Numbered list — show items as 1, 2, 3 instead of bullets
-                    </label>
-                    <Field
-                      className="sm:col-span-2"
-                      label="Button label"
-                      hint="Optional. Adds a button to this section; leave blank for none."
-                      value={s.cta}
-                      onChange={(v) => setSection(i, { cta: v })}
-                    />
-                    <Field
-                      className="sm:col-span-2"
-                      label="Button link"
-                      hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the category page."
-                      value={s.ctaHref}
-                      onChange={(v) => setSection(i, { ctaHref: v })}
-                      placeholder="/path or https://…"
-                    />
+              {draft.sections.map((s, i) => {
+                const sc = savedSectionByK[s._k];
+                const si = savedSectionKeys.indexOf(s._k);
+                const moved = si !== -1 && si !== i;
+                return (
+                  <div key={s._k} ref={sectionFlip(s._k)}>
+                    <EditorRow
+                      title={s.heading || "Untitled section"}
+                      subtitle={s.lead}
+                      defaultOpen={s.heading === "New section"}
+                      onDelete={() => removeSection(i)}
+                      onMoveUp={() => moveSection(i, -1)}
+                      onMoveDown={() => moveSection(i, 1)}
+                      onDuplicate={() => duplicateSection(i)}
+                      isFirst={i === 0}
+                      isLast={i === draft.sections.length - 1}
+                      marked={moved}
+                      flashing={flashSectionKey === s._k}
+                    >
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field
+                          label="Heading"
+                          required
+                          value={s.heading}
+                          onChange={(v) => setSection(i, { heading: v })}
+                          dirty={fieldDirty(s.heading, sc?.heading)}
+                        />
+                        <Field
+                          label="Lead"
+                          hint="Teal intro line above the body."
+                          value={s.lead}
+                          onChange={(v) => setSection(i, { lead: v })}
+                          dirty={fieldDirty(s.lead, sc?.lead)}
+                        />
+                        <Field
+                          className="sm:col-span-2"
+                          label="Body"
+                          hint="Paragraphs — separate them with a blank line."
+                          value={s.body}
+                          onChange={(v) => setSection(i, { body: v })}
+                          dirty={fieldDirty(s.body, sc?.body)}
+                          textarea
+                          rows={4}
+                        />
+                        <Field
+                          className="sm:col-span-2"
+                          label="Bullet list"
+                          hint="One item per line. Leave blank for no list."
+                          value={s.bullets}
+                          onChange={(v) => setSection(i, { bullets: v })}
+                          dirty={fieldDirty(s.bullets, sc?.bullets)}
+                          textarea
+                          rows={3}
+                        />
+                        <label className="flex items-center gap-2 text-ds-xs font-medium text-foreground sm:col-span-2">
+                          <Checkbox
+                            checked={s.ordered === true}
+                            onCheckedChange={(checked) =>
+                              setSection(i, { ordered: checked === true })
+                            }
+                          />
+                          Numbered list — show items as 1, 2, 3 instead of bullets
+                          {fieldDirty(s.ordered, sc?.ordered) ? <DirtyDot /> : null}
+                        </label>
+                        <Field
+                          className="sm:col-span-2"
+                          label="Button label"
+                          hint="Optional. Adds a button to this section; leave blank for none."
+                          value={s.cta}
+                          onChange={(v) => setSection(i, { cta: v })}
+                          dirty={fieldDirty(s.cta, sc?.cta)}
+                        />
+                        <Field
+                          className="sm:col-span-2"
+                          label="Button link"
+                          hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the category page."
+                          value={s.ctaHref}
+                          onChange={(v) => setSection(i, { ctaHref: v })}
+                          dirty={fieldDirty(s.ctaHref, sc?.ctaHref)}
+                          placeholder="/path or https://…"
+                        />
+                      </div>
+                    </EditorRow>
                   </div>
-                </EditorRow>
-              ))}
+                );
+              })}
             </div>
           )}
         </Section>
@@ -384,6 +448,7 @@ export function TopicEditor({ topic, service, audit }) {
             label="FAQ subheading"
             value={draft.faqLead}
             onChange={(v) => set({ faqLead: v })}
+            dirty={fieldDirty(draft.faqLead, saved.faqLead)}
           />
           {draft.faqs.length === 0 ? (
             <EmptyState
@@ -393,36 +458,46 @@ export function TopicEditor({ topic, service, audit }) {
             />
           ) : (
             <div className="space-y-2">
-              {draft.faqs.map((f, i) => (
-                <EditorRow
-                  key={i}
-                  title={f.question || "Untitled question"}
-                  subtitle={f.answer}
-                  defaultOpen={f.question === "New question"}
-                  onDelete={() => removeFaq(i)}
-                  onMoveUp={() => moveFaq(i, -1)}
-                  onMoveDown={() => moveFaq(i, 1)}
-                  onDuplicate={() => duplicateFaq(i)}
-                  isFirst={i === 0}
-                  isLast={i === draft.faqs.length - 1}
-                >
-                  <div className="grid gap-4">
-                    <Field
-                      label="Question"
-                      required
-                      value={f.question}
-                      onChange={(v) => setFaq(i, { question: v })}
-                    />
-                    <Field
-                      label="Answer"
-                      value={f.answer}
-                      onChange={(v) => setFaq(i, { answer: v })}
-                      textarea
-                      rows={3}
-                    />
+              {draft.faqs.map((f, i) => {
+                const fc = savedFaqByK[f._k];
+                const si = savedFaqKeys.indexOf(f._k);
+                const moved = si !== -1 && si !== i;
+                return (
+                  <div key={f._k} ref={faqFlip(f._k)}>
+                    <EditorRow
+                      title={f.question || "Untitled question"}
+                      subtitle={f.answer}
+                      defaultOpen={f.question === "New question"}
+                      onDelete={() => removeFaq(i)}
+                      onMoveUp={() => moveFaq(i, -1)}
+                      onMoveDown={() => moveFaq(i, 1)}
+                      onDuplicate={() => duplicateFaq(i)}
+                      isFirst={i === 0}
+                      isLast={i === draft.faqs.length - 1}
+                      marked={moved}
+                      flashing={flashFaqKey === f._k}
+                    >
+                      <div className="grid gap-4">
+                        <Field
+                          label="Question"
+                          required
+                          value={f.question}
+                          onChange={(v) => setFaq(i, { question: v })}
+                          dirty={fieldDirty(f.question, fc?.question)}
+                        />
+                        <Field
+                          label="Answer"
+                          value={f.answer}
+                          onChange={(v) => setFaq(i, { answer: v })}
+                          dirty={fieldDirty(f.answer, fc?.answer)}
+                          textarea
+                          rows={3}
+                        />
+                      </div>
+                    </EditorRow>
                   </div>
-                </EditorRow>
-              ))}
+                );
+              })}
             </div>
           )}
         </Section>
@@ -436,15 +511,4 @@ export function TopicEditor({ topic, service, audit }) {
       </div>
     </div>
   );
-}
-
-function SaveState({ status }) {
-  const map = {
-    saved: { label: "Saved", cls: "text-muted-foreground" },
-    dirty: { label: "Unsaved changes", cls: "text-brand-link" },
-    saving: { label: "Saving…", cls: "text-muted-foreground" },
-    error: { label: "Save failed — retry", cls: "text-destructive" },
-  };
-  const s = map[status] ?? map.saved;
-  return <span className={`text-ds-xxs font-medium ${s.cls}`}>{s.label}</span>;
 }

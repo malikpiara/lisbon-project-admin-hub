@@ -26,25 +26,21 @@ export default async function AdminServiceEditPage({ params }) {
   const { id } = await params;
   const { payload } = await authedPayload();
 
-  let service;
-  try {
-    // depth: 1 populates createdBy/updatedBy users for the audit line.
-    service = await payload.findByID({ collection: "services", id, depth: 1 });
-  } catch {
-    notFound();
-  }
-  if (!service) notFound();
-
-  const { docs: topics } = await payload.find({
+  // Topics and versions only need the URL id, not the service result — so start
+  // all three reads together and await them after, instead of waterfalling.
+  // depth: 1 on the service populates createdBy/updatedBy users for the audit line.
+  const servicePromise = payload
+    .findByID({ collection: "services", id, depth: 1 })
+    .catch(() => null);
+  const topicsPromise = payload.find({
     collection: "topics",
     where: { service: { equals: id } },
     sort: "order",
     limit: 100,
     depth: 0,
   });
-
   // PROTOTYPE (#2): version history for the restore panel.
-  const { docs: versionDocs } = await payload
+  const versionsPromise = payload
     .findVersions({
       collection: "services",
       where: { parent: { equals: id } },
@@ -53,6 +49,11 @@ export default async function AdminServiceEditPage({ params }) {
       depth: 1,
     })
     .catch(() => ({ docs: [] }));
+
+  const service = await servicePromise;
+  if (!service) notFound();
+  const { docs: topics } = await topicsPromise;
+  const { docs: versionDocs } = await versionsPromise;
 
   // versionDocs are newest-first; each entry's diff is vs the chronologically
   // previous (older) snapshot — i.e. "what this save changed".

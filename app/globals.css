@@ -360,3 +360,18 @@
 .tk-a { color: #1d4ed8; } /* attribute name */
 .tk-n { color: #b45309; } /* number */
 .tk-p { color: #64748b; } /* tag punctuation < > /> */
+
+/* Reorder feedback: a brief teal ring pulse on a row that just moved up/down.
+   Paired with the FLIP slide (lib/use-flip.js) so a discrete reorder is legible
+   for non-technical editors. */
+@keyframes reorder-flash {
+  from {
+    box-shadow: 0 0 0 3px var(--brand-400);
+  }
+  to {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.reorder-flash {
+  animation: reorder-flash 0.7s ease;
+}

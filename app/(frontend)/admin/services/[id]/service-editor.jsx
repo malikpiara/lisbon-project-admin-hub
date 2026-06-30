@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ChevronRight,
@@ -26,6 +25,10 @@ import {
   Section,
 } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { SaveBar } from "@/components/admin/save-bar";
+import { countChanges } from "@/lib/count-changes";
+import { useFlip } from "@/lib/use-flip";
+import { cn } from "@/lib/utils";
 import { AuditMeta } from "@/components/admin/audit-meta";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import {
@@ -34,6 +37,12 @@ import {
   saveService,
 } from "../actions";
 import { createTopic, reorderTopics } from "../../topics/actions";
+
+// Stable client-only key per contact row so reordering can animate (FLIP) and
+// mark the moved row by identity, independent of array index. Stripped before
+// saving (see toPayload) so it never reaches Payload.
+let _contactKeySeq = 0;
+const nextContactKey = () => `c${_contactKeySeq++}`;
 
 // Map Payload's stored shape <-> the editor draft. The string lists are arrays
 // of { text } in Payload (a named subfield is required); the editor treats intro
@@ -49,6 +58,7 @@ function fromPayload(s) {
     contactsSubtitle: s.contactsSubtitle ?? "",
     categoryFilters: (s.categoryFilters ?? []).map((c) => c.value ?? ""),
     contacts: (s.contacts ?? []).map((c) => ({
+      _k: nextContactKey(),
       organization: c.organization ?? "",
       service: c.service ?? "",
       phone: c.phone ?? "",
@@ -75,100 +85,166 @@ function toPayload(d) {
       .map((v) => v.trim())
       .filter(Boolean)
       .map((value) => ({ value })),
-    contacts: d.contacts,
+    contacts: d.contacts.map(({ _k, ...c }) => c), // drop the client-only key
   };
 }
 
 export function ServiceEditor({ service, topics, audit, versions = [] }) {
-  const router = useRouter();
   const [draft, setDraft] = useState(() => fromPayload(service));
-  const [status, setStatus] = useState("saved"); // saved | dirty | saving | error
+  // Share draft's initial object so contact `_k`s match the baseline (separate
+  // fromPayload calls would assign different keys and read as dirty on load).
+  const [saved, setSaved] = useState(() => draft);
+  const [phase, setPhase] = useState("idle"); // idle | saving | error
   const [isPending, startTransition] = useTransition();
-  const [reordering, startReorder] = useTransition();
+  const contactFlip = useFlip();
+  const [flashContactKey, setFlashContactKey] = useState(null);
+
+  // Topics reorder is deferred (local order, persisted on Save) rather than the
+  // old instant server-action + router.refresh — so rows slide (FLIP), the moved
+  // topic pulses + stays marked until saved, and reorders feed the change count.
+  const topicById = Object.fromEntries(topics.map((t) => [t.id, t]));
+  const topicIds = topics.map((t) => t.id);
+  const topicKey = topicIds.join("|");
+  const [topicOrder, setTopicOrder] = useState(topicIds);
+  const [savedTopicOrder, setSavedTopicOrder] = useState(topicIds);
+  const [topicSyncKey, setTopicSyncKey] = useState(topicKey);
+  const [flashTopicId, setFlashTopicId] = useState(null);
+  const topicFlip = useFlip();
+  // Re-sync to server membership when topics are added/deleted (adjust during
+  // render, preserving any pending local reorder of the topics that remain).
+  if (topicSyncKey !== topicKey) {
+    setTopicSyncKey(topicKey);
+    setSavedTopicOrder(topicIds);
+    setTopicOrder((prev) => {
+      const kept = prev.filter((id) => topicIds.includes(id));
+      const added = topicIds.filter((id) => !kept.includes(id));
+      return [...kept, ...added];
+    });
+  }
+  const topicOrderDirty = topicOrder.join("|") !== savedTopicOrder.join("|");
+  const reorderedTopicCount = topicOrder.reduce(
+    (n, id, i) => n + (savedTopicOrder.indexOf(id) !== i ? 1 : 0),
+    0
+  );
+
+  // Contacts reorder by identity (`_k`): a contact is "moved" when its key sits
+  // at a different index than in the saved baseline. The wash/count compare by
+  // key too, so reordering an unedited contact doesn't light up its fields.
+  const savedContactKeys = saved.contacts.map((c) => c._k);
+  const savedContactByK = Object.fromEntries(
+    saved.contacts.map((c) => [c._k, c])
+  );
+  const reorderedContactCount = draft.contacts.reduce((n, c, i) => {
+    const si = savedContactKeys.indexOf(c._k);
+    return n + (si !== -1 && si !== i ? 1 : 0);
+  }, 0);
+
+  // Honest diff: derived by comparing the working draft to the last-saved
+  // snapshot (the old one-way latch never relaxed). Field edits, topic reorders
+  // and contact reorders all feed dirty and the change count.
+  const fieldsDirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const dirty = fieldsDirty || topicOrderDirty;
+  const changeCount =
+    countChanges(draft, saved) + reorderedTopicCount + reorderedContactCount;
+  const fieldDirty = (a, b) => (a ?? "") !== (b ?? "");
 
   const moveTopic = (i, dir) => {
     const j = i + dir;
-    if (j < 0 || j >= topics.length) return;
-    const ids = topics.map((t) => t.id);
-    [ids[i], ids[j]] = [ids[j], ids[i]];
-    startReorder(async () => {
-      await reorderTopics(ids, service.id);
-      router.refresh();
+    if (j < 0 || j >= topicOrder.length) return;
+    const movedId = topicOrder[i];
+    setTopicOrder((prev) => {
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
     });
+    setFlashTopicId(movedId);
+    setTimeout(() => setFlashTopicId((c) => (c === movedId ? null : c)), 700);
   };
 
   const set = (patch) => {
     setDraft((d) => ({ ...d, ...patch }));
-    setStatus("dirty");
   };
   const setContact = (i, patch) => {
     setDraft((d) => ({
       ...d,
       contacts: d.contacts.map((c, idx) => (idx === i ? { ...c, ...patch } : c)),
     }));
-    setStatus("dirty");
   };
   const addContact = () => {
     setDraft((d) => ({
       ...d,
       contacts: [
         ...d.contacts,
-        { organization: "New organization", service: "", phone: "", email: "", category: "" },
+        { _k: nextContactKey(), organization: "New organization", service: "", phone: "", email: "", category: "" },
       ],
     }));
-    setStatus("dirty");
   };
   const removeContact = (i) => {
     setDraft((d) => ({ ...d, contacts: d.contacts.filter((_, idx) => idx !== i) }));
-    setStatus("dirty");
   };
   const moveContact = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= draft.contacts.length) return;
+    const movedKey = draft.contacts[i]._k;
     setDraft((d) => {
       const arr = [...d.contacts];
-      const j = i + dir;
-      if (j < 0 || j >= arr.length) return d;
       [arr[i], arr[j]] = [arr[j], arr[i]];
       return { ...d, contacts: arr };
     });
-    setStatus("dirty");
+    setFlashContactKey(movedKey);
+    setTimeout(() => setFlashContactKey((c) => (c === movedKey ? null : c)), 700);
   };
   const duplicateContact = (i) => {
     setDraft((d) => {
       const arr = [...d.contacts];
-      arr.splice(i + 1, 0, { ...arr[i] });
+      arr.splice(i + 1, 0, { ...arr[i], _k: nextContactKey() });
       return { ...d, contacts: arr };
     });
-    setStatus("dirty");
   };
   const setCategoryFilter = (i, v) => {
     setDraft((d) => ({
       ...d,
       categoryFilters: d.categoryFilters.map((c, idx) => (idx === i ? v : c)),
     }));
-    setStatus("dirty");
   };
   const addCategoryFilter = () => {
     setDraft((d) => ({ ...d, categoryFilters: [...d.categoryFilters, ""] }));
-    setStatus("dirty");
   };
   const removeCategoryFilter = (i) => {
     setDraft((d) => ({
       ...d,
       categoryFilters: d.categoryFilters.filter((_, idx) => idx !== i),
     }));
-    setStatus("dirty");
   };
 
-  const save = () =>
+  const save = () => {
+    const snapshot = draft;
+    const orderSnapshot = topicOrder;
     startTransition(async () => {
-      setStatus("saving");
+      setPhase("saving");
       try {
-        await saveService(service.id, toPayload(draft));
-        setStatus("saved");
+        // Only re-save the service when fields changed, so a topic-only reorder
+        // doesn't create a spurious service version.
+        if (fieldsDirty) {
+          await saveService(service.id, toPayload(snapshot));
+          setSaved(snapshot); // advance the baseline so dirty clears
+        }
+        if (topicOrderDirty) {
+          await reorderTopics(orderSnapshot, service.id);
+          setSavedTopicOrder(orderSnapshot);
+        }
+        setPhase("idle");
       } catch {
-        setStatus("error");
+        setPhase("error");
       }
     });
+  };
+
+  const discard = () => {
+    setDraft(saved);
+    setTopicOrder(savedTopicOrder);
+    setPhase("idle");
+  };
 
   // PROTOTYPE (#2): restore a past version, then reload so the editor re-reads
   // the restored document.
@@ -182,8 +258,16 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
 
   return (
     <div>
-      <UnsavedChangesGuard when={status === "dirty"} />
-      <div className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
+      <UnsavedChangesGuard when={dirty} />
+      <SaveBar
+        dirty={dirty}
+        count={changeCount}
+        saving={phase === "saving"}
+        error={phase === "error"}
+        onSave={save}
+        onDiscard={discard}
+      />
+      <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
           <Link
             href="/admin/services"
@@ -209,14 +293,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              <SaveState status={status} />
-              <Button
-                size="sm"
-                onClick={save}
-                disabled={status === "saved" || status === "saving" || isPending}
-              >
-                Save
-              </Button>
               <Link
                 href={`/services/${service.slug}`}
                 target="_blank"
@@ -246,7 +322,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-5xl px-8 py-10">
+      <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
         <Section
           title="Basics"
           description="How this category appears on the home grid and its own page."
@@ -257,12 +333,14 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               required
               value={draft.title}
               onChange={(v) => set({ title: v })}
+              dirty={fieldDirty(draft.title, saved.title)}
               hint="Shown on the home grid card and the category page."
             />
             <Field
               label="Breadcrumb label"
               value={draft.breadcrumb}
               onChange={(v) => set({ breadcrumb: v })}
+              dirty={fieldDirty(draft.breadcrumb, saved.breadcrumb)}
               hint="Short label for the breadcrumb trail."
             />
             <Field
@@ -270,6 +348,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               label="Short description"
               value={draft.shortDescription}
               onChange={(v) => set({ shortDescription: v })}
+              dirty={fieldDirty(draft.shortDescription, saved.shortDescription)}
               textarea
               rows={2}
               hint="Copy for the home grid card."
@@ -279,6 +358,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               label="Intro paragraphs"
               value={draft.intro}
               onChange={(v) => set({ intro: v })}
+              dirty={fieldDirty(draft.intro, saved.intro)}
               textarea
               rows={4}
               hint="Paragraphs separated by a blank line."
@@ -301,11 +381,13 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               label="Section title"
               value={draft.contactsTitle}
               onChange={(v) => set({ contactsTitle: v })}
+              dirty={fieldDirty(draft.contactsTitle, saved.contactsTitle)}
             />
             <Field
               label="Section subtitle"
               value={draft.contactsSubtitle}
               onChange={(v) => set({ contactsSubtitle: v })}
+              dirty={fieldDirty(draft.contactsSubtitle, saved.contactsSubtitle)}
             />
           </div>
         </Section>
@@ -335,6 +417,11 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                     value={value}
                     onChange={(e) => setCategoryFilter(i, e.target.value)}
                     placeholder="e.g. Housing"
+                    className={
+                      fieldDirty(value, saved.categoryFilters[i])
+                        ? "border-brand-300 bg-muted"
+                        : ""
+                    }
                   />
                   <button
                     type="button"
@@ -352,7 +439,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
 
         <Section
           title="Topics"
-          count={topics.length}
+          count={topicOrder.length}
           description="Each topic is an article on this category's page. Open one to edit its content."
           action={
             <form action={createTopic.bind(null, service.id)}>
@@ -363,7 +450,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
             </form>
           }
         >
-          {topics.length === 0 ? (
+          {topicOrder.length === 0 ? (
             <EmptyState
               icon={FileText}
               label="No topics yet"
@@ -371,38 +458,52 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
             />
           ) : (
             <div className="space-y-2">
-              {topics.map((t, i) => (
-                <div
-                  key={t.id}
-                  className="flex items-center gap-1 overflow-hidden rounded-lg border-2 border-border bg-card transition-colors hover:border-foreground/20"
-                >
-                  <Link
-                    href={`/admin/topics/${t.id}`}
-                    className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
+              {topicOrder.map((id, i) => {
+                const t = topicById[id];
+                if (!t) return null;
+                const moved = savedTopicOrder.indexOf(id) !== i;
+                return (
+                  <div
+                    key={id}
+                    ref={topicFlip(id)}
+                    className={cn(
+                      "flex items-center gap-1 overflow-hidden rounded-lg border-2 border-border bg-card transition-colors hover:border-foreground/20",
+                      moved && "border-brand-300 bg-muted",
+                      flashTopicId === id && "reorder-flash"
+                    )}
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate text-ds-xs font-bold text-foreground">
-                        {t.title || "Untitled topic"}
-                      </span>
-                      {t.description ? (
-                        <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
-                          {t.description}
+                    <Link
+                      href={`/admin/topics/${t.id}`}
+                      className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-ds-xs font-bold text-foreground">
+                          {t.title || "Untitled topic"}
                         </span>
-                      ) : null}
-                    </span>
-                    <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                  <div className="pr-2">
-                    <MoveControls
-                      onMoveUp={() => moveTopic(i, -1)}
-                      onMoveDown={() => moveTopic(i, 1)}
-                      isFirst={i === 0}
-                      isLast={i === topics.length - 1}
-                      disabled={reordering}
-                    />
+                        {t.description ? (
+                          <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
+                            {t.description}
+                          </span>
+                        ) : null}
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                    {moved ? (
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
+                        Moved
+                      </span>
+                    ) : null}
+                    <div className="pr-2">
+                      <MoveControls
+                        onMoveUp={() => moveTopic(i, -1)}
+                        onMoveDown={() => moveTopic(i, 1)}
+                        isFirst={i === 0}
+                        isLast={i === topicOrder.length - 1}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Section>
@@ -425,53 +526,66 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
             />
           ) : (
             <div className="space-y-2">
-              {draft.contacts.map((contact, i) => (
-                <EditorRow
-                  key={i}
-                  title={contact.organization || "New organization"}
-                  subtitle={[contact.category, contact.service]
-                    .filter(Boolean)
-                    .join(" · ")}
-                  defaultOpen={contact.organization === "New organization"}
-                  onDelete={() => removeContact(i)}
-                  onMoveUp={() => moveContact(i, -1)}
-                  onMoveDown={() => moveContact(i, 1)}
-                  onDuplicate={() => duplicateContact(i)}
-                  isFirst={i === 0}
-                  isLast={i === draft.contacts.length - 1}
-                >
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field
-                      label="Organization"
-                      required
-                      value={contact.organization}
-                      onChange={(v) => setContact(i, { organization: v })}
-                    />
-                    <Field
-                      label="Category"
-                      value={contact.category}
-                      onChange={(v) => setContact(i, { category: v })}
-                    />
-                    <Field
-                      className="sm:col-span-2"
-                      label="Service description"
-                      value={contact.service}
-                      onChange={(v) => setContact(i, { service: v })}
-                    />
-                    <Field
-                      label="Phone"
-                      value={contact.phone}
-                      onChange={(v) => setContact(i, { phone: v })}
-                    />
-                    <Field
-                      label="Email"
-                      type="email"
-                      value={contact.email}
-                      onChange={(v) => setContact(i, { email: v })}
-                    />
+              {draft.contacts.map((contact, i) => {
+                const sc = savedContactByK[contact._k];
+                const si = savedContactKeys.indexOf(contact._k);
+                const moved = si !== -1 && si !== i;
+                return (
+                  <div key={contact._k} ref={contactFlip(contact._k)}>
+                    <EditorRow
+                      title={contact.organization || "New organization"}
+                      subtitle={[contact.category, contact.service]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      defaultOpen={contact.organization === "New organization"}
+                      onDelete={() => removeContact(i)}
+                      onMoveUp={() => moveContact(i, -1)}
+                      onMoveDown={() => moveContact(i, 1)}
+                      onDuplicate={() => duplicateContact(i)}
+                      isFirst={i === 0}
+                      isLast={i === draft.contacts.length - 1}
+                      marked={moved}
+                      flashing={flashContactKey === contact._k}
+                    >
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field
+                          label="Organization"
+                          required
+                          value={contact.organization}
+                          onChange={(v) => setContact(i, { organization: v })}
+                          dirty={fieldDirty(contact.organization, sc?.organization)}
+                        />
+                        <Field
+                          label="Category"
+                          value={contact.category}
+                          onChange={(v) => setContact(i, { category: v })}
+                          dirty={fieldDirty(contact.category, sc?.category)}
+                        />
+                        <Field
+                          className="sm:col-span-2"
+                          label="Service description"
+                          value={contact.service}
+                          onChange={(v) => setContact(i, { service: v })}
+                          dirty={fieldDirty(contact.service, sc?.service)}
+                        />
+                        <Field
+                          label="Phone"
+                          value={contact.phone}
+                          onChange={(v) => setContact(i, { phone: v })}
+                          dirty={fieldDirty(contact.phone, sc?.phone)}
+                        />
+                        <Field
+                          label="Email"
+                          type="email"
+                          value={contact.email}
+                          onChange={(v) => setContact(i, { email: v })}
+                          dirty={fieldDirty(contact.email, sc?.email)}
+                        />
+                      </div>
+                    </EditorRow>
                   </div>
-                </EditorRow>
-              ))}
+                );
+              })}
             </div>
           )}
         </Section>
@@ -529,17 +643,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
       </div>
     </div>
   );
-}
-
-function SaveState({ status }) {
-  const map = {
-    saved: { label: "Saved", cls: "text-muted-foreground" },
-    dirty: { label: "Unsaved changes", cls: "text-brand-link" },
-    saving: { label: "Saving…", cls: "text-muted-foreground" },
-    error: { label: "Save failed — retry", cls: "text-destructive" },
-  };
-  const s = map[status] ?? map.saved;
-  return <span className={`text-ds-xxs font-medium ${s.cls}`}>{s.label}</span>;
 }
 
 function clip(value) {

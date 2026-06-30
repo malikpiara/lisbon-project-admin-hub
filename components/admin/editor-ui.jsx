@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { DeleteButton } from "@/components/admin/delete-button";
+import { cn } from "@/lib/utils";
 
 // Compact ghost icon button for row actions (reorder / duplicate). Visible
 // inline rather than hidden in a "⋮" popup like Payload — recognition over
@@ -82,12 +83,18 @@ export function EditorRow({
   onDuplicate,
   isFirst,
   isLast,
+  marked = false,
+  flashing = false,
   children,
 }) {
   return (
     <Collapsible
       defaultOpen={defaultOpen}
-      className="overflow-hidden rounded-lg border-2 border-border bg-card"
+      className={cn(
+        "overflow-hidden rounded-lg border-2 border-border bg-card",
+        marked && "border-brand-300 bg-muted",
+        flashing && "reorder-flash"
+      )}
     >
       <div className="flex items-center gap-2 px-4 py-3">
         <CollapsibleTrigger className="group/row flex min-w-0 flex-1 items-center gap-3 text-left outline-none">
@@ -104,6 +111,11 @@ export function EditorRow({
           </span>
         </CollapsibleTrigger>
         <div className="flex shrink-0 items-center gap-0.5">
+          {marked ? (
+            <span className="mr-1 rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
+              Moved
+            </span>
+          ) : null}
           {onMoveUp ? (
             <RowAction
               icon={ArrowUp}

@@ -12,6 +12,18 @@ import {
 
 const labelClass = "mb-1.5 block text-ds-xs font-medium text-foreground";
 
+// The brand-link "changed since saved" marker. Shared so every field signal —
+// text inputs (via Field), checkboxes, anywhere — uses the identical dot.
+// Pass `className` for spacing (Field uses ml-1.5; flex labels rely on gap).
+export function DirtyDot({ className = "" }) {
+  return (
+    <span
+      className={`inline-block size-1.5 rounded-full bg-brand-link align-middle ${className}`}
+      aria-hidden
+    />
+  );
+}
+
 export function Field({
   label,
   value,
@@ -22,8 +34,14 @@ export function Field({
   rows = 3,
   hint,
   required = false,
+  // When true, the field differs from its last-saved value: soft mint wash on
+  // the control + a brand-link dot on the label. Focus still wins the border
+  // (turns teal via focus-visible:border-ring), so "editing now" stays distinct
+  // from "changed earlier".
+  dirty = false,
   className = "",
 }) {
+  const wash = dirty ? "border-brand-300 bg-muted" : "";
   return (
     <label className={`block ${className}`}>
       <span className={labelClass}>
@@ -33,6 +51,7 @@ export function Field({
             *
           </span>
         ) : null}
+        {dirty ? <DirtyDot className="ml-1.5" /> : null}
       </span>
       {textarea ? (
         <Textarea
@@ -40,6 +59,7 @@ export function Field({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={rows}
+          className={wash}
         />
       ) : (
         <Input
@@ -47,6 +67,7 @@ export function Field({
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          className={wash}
         />
       )}
       {hint ? (

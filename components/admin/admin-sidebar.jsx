@@ -45,7 +45,7 @@ const navGroups = [
 export function AdminSidebar({ userEmail }) {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-bg-page px-4 py-6">
+    <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6">
       <div className="mb-6 px-2">
         <p className="font-heading text-ds-s font-bold text-brand-dark">
           Admin Hub

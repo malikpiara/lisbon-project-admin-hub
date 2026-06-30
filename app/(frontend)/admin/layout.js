@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }) {
   return (
     <div className="flex min-h-dvh">
       <AdminSidebar userEmail={user.email} />
-      <div className="min-w-0 flex-1 bg-background">{children}</div>
+      <div className="min-w-0 flex-1 bg-card">{children}</div>
     </div>
   );
 }
