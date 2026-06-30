@@ -18,34 +18,61 @@ export default async function LoginPage() {
   if (user) redirect("/admin");
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="rounded-lg border-2 border-border bg-card p-8 shadow-md">
-          <div className="mb-7 flex flex-col items-center text-center">
-            <Image
-              src="/lisbon-project-logo.svg"
-              alt="The Lisbon Project"
-              width={108}
-              height={43}
-              priority
-              unoptimized
-              className="mb-6 h-11 w-auto"
-            />
-            <h1 className="font-heading text-ds-l font-bold text-foreground">
-              Sign in to Admin Hub
-            </h1>
-            <p className="mt-1.5 text-ds-xs font-medium text-muted-foreground">
-              Use your team account to continue.
-            </p>
-          </div>
-
-          <LoginForm />
+    <div className="grid min-h-svh lg:grid-cols-2">
+      {/* Form side */}
+      <div className="flex flex-col gap-8 bg-card p-6 md:p-10">
+        <div className="flex justify-center lg:justify-start">
+          <Image
+            src="/lisbon-project-logo.svg"
+            alt="The Lisbon Project"
+            width={108}
+            height={43}
+            priority
+            unoptimized
+            className="h-9 w-auto"
+          />
         </div>
 
-        <p className="mt-4 text-center text-ds-xxs font-medium text-muted-foreground">
-          The Lisbon Project · staff access only
-        </p>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-sm">
+            <div className="mb-7 text-center lg:text-left">
+              <h1 className="font-heading text-ds-l font-bold text-foreground">
+                Sign in to Admin Hub
+              </h1>
+              <p className="mt-1.5 text-ds-xs font-medium text-muted-foreground">
+                Use your team account to continue.
+              </p>
+            </div>
+
+            <LoginForm />
+
+            <p className="mt-6 text-center text-ds-xxs font-medium text-muted-foreground lg:text-left">
+              Staff access only.
+            </p>
+          </div>
+        </div>
       </div>
-    </main>
+
+      {/* Cover side — brand panel, hidden on small screens (login-02 pattern) */}
+      <div className="relative hidden flex-col justify-between bg-brand-900 p-12 lg:flex">
+        <Image
+          src="/lisbon-project-logo.svg"
+          alt=""
+          width={108}
+          height={43}
+          unoptimized
+          className="h-10 w-auto"
+        />
+        <div className="max-w-md">
+          <p className="font-heading text-ds-xl font-bold leading-tight text-brand-000">
+            Supporting people who&rsquo;ve made Lisbon their new home.
+          </p>
+          <p className="mt-3 text-ds-s font-medium text-brand-300">
+            The Admin Hub is where the team keeps services, topics, and contacts
+            up to date for our community.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
