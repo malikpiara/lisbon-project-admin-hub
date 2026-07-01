@@ -87,6 +87,28 @@ Each topic can carry an `article`: `{ heroLead, sections[], faqLead, faqs[] }`.
   (`bg-secondary`). They drive only the admin swatch/dots (used directly as
   Tailwind colours) — there is **no** `lib/admin-tones.js` hex map (that file
   does not exist). Choosing a tone changes the admin swatch, not the public card colour.
+- **Colour tokens are a 3-layer, mode-aware system** (`app/globals.css`):
+  primitives (`--brand-*`, `--neutral-*`, `--project-*`, `--green`/`--red`) →
+  semantic roles (`--brand-primary`, `--bg-*`, `--text-*`,
+  `--positive`/`--negative`) → shadcn aliases (`--background`, `--card`,
+  `--primary`…). The `.dark` block restates **only** the primitives and the roles
+  that remap; the shadcn aliases are pure `var()` chains, so they re-resolve
+  automatically. Build with tokens, never a pasted hex. **Dark mode is fully
+  defined but not wired to a toggle yet.**
+- **The `/components/colors` reference is copy-first and reads live values.**
+  Swatches (`color-grid.tsx`) paint from `var(--token)` and read the resolved hex
+  back with `getComputedStyle` (an `IntersectionObserver` re-reads when the
+  collapsed component-token disclosure opens). Click copies the hex, ⌥-click
+  copies the CSS variable, and each swatch's hover tooltip shows both plus
+  best-text contrast. There is **no** per-swatch WCAG badge — "best of
+  black/white text" is mathematically always ≥4.58:1 (≥AA), so it could never
+  flag; contrast guidance lives in the tooltip + the Accessibility doc section.
+- **Doc pages branch by category.** `component-doc-page.tsx` renders foundation
+  docs (`category === "Foundations"`) without the props-table "API Reference";
+  Colors supplies `guide` (How to use, Accessibility) + `previewSections`
+  (palette ToC) instead of the generic Installation/Usage/Composition.
+  `components/ui/tooltip.tsx` is a new Base UI wrapper (inverted dark chip that
+  auto-adapts to dark) reused app-wide.
 
 ## Known inconsistencies / things to be aware of
 
@@ -101,3 +123,43 @@ Each topic can carry an `article`: `{ heroLead, sections[], faqLead, faqs[] }`.
 | 7 | Navigation (breadcrumb / main-menu / footer / list-item) and Sections (contact / grid / header / text) are **not** fully audited against Figma. The header menu button is fixed; the rest is outstanding. | Outstanding |
 | 8 | Infobox border (`border-2 border-brand-link`) contradicts the `infobox/border` token (#0d635d). | Pending a designer call |
 | 9 | The public pages are client-rendered from localStorage (hydration gap; not true SSG). | Architectural, by design for the prototype |
+
+## Pre-release review — revisit before shipping
+
+Surfaced while reworking the colour tokens and the `/components/colors`
+reference. None block the current spike, but each wants a decision before a
+public release.
+
+- [ ] **DS cross-mode inconsistencies (owner: Rafael).** The Figma exports are
+  faithful but internally inconsistent between Light and Dark:
+  `chatbot/background` is `#F57600` (light) yet `brand-600` (dark);
+  `social-care` shifts orange→red and `community-life` red→magenta across modes,
+  while the other three programme areas keep their hue. Confirm these are
+  intentional or fix at source.
+- [ ] **Legacy / off-DS tokens to clean up** (`app/globals.css`). Remove the
+  one-off aliases `--bg-water` (#90DAEC), `--brand-yellow`, `--brand-yellow-soft`
+  (~1 use each). Map the off-token values `--secondary-foreground` (#155E57) and
+  `--muted` (#E8F6F4) to real DS tokens once Button/Tag are built (both carry a
+  TODO in the file).
+- [ ] **Dark mode has no toggle.** Tokens are defined in `.dark` but nothing
+  switches it. When a toggle lands, the `/components/colors` swatches must re-read
+  their hex on theme change — they currently read at mount/visibility, not on a
+  class change.
+- [ ] **`color-tokens.ts` is light-only.** The 208 component tokens map to their
+  light references; chatbot, breadcrumb divider and card-service point at
+  different primitives in dark, so that section is accurate in light mode only.
+  It also mirrors a Figma typo (`card-service.iconbackgorund`) deliberately to
+  stay 1:1 with source — fix upstream first, then here.
+- [ ] **Accessibility note.** ⌥-click (copy CSS variable) is mouse-only; the
+  primary hex copy is keyboard-accessible. Acceptable for a contributor docs
+  page, but worth a keyboard path if this ships wider.
+- [ ] **Strict build.** Pre-existing TS errors in `components/ui/chart.tsx`
+  (recharts typings) are unrelated to this work but will surface in a strict
+  `next build`. Verify the deploy build before release.
+- [ ] **Test data.** 4 leftover "New card" Quick Access rows (ids 10, 12, 13, 14)
+  remain in the DB from add-card testing — delete before release.
+- [ ] **Follow-ups (not blockers).** The colours page is Direction A
+  (copy-first). Direction C (role-first ordering) and Direction B (a global
+  component search) are designed but unbuilt. The other foundation docs
+  (Typography/Radii/Icons) still use the fallback Installation/Usage/Composition
+  and could take the How-to-use/Accessibility treatment.

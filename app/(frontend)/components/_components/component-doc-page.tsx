@@ -28,9 +28,7 @@ function PreviewFrame({
   }
 
   return (
-    <div className="rounded-lg bg-card p-8 ring-2 ring-border">
-      {children}
-    </div>
+    <div className="rounded-lg bg-card p-8 ring-2 ring-border">{children}</div>
   );
 }
 
@@ -55,25 +53,79 @@ function DocBlock({
   );
 }
 
+function InstallationBlock({ doc }: { doc: ComponentDoc }) {
+  return (
+    <DocBlock id="installation" title="Installation">
+      <p className="max-w-3xl text-ds-s font-medium text-foreground">
+        {doc.installation}
+      </p>
+      {doc.importCode ? <CodeBlock code={doc.importCode} /> : null}
+    </DocBlock>
+  );
+}
+
+function UsageBlock({ doc }: { doc: ComponentDoc }) {
+  return (
+    <DocBlock id="usage" title="Usage">
+      <p className="max-w-3xl text-ds-s font-medium text-foreground">
+        {doc.usage}
+      </p>
+      {doc.usageCode ? <CodeBlock code={doc.usageCode} /> : null}
+    </DocBlock>
+  );
+}
+
+function CompositionBlock({ doc }: { doc: ComponentDoc }) {
+  return (
+    <DocBlock id="composition" title="Composition">
+      <ul className="grid gap-3 text-ds-s font-medium text-foreground">
+        {doc.composition.map((item) => (
+          <li key={item} className="rounded-lg bg-muted px-4 py-3">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </DocBlock>
+  );
+}
+
 export function ComponentDocPage({ doc }: { doc: ComponentDoc }) {
+  const isFoundation = doc.category === "Foundations";
   const hasComposition = doc.composition.length > 0;
   const hasExamples = doc.examples.length > 0;
-  const rightNav: { id: string; label: string; child?: boolean }[] = [
-    { id: "installation", label: "Installation" },
-    { id: "usage", label: "Usage" },
-    ...(hasComposition ? [{ id: "composition", label: "Composition" }] : []),
-    ...(hasExamples
-      ? [
-          { id: "examples", label: "Examples" },
-          ...doc.examples.map((example) => ({
-            id: slugify(example.title),
-            label: example.title,
-            child: true,
-          })),
-        ]
-      : []),
-    { id: "api-reference", label: "API Reference" },
-  ];
+  const guide = doc.guide ?? [];
+  const hasGuide = guide.length > 0;
+  const previewSections = doc.previewSections ?? [];
+
+  const rightNav: { id: string; label: string; child?: boolean }[] = isFoundation
+    ? [
+        ...previewSections.map((s) => ({ id: s.id, label: s.label })),
+        ...(hasGuide
+          ? guide.map((s) => ({ id: s.id, label: s.title }))
+          : [
+              { id: "installation", label: "Installation" },
+              { id: "usage", label: "Usage" },
+              ...(hasComposition
+                ? [{ id: "composition", label: "Composition" }]
+                : []),
+            ]),
+      ]
+    : [
+        { id: "installation", label: "Installation" },
+        { id: "usage", label: "Usage" },
+        ...(hasComposition ? [{ id: "composition", label: "Composition" }] : []),
+        ...(hasExamples
+          ? [
+              { id: "examples", label: "Examples" },
+              ...doc.examples.map((example) => ({
+                id: slugify(example.title),
+                label: example.title,
+                child: true,
+              })),
+            ]
+          : []),
+        { id: "api-reference", label: "API Reference" },
+      ];
 
   return (
     <div className="grid min-w-0 gap-12 lg:grid-cols-[minmax(0,1fr)_14rem]">
@@ -95,85 +147,92 @@ export function ComponentDocPage({ doc }: { doc: ComponentDoc }) {
           {doc.preview}
         </PreviewFrame>
 
-        <DocBlock id="installation" title="Installation">
-          <p className="max-w-3xl text-ds-s font-medium text-foreground">
-            {doc.installation}
-          </p>
-          {doc.importCode ? <CodeBlock code={doc.importCode} /> : null}
-        </DocBlock>
+        {isFoundation ? (
+          hasGuide ? (
+            guide.map((section) => (
+              <DocBlock key={section.id} id={section.id} title={section.title}>
+                {section.body}
+              </DocBlock>
+            ))
+          ) : (
+            <>
+              <InstallationBlock doc={doc} />
+              <UsageBlock doc={doc} />
+              {hasComposition ? <CompositionBlock doc={doc} /> : null}
+            </>
+          )
+        ) : (
+          <>
+            <InstallationBlock doc={doc} />
+            <UsageBlock doc={doc} />
+            {hasComposition ? <CompositionBlock doc={doc} /> : null}
 
-        <DocBlock id="usage" title="Usage">
-          <p className="max-w-3xl text-ds-s font-medium text-foreground">
-            {doc.usage}
-          </p>
-          {doc.usageCode ? <CodeBlock code={doc.usageCode} /> : null}
-        </DocBlock>
+            {hasExamples ? (
+              <DocBlock id="examples" title="Examples">
+                <div className="space-y-10">
+                  {doc.examples.map((example) => (
+                    <section
+                      key={example.title}
+                      id={slugify(example.title)}
+                      className="scroll-mt-28 space-y-4"
+                    >
+                      <div>
+                        <h3 className="font-heading text-ds-xl font-bold text-foreground">
+                          {example.title}
+                        </h3>
+                        {example.description ? (
+                          <p className="mt-2 max-w-3xl text-ds-s font-medium text-muted-foreground">
+                            {example.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      <PreviewFrame fullWidth={example.fullWidth}>
+                        {example.preview}
+                      </PreviewFrame>
+                      {example.code ? <CodeBlock code={example.code} /> : null}
+                    </section>
+                  ))}
+                </div>
+              </DocBlock>
+            ) : null}
 
-        {hasComposition ? (
-          <DocBlock id="composition" title="Composition">
-            <ul className="grid gap-3 text-ds-s font-medium text-foreground">
-              {doc.composition.map((item) => (
-                <li key={item} className="rounded-lg bg-muted px-4 py-3">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </DocBlock>
-        ) : null}
-
-        {hasExamples ? (
-          <DocBlock id="examples" title="Examples">
-            <div className="space-y-10">
-              {doc.examples.map((example) => (
-                <section
-                  key={example.title}
-                  id={slugify(example.title)}
-                  className="scroll-mt-28 space-y-4"
-                >
-                  <div>
-                    <h3 className="font-heading text-ds-xl font-bold text-foreground">
-                      {example.title}
-                    </h3>
-                    {example.description ? (
-                      <p className="mt-2 max-w-3xl text-ds-s font-medium text-muted-foreground">
-                        {example.description}
-                      </p>
-                    ) : null}
-                  </div>
-                  <PreviewFrame fullWidth={example.fullWidth}>
-                    {example.preview}
-                  </PreviewFrame>
-                  {example.code ? <CodeBlock code={example.code} /> : null}
-                </section>
-              ))}
-            </div>
-          </DocBlock>
-        ) : null}
-
-        <DocBlock id="api-reference" title="API Reference">
-          <div className="overflow-x-auto rounded-lg ring-2 ring-border">
-            <table className="w-full min-w-[720px] text-left text-ds-xs">
-              <thead className="border-b-2 border-border text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-bold">Prop / token</th>
-                  <th className="px-4 py-3 font-bold">Type</th>
-                  <th className="px-4 py-3 font-bold">Default</th>
-                  <th className="px-4 py-3 font-bold">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {doc.api.map((row) => (
-                  <tr key={row.name} className="border-b-2 border-border last:border-b-0">
-                    <td className="px-4 py-3 font-bold text-foreground">{row.name}</td>
-                    <td className="px-4 py-3 font-mono text-ds-xxs text-foreground">{row.type}</td>
-                    <td className="px-4 py-3 font-mono text-ds-xxs text-foreground">{row.defaultValue}</td>
-                    <td className="px-4 py-3 font-medium text-foreground">{row.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DocBlock>
+            <DocBlock id="api-reference" title="API Reference">
+              <div className="overflow-x-auto rounded-lg ring-2 ring-border">
+                <table className="w-full min-w-[720px] text-left text-ds-xs">
+                  <thead className="border-b-2 border-border text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3 font-bold">Prop / token</th>
+                      <th className="px-4 py-3 font-bold">Type</th>
+                      <th className="px-4 py-3 font-bold">Default</th>
+                      <th className="px-4 py-3 font-bold">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {doc.api.map((row) => (
+                      <tr
+                        key={row.name}
+                        className="border-b-2 border-border last:border-b-0"
+                      >
+                        <td className="px-4 py-3 font-bold text-foreground">
+                          {row.name}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-ds-xxs text-foreground">
+                          {row.type}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-ds-xxs text-foreground">
+                          {row.defaultValue}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {row.description}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </DocBlock>
+          </>
+        )}
       </article>
 
       <aside className="hidden lg:block">

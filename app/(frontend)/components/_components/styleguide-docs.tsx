@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Check, ChevronRight, Clock, Info, Plus, Search } from "lucide-react";
 
 import { IconGallery } from "./icon-gallery";
+import { ColorGrid } from "./color-grid";
 import { defaultAdminData } from "@/lib/admin-default-data";
 import { cn } from "@/lib/utils";
 import { Tag } from "@/components/ui/tag";
@@ -84,6 +85,12 @@ type ApiRow = {
   description: string;
 };
 
+type DocSection = {
+  id: string;
+  title: string;
+  body: ReactNode;
+};
+
 export type ComponentDoc = {
   slug: string;
   title: string;
@@ -99,24 +106,15 @@ export type ComponentDoc = {
   composition: string[];
   examples: Example[];
   api: ApiRow[];
+  // Foundation docs only: anchors into the preview (e.g. palette groups) for the
+  // right rail, and prose guide sections that replace the component scaffolding.
+  previewSections?: { id: string; label: string }[];
+  guide?: DocSection[];
 };
 
 const familyService =
   defaultAdminData.services.find((service) => service.slug === "family-child-support") ??
   defaultAdminData.services[0];
-
-const colorSwatches = [
-  { name: "background", className: "bg-background" },
-  { name: "foreground", className: "bg-foreground" },
-  { name: "card", className: "bg-card" },
-  { name: "primary", className: "bg-primary" },
-  { name: "secondary", className: "bg-secondary" },
-  { name: "border", className: "bg-border" },
-  { name: "input", className: "bg-input" },
-  { name: "bg-page", className: "bg-bg-page" },
-  { name: "bg-mint", className: "bg-bg-mint" },
-  { name: "brand-dark", className: "bg-brand-dark" },
-] as const;
 
 const radii = [
   "rounded-sm",
@@ -128,26 +126,6 @@ const radii = [
 ] as const;
 
 const buttonVariants = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
-
-function ColorGrid() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      {colorSwatches.map((swatch) => (
-        <div key={swatch.name} className="space-y-2">
-          <div
-            className={cn(
-              "h-20 rounded-lg ring-2 ring-border",
-              swatch.className
-            )}
-          />
-          <p className="font-mono text-ds-xxs text-muted-foreground">
-            {swatch.name}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function TypographySpec() {
   return (
@@ -593,8 +571,8 @@ const galleryPhoto = (color: string, label: string) =>
 function PhotoGalleryDemo() {
   const images = [
     { src: galleryPhoto("#1F8E87", "Photo 1"), alt: "Photo 1" },
-    { src: galleryPhoto("#1A72D5", "Photo 2"), alt: "Photo 2" },
-    { src: galleryPhoto("#6A40E2", "Photo 3"), alt: "Photo 3" },
+    { src: galleryPhoto("#006DBD", "Photo 2"), alt: "Photo 2" },
+    { src: galleryPhoto("#443FD9", "Photo 3"), alt: "Photo 3" },
   ];
   return <PhotoGallery images={images} className="max-w-2xl" />;
 }
@@ -632,6 +610,83 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       "Use bg-page for full-page surfaces.",
       "Use card for contained surfaces and repeated items.",
       "Use border and input separately: border is the mint DS divider, input is the neutral field border.",
+    ],
+    previewSections: [
+      { id: "brand", label: "Brand" },
+      { id: "neutral", label: "Neutral" },
+      { id: "project-areas", label: "Project areas" },
+      { id: "status", label: "Status" },
+      { id: "semantic", label: "Semantic" },
+      { id: "component-tokens", label: "Component tokens" },
+    ],
+    guide: [
+      {
+        id: "how-to-use",
+        title: "How to use",
+        body: (
+          <div className="max-w-3xl space-y-4 text-ds-s font-medium text-foreground">
+            <p>
+              The palette is layered. Reach for the most specific layer that
+              fits, in this order:
+            </p>
+            <ol className="grid gap-3">
+              <li className="rounded-lg bg-muted px-4 py-3">
+                <span className="font-bold">Semantic roles first</span> —{" "}
+                <span className="font-mono text-ds-xs">background/*</span>,{" "}
+                <span className="font-mono text-ds-xs">text/*</span>,{" "}
+                <span className="font-mono text-ds-xs">brand/*</span>, and{" "}
+                <span className="font-mono text-ds-xs">positive</span>/
+                <span className="font-mono text-ds-xs">negative</span>. They carry
+                meaning and flip between light and dark on their own.
+              </li>
+              <li className="rounded-lg bg-muted px-4 py-3">
+                <span className="font-bold">Primitives as a fallback</span> —{" "}
+                <span className="font-mono text-ds-xs">brand-500</span>,{" "}
+                <span className="font-mono text-ds-xs">neutral-700</span>, and the
+                rest of the ramps. Use a raw stop only when no role fits.
+              </li>
+              <li className="rounded-lg bg-muted px-4 py-3">
+                <span className="font-bold">Component tokens to fine-tune</span> —
+                the per-component entries (button, input, card…) when you are
+                styling that specific component.
+              </li>
+            </ol>
+            <p>
+              Click any swatch to copy its hex;{" "}
+              <span className="font-mono text-ds-xs">⌥</span>-click (Alt) to copy
+              its CSS variable instead. Hover a swatch for its variable and best
+              text contrast. Build with tokens, never a pasted hex — that is what
+              keeps light and dark in sync.
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "accessibility",
+        title: "Accessibility",
+        body: (
+          <div className="max-w-3xl space-y-4 text-ds-s font-medium text-foreground">
+            <p>
+              Text contrast is measured against WCAG:{" "}
+              <span className="font-bold">AAA</span> is 7:1 or better,{" "}
+              <span className="font-bold">AA</span> is 4.5:1 for body text, and{" "}
+              <span className="font-bold">AA Large</span> is 3:1 for text 18px and
+              up or bold.
+            </p>
+            <p>
+              Every colour can carry either dark or light text at AA or better, so
+              a single swatch is never the whole story. Hover one to see which text
+              colour works on it and the exact ratio.
+            </p>
+            <p>
+              What matters is the pair you ship: verify the real background with
+              the real text colour rather than trusting one swatch. And never lean
+              on colour alone — pair project-area and status colours with a label
+              or icon so the meaning survives for colour-blind readers.
+            </p>
+          </div>
+        ),
+      },
     ],
     examples: [],
     api: sharedFoundationApi,

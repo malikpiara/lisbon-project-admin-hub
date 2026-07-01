@@ -9,11 +9,11 @@ type Category = { key: string; label: string; color: string };
 
 // Program-area colors (Figma projects/*).
 const CATEGORIES: Category[] = [
-  { key: "community-life", label: "Community Life", color: "#DB0F0F" },
-  { key: "people-culture", label: "People & Culture", color: "#CE1DD7" },
-  { key: "education", label: "Education", color: "#6A40E2" },
-  { key: "employability", label: "Employability", color: "#1A72D5" },
-  { key: "social-care", label: "Social Care", color: "#D66B00" },
+  { key: "community-life", label: "Community Life", color: "#DA2916" },
+  { key: "people-culture", label: "People & Culture", color: "#B530B5" },
+  { key: "education", label: "Education", color: "#443FD9" },
+  { key: "employability", label: "Employability", color: "#006DBD" },
+  { key: "social-care", label: "Social Care", color: "#CC6300" },
 ];
 const CAT_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.key, c]));
 

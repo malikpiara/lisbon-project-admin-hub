@@ -136,11 +136,11 @@
   --red:   #D60000;
 
   /* Program-area colors — one per Lisbon Project programme (Figma projects/*) */
-  --project-social-care:    #D66B00;
-  --project-people-culture: #CE1DD7;
-  --project-community-life: #DB0F0F;
-  --project-education:       #6A40E2;
-  --project-employability:   #1A72D5;
+  --project-social-care:    #CC6300;
+  --project-people-culture: #B530B5;
+  --project-community-life: #DA2916;
+  --project-education:       #443FD9;
+  --project-employability:   #006DBD;
 
   /* — Layer 2: semantic roles (Figma brand/*, semantic/*) — */
   --brand-primary:   var(--brand-500);
@@ -204,37 +204,66 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: #3FB6AC;
-  --primary-foreground: #07312E;
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.30 0.03 180);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: #3FB6AC;
+  /* ============================================================
+     Dark mode — mirrors Figma "Lisbon-Project---DS" Dark mode.
+     Same 3-layer model as :root: dark primitives → semantic role
+     remaps. The shadcn aliases stay defined in :root as var() chains,
+     so they re-resolve here automatically — only the primitives and
+     the roles that *remap* (and the two non-var aliases) restate.
+     NOTE: dark mode isn't wired to a toggle yet; this defines the
+     palette for when it is.
+     ============================================================ */
+
+  /* — Layer 1: primitives (Dark mode values) — */
+  --brand-1000: #DFEBEB;
+  --brand-900:  #BFE3E1;
+  --brand-800:  #A0DBD7;
+  --brand-700:  #80D3CE;
+  --brand-600:  #61CBC4;
+  --brand-500:  #3BBAB1;
+  --brand-400:  #2F8E8A;
+  --brand-300:  #2E666B;
+  --brand-200:  #214245;
+  --brand-100:  #172527;
+  --brand-000:  #081516;
+
+  --neutral-1000: #E8EAED;
+  --neutral-900:  #C9CFD4;
+  --neutral-800:  #B5BABF;
+  --neutral-700:  #8F969E;
+  --neutral-600:  #555C62;
+  --neutral-500:  #2F3337;
+  --neutral-400:  #1F2123;
+  --neutral-300:  #181A1B;
+  --neutral-200:  #131416;
+  --neutral-100:  #0C0D0E;
+
+  --red: #E26F6F; /* green is identical across modes (#72C549) */
+
+  --project-social-care:    #DB0F0F;
+  --project-people-culture: #CE1DD7;
+  --project-community-life: #C61CCF;
+  --project-education:       #6A40E2;
+  --project-employability:   #1B74DA;
+
+  /* — Layer 2: semantic roles that differ from light (Figma Dark) — */
+  --brand-primary:   var(--brand-600);
+  --bg-primary:      var(--neutral-300);
+  --bg-secondary:    var(--neutral-200);
+  --bg-tertiary:     var(--neutral-100);
+  --text-secondary:  var(--neutral-1000);
+  --text-tertiary:   var(--neutral-800);
+
+  /* shadcn aliases that aren't pure var() chains in :root → dark values */
+  --secondary-foreground: var(--brand-500);
+  --muted: var(--brand-200);
+
+  /* charts (insights) keep the neutral ramp in dark */
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 /* DS responsive type scale — values per breakpoint (Phone base → Tablet 768 → Laptop 1280 → Desktop 1680) */
