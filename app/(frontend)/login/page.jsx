@@ -1,4 +1,5 @@
 import { headers as nextHeaders } from "next/headers";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { getPayload } from "payload";
@@ -11,6 +12,10 @@ export const metadata = {
 };
 
 export default async function LoginPage() {
+  // Reads a session, so it must render per-request — never prerendered at build
+  // (booting Payload with no PAYLOAD_SECRET). See lib/admin-auth for the same fix.
+  await connection();
+
   // Already signed in → go straight to the admin. (Checked inline rather than via
   // authedPayload, which would redirect back here and loop.)
   const payload = await getPayload({ config });
