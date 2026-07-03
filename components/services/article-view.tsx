@@ -5,6 +5,7 @@ import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
 import { IconInfo } from "@/components/icons/ds-icons";
 
+import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
 import { buttonVariants } from "@/components/ui/button";
@@ -47,6 +48,7 @@ type Service = {
   slug: string;
   title: string;
   breadcrumb: string;
+  iconKey?: string;
   topics: Topic[];
 };
 
@@ -95,6 +97,12 @@ export function ArticleView({
   }
 
   const article: Article = topic.article ?? defaultArticle(topic);
+  // Per the article spec (Proposal 949:4028), content-section chips carry the
+  // service's category glyph — the same one as its home tile — while the FAQ
+  // section keeps the generic info icon.
+  const CategoryIcon = getServiceIcon(
+    getServiceIconKey(service.slug, service.iconKey)
+  );
 
   return (
     <>
@@ -105,13 +113,16 @@ export function ArticleView({
             aria-label="Breadcrumb"
             className="ds-section-x-padding pb-6 text-ds-xxs font-bold"
           >
-            <Link href="/" className="text-primary hover:underline">
+            <Link
+              href="/"
+              className="text-primary underline underline-offset-[3px] hover:text-brand-link"
+            >
               Home
             </Link>
             <span className="mx-2 text-muted-foreground">/</span>
             <Link
               href={`/services/${service.slug}`}
-              className="text-primary hover:underline"
+              className="text-primary underline underline-offset-[3px] hover:text-brand-link"
             >
               {service.breadcrumb}
             </Link>
@@ -154,7 +165,7 @@ export function ArticleView({
                 <div className="mx-auto max-w-[760px]">
                   <header className="mb-6 flex items-center gap-4">
                     <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
-                      <IconInfo className="size-5" />
+                      <CategoryIcon className="size-5" />
                     </div>
                     <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
                       {s.heading}

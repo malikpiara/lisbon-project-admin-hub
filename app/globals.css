@@ -377,6 +377,14 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 preflight leaves buttons at cursor: default (the native OS
+     convention). Our DS treats every enabled button as clickable-looking —
+     restore the pointer app-wide, including Base UI triggers, which all
+     render real <button> elements. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 /* Component-docs code highlighting (see lib/highlight-code.js). Light theme,
@@ -404,3 +412,4 @@
 .reorder-flash {
   animation: reorder-flash 0.7s ease;
 }
+

@@ -115,7 +115,7 @@ export default async function CalendarPage() {
                 >
                   Adamastor
                 </a>
-                {" "}project — illustrates what's achievable with focused effort.
+                {" "}project — illustrates what&apos;s achievable with focused effort.
               </>
             }
           >

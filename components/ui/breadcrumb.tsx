@@ -47,7 +47,7 @@ function BreadcrumbLink({
     <Link
       data-slot="breadcrumb-link"
       className={cn(
-        "text-primary transition-colors hover:text-brand-link",
+        "text-primary underline underline-offset-[3px] transition-colors hover:text-brand-link",
         className
       )}
       {...props}

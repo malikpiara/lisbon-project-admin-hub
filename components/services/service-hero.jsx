@@ -35,7 +35,10 @@ export function ServiceHero({ title, breadcrumb, intro = [], iconKey }) {
           aria-label="Breadcrumb"
           className="ds-section-x-padding pb-6 text-ds-xxs font-bold"
         >
-          <Link href="/" className="text-primary hover:underline">
+          <Link
+            href="/"
+            className="text-primary underline underline-offset-[3px] hover:text-brand-link"
+          >
             Home
           </Link>
           <span className="mx-2 text-muted-foreground">/</span>

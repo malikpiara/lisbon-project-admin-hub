@@ -50,7 +50,18 @@ function TooltipContent({
           {...props}
         >
           {children}
-          <TooltipPrimitive.Arrow className="group-data-[side=bottom]:rotate-180 group-data-[side=left]:-rotate-90 group-data-[side=right]:rotate-90">
+          {/* Base UI centres the arrow along the anchor axis but leaves the
+              cross-axis offset to CSS — pin it outside the bubble edge per
+              side. The 14x7 box keeps its layout size when rotated, hence the
+              10.5px (7 + 3.5) offsets on the vertical sides. */}
+          <TooltipPrimitive.Arrow
+            className={cn(
+              "group-data-[side=top]:bottom-[-7px]",
+              "group-data-[side=bottom]:top-[-7px] group-data-[side=bottom]:rotate-180",
+              "group-data-[side=left]:right-[-10.5px] group-data-[side=left]:-rotate-90",
+              "group-data-[side=right]:left-[-10.5px] group-data-[side=right]:rotate-90"
+            )}
+          >
             <svg
               width="14"
               height="7"
