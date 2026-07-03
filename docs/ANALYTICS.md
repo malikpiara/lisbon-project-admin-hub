@@ -34,6 +34,9 @@ built-ins — don't rename them.
 | `service_viewed` | a service category page renders (`/services/[slug]`) | `service_slug` (str), `service_name` (str) |
 | `topic_viewed` | a topic/article page renders (`/services/[slug]/[topic]`) | `service_slug`, `service_name`, `topic_slug`, `topic_name` (all str) |
 | `contacts_searched` | user searches the All Contacts table (debounced 800ms) | `search_query` (str, lowercased), **`results_count`** (int), `category_filter` (str), `list_name` (str) |
+| `chatbot_opened` | user opens the help chatbot via our launcher | — (engagement only; no message content) |
+| `chatbot_closed` | user closes the chatbot panel (X or Esc) | — |
+| `chatbot_conversation_logged` | a chatbot conversation ends → Zapier POSTs the transcript to `/webhooks/chatbot-log` | `conversation_id` (str), `transcript` (str, redacted), `$process_person_profile: false` |
 
 `results_count` is deliberate: a `contacts_searched` with **`results_count = 0`** is
 someone looking for something we don't list — the highest-signal "learn from it" data.
@@ -50,6 +53,50 @@ someone looking for something we don't list — the highest-signal "learn from i
 3. **[Top All Contacts searches](https://eu.posthog.com/project/208396/insights/XDjqtSrd)** — `contacts_searched`, breakdown `search_query`.
 4. **[Searches with no results (content gaps)](https://eu.posthog.com/project/208396/insights/NVAgKLDu)** — `contacts_searched` where `results_count = 0`, breakdown `search_query`.
 
+## Chatbot conversation logging (Zapier → PostHog)
+
+The help chatbot is a Zapier Chatbot embedded in a **cross-origin iframe**, so its
+message text is invisible to our client JS (same-origin policy). We capture at two
+layers:
+
+- **Engagement (client):** `chatbot_opened` / `chatbot_closed`, fired from our own
+  launcher (`components/site/zapier-chatbot.jsx`). No message content.
+- **Content (server):** the raw transcript, logged **from Zapier**, never the browser.
+
+### How the transcript reaches PostHog
+
+1. **Zapier chatbot builder → Run Zap** logic (fires when a conversation *ends* — the
+   grain is a whole transcript, not per-message/real-time). Hands the Zap the full
+   transcript + metadata.
+2. **Zap action → Webhooks by Zapier (POST)** to `https://<site>/webhooks/chatbot-log`,
+   header `Authorization: Bearer <CHATBOT_LOG_SECRET>`, JSON body like
+   `{ "conversation_id": "…", "transcript": "…" }`.
+3. Our handler (`app/(frontend)/webhooks/chatbot-log/route.js`) checks the secret,
+   redacts obvious emails/phones, and forwards to PostHog `/capture/` as
+   `chatbot_conversation_logged` with `$process_person_profile: false`.
+
+> **Why our own webhook, not Zapier → PostHog directly?** One place *in code we own*
+> to authenticate, redact, and keep person profiles off — rather than trusting a
+> Zapier UI step with special-category data.
+
+### Non-negotiables (consent + retention)
+
+- **Disclosure.** This logs **regardless of the site's PostHog opt-in** (it runs on
+  Zapier, not the browser). Disclose in the chatbot greeting *and* the privacy policy
+  that conversations may be stored — on a migrant/refugee site this is special-category
+  data under RGPD, so notice is mandatory.
+- **No cross-linking.** `distinct_id` is the conversation id; these events can't tie to
+  the web-session person (the iframe can't see our distinct_id). Standalone by design.
+- **Short retention + restricted access.** Cap transcript retention and limit who can
+  view the PostHog project.
+
+### Setup checklist (blocked on Zapier dashboard access)
+
+- [ ] Set `CHATBOT_LOG_SECRET` in `.env.local` (and as the Zapier webhook header).
+- [ ] Build the Run Zap → Webhooks POST in Zapier.
+- [ ] Add the logging disclosure to the chatbot greeting + privacy policy.
+- [ ] Set a retention window in PostHog.
+
 ## Privacy / GDPR (decide before launch)
 
 - Configured with **`person_profiles: 'identified_only'`** — anonymous visitors get
@@ -65,4 +112,6 @@ someone looking for something we don't list — the highest-signal "learn from i
 - `components/analytics/posthog-provider.tsx` — init (guarded on the env key) + manual `$pageview`.
 - `app/(frontend)/layout.js` — wraps the public app in `<PostHogProvider>`.
 - `components/shared/contacts-section.tsx` — the `contacts_search` capture.
-- `.env.example` / `.env.local` — `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`.
+- `components/site/zapier-chatbot.jsx` — `chatbot_opened` / `chatbot_closed` engagement events.
+- `app/(frontend)/webhooks/chatbot-log/route.js` — server sink for Zapier chatbot transcripts → PostHog.
+- `.env.example` / `.env.local` — `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `CHATBOT_LOG_SECRET`.

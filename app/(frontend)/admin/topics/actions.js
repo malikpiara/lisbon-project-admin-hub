@@ -7,16 +7,39 @@ import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
-// FAQs). `data` is already mapped to Payload's shape by the editor; tone/order/
-// slug/service are left untouched by the partial update. Stamp the editor as the
-// last modifier (the Local API doesn't infer the user).
+// FAQs) and the `service` relationship. `data` is already mapped to Payload's
+// shape by the editor; tone/slug are left untouched. Reassigning the service
+// moves the topic: we append it to the destination service and revalidate both
+// service pages (its public URL changes with the service). Stamp the editor as
+// the last modifier (the Local API doesn't infer the user).
 export async function saveTopic(id, data) {
   const { payload, user } = await authedPayload();
-  await payload.update({
-    collection: "topics",
-    id,
-    data: { ...data, updatedBy: user.id },
-  });
+
+  const prev = await payload
+    .findByID({ collection: "topics", id, depth: 0 })
+    .catch(() => null);
+  const prevServiceId = prev?.service
+    ? typeof prev.service === "object"
+      ? prev.service.id
+      : prev.service
+    : null;
+  const nextServiceId = data.service ?? prevServiceId;
+  const moved =
+    prevServiceId &&
+    nextServiceId &&
+    String(prevServiceId) !== String(nextServiceId);
+
+  const patch = { ...data, updatedBy: user.id };
+  if (moved) {
+    // Land it at the end of the destination service's list.
+    const dest = await payload.count({
+      collection: "topics",
+      where: { service: { equals: nextServiceId } },
+    });
+    patch.order = dest.totalDocs;
+  }
+
+  await payload.update({ collection: "topics", id, data: patch });
   await logAudit(payload, {
     action: "updated",
     collectionSlug: "topics",
@@ -25,16 +48,19 @@ export async function saveTopic(id, data) {
     userId: user.id,
   });
   revalidatePath(`/admin/topics/${id}`);
+  revalidatePath("/admin/topics");
+  if (moved) {
+    revalidatePath(`/admin/services/${prevServiceId}`);
+    revalidatePath(`/admin/services/${nextServiceId}`);
+  }
   revalidatePath("/"); // article pages — live once the public site reads Payload
 }
 
 export async function createTopic(serviceId) {
   const { payload, user } = await authedPayload();
-  const existing = await payload.find({
+  const existing = await payload.count({
     collection: "topics",
     where: { service: { equals: serviceId } },
-    limit: 0,
-    depth: 0,
   });
   const created = await payload.create({
     collection: "topics",

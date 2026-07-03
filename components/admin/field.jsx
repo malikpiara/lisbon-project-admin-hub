@@ -79,22 +79,49 @@ export function Field({
   );
 }
 
-export function SelectField({ label, value, onChange, options, className = "" }) {
+// `options` accepts plain strings (value === label) or { value, label } objects.
+// Base UI's Select shows the raw value in the trigger unless it gets a value→label
+// `items` map, so we pass one whenever a label differs from its value (e.g. a
+// service shown by title but stored by id). String-only callers are unaffected.
+export function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  hint,
+  dirty = false,
+  placeholder = "Select…",
+  className = "",
+}) {
+  const normalized = options.map((opt) =>
+    typeof opt === "string" ? { value: opt, label: opt } : opt
+  );
+  const items = normalized.some((o) => o.value !== o.label)
+    ? Object.fromEntries(normalized.map((o) => [o.value, o.label]))
+    : undefined;
   return (
     <div className={`block ${className}`}>
-      <span className={labelClass}>{label}</span>
-      <Select value={value ?? ""} onValueChange={onChange}>
+      <span className={labelClass}>
+        {label}
+        {dirty ? <DirtyDot className="ml-1.5" /> : null}
+      </span>
+      <Select items={items} value={value ?? ""} onValueChange={onChange}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select…" />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {options.map((opt) => (
-            <SelectItem key={opt} value={opt}>
-              {opt}
+          {normalized.map((o) => (
+            <SelectItem key={o.value} value={o.value}>
+              {o.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+      {hint ? (
+        <span className="mt-1 block text-ds-xxs font-medium text-muted-foreground">
+          {hint}
+        </span>
+      ) : null}
     </div>
   );
 }

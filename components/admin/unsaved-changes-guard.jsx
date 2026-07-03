@@ -16,7 +16,12 @@ export function UnsavedChangesGuard({ when }) {
   const router = useRouter();
   const [pendingHref, setPendingHref] = useState(null);
   const whenRef = useRef(when);
-  whenRef.current = when;
+  // Sync in an effect, not during render — a render-phase ref write can tear
+  // under concurrent rendering (and the react-hooks lint errors on it). Click
+  // and beforeunload handlers only fire after effects run, so this is safe.
+  useEffect(() => {
+    whenRef.current = when;
+  }, [when]);
   const bypassRef = useRef(false);
 
   // Tab close / reload / hard navigation.

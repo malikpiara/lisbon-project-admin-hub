@@ -6,7 +6,7 @@ import { ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 // Searchable Topics list — the teardown's "manage-at-scale" lesson: 140 topics
-// as cards is a scroll-wall, so filter by title / category / description.
+// as cards is a scroll-wall, so filter by title / service / description.
 export function TopicsList({ topics }) {
   const [q, setQ] = useState("");
 
@@ -28,7 +28,7 @@ export function TopicsList({ topics }) {
           Topics
         </h1>
         <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-          {topics.length} articles across all categories.
+          {topics.length} articles across all services.
         </p>
       </header>
 
@@ -37,7 +37,7 @@ export function TopicsList({ topics }) {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search topics by title, category, or description…"
+          placeholder="Search by title, service, or description…"
           className="pl-9"
         />
       </div>

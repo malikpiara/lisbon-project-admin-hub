@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ExternalLink, FileText, HelpCircle, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, DirtyDot } from "@/components/admin/field";
+import { Field, DirtyDot, SelectField } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -73,11 +73,17 @@ function toPayload(d) {
       faqLead: d.faqLead,
       faqs: d.faqs.map((f) => ({ question: f.question, answer: f.answer })),
     },
+    // Which service this article belongs to. Editing it reassigns the topic
+    // (and changes its public URL); saveTopic handles the move + revalidation.
+    service: d.serviceId,
   };
 }
 
-export function TopicEditor({ topic, service, audit }) {
-  const [draft, setDraft] = useState(() => fromPayload(topic));
+export function TopicEditor({ topic, service, services = [], audit }) {
+  const [draft, setDraft] = useState(() => ({
+    ...fromPayload(topic),
+    serviceId: service?.id ?? "",
+  }));
   // Share draft's initial object so section/FAQ `_k`s match the baseline (separate
   // fromPayload calls would assign different keys and read as dirty on load).
   const [saved, setSaved] = useState(() => draft);
@@ -211,6 +217,14 @@ export function TopicEditor({ topic, service, audit }) {
     ? `/services/${serviceSlug}/${topic.slug}`
     : null;
 
+  const serviceOptions = services.map((s) => ({ value: s.id, label: s.title }));
+  // The service currently chosen in the draft — may differ from the original
+  // `service` prop once the editor reassigns it. `serviceChanged` drives the
+  // move warning + the field's dirty dot (compared to the saved baseline).
+  const selectedService =
+    services.find((s) => s.id === draft.serviceId) ?? service;
+  const serviceChanged = draft.serviceId !== saved.serviceId;
+
   return (
     <div>
       <UnsavedChangesGuard when={dirty} />
@@ -294,7 +308,7 @@ export function TopicEditor({ topic, service, audit }) {
         <div className="min-w-0">
         <Section
           title="Basics"
-          description="The title and summary shown on the category page."
+          description="The title and summary shown on the service page."
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
@@ -304,10 +318,33 @@ export function TopicEditor({ topic, service, audit }) {
               onChange={(v) => set({ title: v })}
               dirty={fieldDirty(draft.title, saved.title)}
             />
+            <SelectField
+              label="Service"
+              value={draft.serviceId}
+              onChange={(v) => set({ serviceId: v })}
+              options={serviceOptions}
+              dirty={serviceChanged}
+              hint="Which service this article lives under."
+            />
+            {serviceChanged && selectedService ? (
+              <div className="rounded-lg border-2 border-brand-300 bg-muted px-4 py-3 text-ds-xxs font-medium text-foreground sm:col-span-2">
+                Saving moves this article to{" "}
+                <span className="font-bold">{selectedService.title}</span> and
+                changes its public link from{" "}
+                <span className="font-mono">
+                  /services/{service?.slug}/{topic.slug}
+                </span>{" "}
+                to{" "}
+                <span className="font-mono">
+                  /services/{selectedService.slug}/{topic.slug}
+                </span>
+                . Existing links to the old address will stop working.
+              </div>
+            ) : null}
             <Field
               className="sm:col-span-2"
               label="Description"
-              hint="Shown on the category card and reused as the intro line."
+              hint="Shown on the service page card, and reused as the intro line."
               value={draft.description}
               onChange={(v) => set({ description: v })}
               dirty={fieldDirty(draft.description, saved.description)}
@@ -418,7 +455,7 @@ export function TopicEditor({ topic, service, audit }) {
                         <Field
                           className="sm:col-span-2"
                           label="Button link"
-                          hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the category page."
+                          hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the service page."
                           value={s.ctaHref}
                           onChange={(v) => setSection(i, { ctaHref: v })}
                           dirty={fieldDirty(s.ctaHref, sc?.ctaHref)}

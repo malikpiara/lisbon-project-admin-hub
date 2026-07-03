@@ -32,10 +32,25 @@ export default async function AdminTopicEditPage({ params }) {
     : null;
   const { service: _service, ...topicForClient } = topic;
 
+  // All services, for the reassignment dropdown (id + title, in page order).
+  const { docs: allServices } = await payload.find({
+    collection: "services",
+    limit: 100,
+    depth: 0,
+    select: { title: true, slug: true },
+    sort: "order",
+  });
+  const services = allServices.map((s) => ({
+    id: s.id,
+    title: s.title,
+    slug: s.slug,
+  }));
+
   return (
     <TopicEditor
       topic={topicForClient}
       service={service}
+      services={services}
       audit={auditLabels(topic)}
     />
   );
