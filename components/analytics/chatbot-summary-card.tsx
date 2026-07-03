@@ -27,7 +27,7 @@ export function ChatbotSummaryCard({
       <CardContent className="space-y-5">
         <div className="flex items-baseline gap-8">
           <div>
-            <p className="text-ds-xxl font-bold tabular-nums text-foreground">
+            <p className="text-ds-xl font-bold tabular-nums text-foreground">
               {conversations ?? "—"}
             </p>
             <p className="text-ds-xxs text-muted-foreground">
@@ -35,7 +35,7 @@ export function ChatbotSummaryCard({
             </p>
           </div>
           <div>
-            <p className="text-ds-l font-bold tabular-nums text-foreground">
+            <p className="text-ds-xl font-bold tabular-nums text-foreground">
               {opens ?? "—"}
             </p>
             <p className="text-ds-xxs text-muted-foreground">chatbot opened</p>
@@ -43,7 +43,7 @@ export function ChatbotSummaryCard({
         </div>
         <Link
           href="/admin/conversations"
-          className="inline-flex items-center gap-1.5 text-ds-xs font-bold text-brand-link hover:underline"
+          className="inline-flex items-center gap-1.5 rounded-md text-ds-xs font-bold text-brand-link hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
         >
           Read the conversations →
         </Link>

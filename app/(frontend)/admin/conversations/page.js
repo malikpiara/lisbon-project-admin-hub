@@ -14,7 +14,7 @@ export const metadata = {
 // gate; re-checks it here too. Reads from PostHog's Query API, so it stays empty
 // until the capture Zap is live and POSTing transcripts to /webhooks/chatbot-log.
 export default async function AdminConversationsPage() {
-  const { user } = await authedPayload();
+  await authedPayload(); // auth gate (redirects to /login when unauthenticated)
 
   const configured = isInsightsConfigured();
   const conversations = await getChatbotConversations();
@@ -31,9 +31,17 @@ export default async function AdminConversationsPage() {
           Assistant conversations
         </h1>
         <p className="mt-2 text-ds-s text-muted-foreground">
-          What people ask the help chatbot · PII-redacted · team-only · signed in
-          as {user.email}
+          What people ask the help chatbot · PII-redacted · team-only
         </p>
+        {data.length > 0 ? (
+          <p className="mt-4 text-ds-xs font-semibold text-foreground">
+            {data.length} conversation{data.length === 1 ? "" : "s"}
+            <span className="font-normal text-muted-foreground">
+              {" "}
+              · most recent first
+            </span>
+          </p>
+        ) : null}
       </header>
 
       <ChatbotConversations data={data} emptyLabel={emptyLabel} />
