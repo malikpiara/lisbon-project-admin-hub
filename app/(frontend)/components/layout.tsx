@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { STYLEGUIDE_NAV_GROUPS } from "./_components/styleguide-docs";
+import { MobileNav } from "./_components/mobile-nav";
 import { StyleguideNav } from "./_components/styleguide-nav";
 
 export const metadata = {
@@ -16,7 +15,8 @@ export default function StyleguideLayout({ children }: { children: ReactNode }) 
     <div className="min-h-dvh bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b-2 border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-[1800px] items-center justify-between gap-6 px-6">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <MobileNav groups={STYLEGUIDE_NAV_GROUPS} />
             <Link href="/" className="font-heading text-ds-m font-bold text-brand-dark">
               Lisbon Project
             </Link>
@@ -25,17 +25,6 @@ export default function StyleguideLayout({ children }: { children: ReactNode }) 
               <Link href="/components/button">Components</Link>
               <Link href="/components/home-hero">System</Link>
             </nav>
-          </div>
-
-          <div className="hidden min-w-0 max-w-md flex-1 items-center md:flex">
-            <div className="relative w-full">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                aria-label="Search documentation"
-                placeholder="Search documentation..."
-                className="bg-card pl-11"
-              />
-            </div>
           </div>
 
           <Link href="/" className={buttonVariants({ size: "sm", variant: "outline" })}>

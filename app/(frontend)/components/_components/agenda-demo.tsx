@@ -46,7 +46,9 @@ export function AgendaDemo() {
     });
 
   return (
-    <div className="flex flex-col gap-6">
+    // Own gutter: this demo renders full-width in the docs preview frame,
+    // which provides no inner padding of its own.
+    <div className="flex flex-col gap-6 p-8">
       {/* Filter chips */}
       <div className="space-y-2">
         <p className="text-ds-xs font-bold text-foreground">Filter by Project</p>

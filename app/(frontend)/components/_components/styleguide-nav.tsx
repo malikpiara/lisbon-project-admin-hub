@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { InputSearch } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export type StyleguideNavGroup = {
@@ -16,10 +18,50 @@ export type StyleguideNavGroup = {
 
 export function StyleguideNav({ groups }: { groups: StyleguideNavGroup[] }) {
   const pathname = usePathname();
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // ⌘K / Ctrl+K focuses the component search from anywhere on the page.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return groups;
+    return groups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) =>
+          item.title.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [groups, query]);
 
   return (
     <nav className="space-y-8">
-      {groups.map((group) => (
+      <InputSearch
+        ref={searchRef}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search components... ⌘K"
+        aria-label="Search components"
+        className="h-10 text-ds-xxs"
+      />
+      {filtered.length === 0 ? (
+        <p className="px-2 text-ds-xxs font-medium text-muted-foreground">
+          No components match “{query}”.
+        </p>
+      ) : null}
+      {filtered.map((group) => (
         <div key={group.title}>
           <p className="px-2 text-ds-xxs font-bold uppercase text-muted-foreground">
             {group.title}
