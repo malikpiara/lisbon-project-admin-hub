@@ -9,6 +9,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  MessagesSquare,
   Sparkles,
   Users2,
 } from "lucide-react";
@@ -33,6 +34,7 @@ const navGroups = [
     title: "Analytics",
     items: [
       { href: "/admin/insights", label: "Insights", icon: BarChart3 },
+      { href: "/admin/conversations", label: "Conversations", icon: MessagesSquare },
       { href: "/admin/history", label: "History", icon: History },
     ],
   },

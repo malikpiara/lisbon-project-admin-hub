@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   Card,
   CardContent,
@@ -34,10 +36,14 @@ export function ContactsSearchesTable({
   data = SAMPLE_DATA,
   title = "What are people searching for in All Contacts?",
   description = "Most-searched queries · last 30 days",
+  caption = "Wire to the contacts_searched PostHog insight for live counts.",
+  emptyLabel = "No searches yet.",
 }: {
   data?: ContactsSearch[];
   title?: string;
   description?: string;
+  caption?: ReactNode;
+  emptyLabel?: ReactNode;
 }) {
   // Ordered by most searched (immutable sort — Vercel best practice: js-tosorted-immutable).
   const ranked = data.toSorted((a, b) => b.searches - a.searches);
@@ -73,14 +79,12 @@ export function ContactsSearchesTable({
                   colSpan={2}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No searches yet.
+                  {emptyLabel}
                 </TableCell>
               </TableRow>
             ) : null}
           </TableBody>
-          <TableCaption>
-            Wire to the <code>contacts_searched</code> PostHog insight for live counts.
-          </TableCaption>
+          <TableCaption>{caption}</TableCaption>
         </Table>
       </CardContent>
     </Card>

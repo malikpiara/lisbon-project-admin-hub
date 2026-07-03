@@ -16,6 +16,18 @@ cloud). Two questions drive it:
   `contacts_search` confirmed landing). Session replay is opted out at the client.
 - **Dashboard built:** [Lisbon Project — site insights](https://eu.posthog.com/project/208396/dashboard/769373)
   with the four insights below.
+- **In-app dashboard wired (2026-07-03):** `/admin/insights` reads live counts
+  from the **Query API** server-side (`lib/posthog-insights.js`) — topics, top
+  searches, and a **"Searches we couldn't answer"** content-gaps panel. Needs a
+  Personal API Key (`POSTHOG_PERSONAL_API_KEY`, scoped `query:read`); without it
+  the two demo panels fall back to sample data and the gaps panel stays empty.
+- **Chatbot data surfaced (2026-07-03):** a dedicated **`/admin/conversations`**
+  route + a summary tile on `/admin/insights` read `chatbot_conversation_logged`
+  from the Query API, and a PostHog dashboard tile ("Assistant — opens vs
+  conversations logged", insight `xyCgvZa1`) tracks it. **All three stay empty
+  until the capture Zap below is live** — that inbound pipeline has never fired
+  (`chatbot_conversation_logged` isn't in the project taxonomy yet). This is the
+  priority pipeline: capture what people ask → PostHog → visible on `/admin`.
 
 ## Naming convention (Amplitude object-action)
 
@@ -52,6 +64,44 @@ someone looking for something we don't list — the highest-signal "learn from i
 2. **[Most-viewed information / topics](https://eu.posthog.com/project/208396/insights/GhLOtOmh)** — `topic_viewed`, unique users, breakdown `topic_name`.
 3. **[Top All Contacts searches](https://eu.posthog.com/project/208396/insights/XDjqtSrd)** — `contacts_searched`, breakdown `search_query`.
 4. **[Searches with no results (content gaps)](https://eu.posthog.com/project/208396/insights/NVAgKLDu)** — `contacts_searched` where `results_count = 0`, breakdown `search_query`.
+
+## Team alerts (PostHog → Zapier)
+
+The dashboard is a **pull** surface — someone has to open it. For the one signal
+worth acting on the *moment* it happens — a **search that returned nothing** —
+push it to the team via Zapier. (It also lands in-app on `/admin/insights` under
+"Searches we couldn't answer", so the insight exists even before anyone wires a
+channel.)
+
+PostHog has a first-class **Zapier destination** (realtime, filterable by event
+*and* property), so **no code on our side** — it's configured in the two
+dashboards:
+
+1. **Zapier:** new Zap → trigger **Webhooks by Zapier → Catch Hook**. Copy the
+   custom webhook URL it gives you.
+2. **PostHog → Data pipeline → Destinations → New → Zapier** (or generic
+   Webhook). Paste the Catch Hook URL. **Filter:** event `contacts_searched`,
+   property `results_count = 0`. Only the matching events leave PostHog.
+3. **Zapier action:** route to wherever the team lives — a Slack message, an
+   email, or an *append-row* in a Google Sheet. Surface `search_query` +
+   timestamp, e.g. _"Someone searched 'emergency shelter' — we list nothing."_
+
+> **The destination is a last-mile choice.** The durable part is the pipe
+> (PostHog → Zapier). Whether it ends in Slack, email, or a Sheet is one Zapier
+> step, changeable any time without touching code or PostHog — so it can be
+> decided (or handed to the org) after launch.
+
+> **Privacy.** `search_query` is free text a visitor typed; on a migrant/refugee
+> site it can carry a name or sensitive term. Send it only to a team-restricted
+> channel and keep the short-retention discipline used elsewhere here.
+
+> **The loop to measure.** This is a testable hypothesis, not a fire-and-forget:
+> alerting the team to gaps → they add the missing contact → zero-result searches
+> should *fall* over time. Watch insight #4 to confirm it's working.
+
+_Variant (not wired):_ a weekly digest — Zapier **Schedule** trigger → **Webhooks
+(POST)** to the Query API (`/api/projects/208396/query/`, HogQL) → email the team
+a top-searches/top-topics summary. Same Query API this dashboard already uses.
 
 ## Chatbot conversation logging (Zapier → PostHog)
 
@@ -90,11 +140,15 @@ layers:
 - **Short retention + restricted access.** Cap transcript retention and limit who can
   view the PostHog project.
 
-### Setup checklist (blocked on Zapier dashboard access)
+### Setup checklist (Zapier access available since 2026-07-03 — now unblocked)
 
-- [ ] Set `CHATBOT_LOG_SECRET` in `.env.local` (and as the Zapier webhook header).
-- [ ] Build the Run Zap → Webhooks POST in Zapier.
-- [ ] Add the logging disclosure to the chatbot greeting + privacy policy.
+- [ ] Generate `CHATBOT_LOG_SECRET` (`openssl rand -hex 32`); set it in
+      `.env.local` (and prod env) **and** as the Zapier webhook `Authorization:
+      Bearer …` header — they must match or the endpoint returns 401.
+- [ ] Build the Run Zap → **Webhooks by Zapier (POST)** to
+      `https://<site>/webhooks/chatbot-log` with that header.
+- [ ] Add the logging disclosure to the chatbot greeting + privacy policy
+      (mandatory — special-category data on this site).
 - [ ] Set a retention window in PostHog.
 
 ## Privacy / GDPR (decide before launch)

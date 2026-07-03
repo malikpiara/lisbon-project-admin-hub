@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import {
   IconArrowRight,
@@ -69,6 +71,11 @@ export function SiteFooter() {
           </p>
           <p className="mt-1 text-ds-xxs font-medium text-brand-deep">
             Registered Charity Number: PT514343575
+          </p>
+          <p className="mt-2 text-ds-xxs font-bold text-brand-deep">
+            <Link href="/privacy" className="underline hover:text-primary">
+              Privacy Policy
+            </Link>
           </p>
           <div className="mt-5 flex items-center gap-3">
             {socials.map((s) => {
