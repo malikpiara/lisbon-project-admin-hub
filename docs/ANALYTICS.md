@@ -7,6 +7,38 @@ cloud). Two questions drive it:
 2. **What do people search for in "All Contacts"?** — so we can learn what people
    need that we may not yet list.
 
+## Ownership & key constraints (read before touching analytics)
+
+- **The PostHog account belongs to RoundTwenty, not the Lisbon Project.** The project
+  "Lisbon Project" (id `208396`, EU) lives under the **RoundTwenty** organization
+  (Malik's umbrella brand). **There is no separate PostHog org/account for the Lisbon
+  Project.** Everything analytics — the project, dashboards, the ingestion
+  transformation, the Personal API keys, and the Zapier↔PostHog connection — is owned by
+  and coupled to Malik's RoundTwenty account. *Handoff implication:* if the Lisbon
+  Project ever needs to own its analytics independently, that means standing up a
+  Lisbon-Project-owned PostHog org and migrating (new project, new Zapier connection, new
+  dashboards/keys). Today it's a maintained-on-their-behalf arrangement, consistent with
+  Malik being the external builder, not org staff.
+
+- **Nonprofit / free-tier constraint.** The org can't pay for tooling right now, which
+  drove the chatbot-capture design below: the **free Zapier plan can't publish a Zap that
+  uses "Webhooks by Zapier"** (a premium app), and free Zaps are capped at 2 steps. So we
+  used PostHog's own **free** Zapier app ("Capture Event") + a **free** PostHog ingestion
+  transformation instead of the `/webhooks/chatbot-log` route. Any future "just add a
+  webhook / a premium step" idea hits this wall. (Note: Zapier *Chatbots* "Pro" is a
+  separate plan from the Zaps *automation* plan, which is Free.)
+
+- **hog transformation VM has no regex-replace.** `replaceRegexpAll`/`replaceRegexpOne`
+  are unsupported at runtime and `match()` returns a boolean — so in-transcript PII
+  redaction is **tokenize-and-swap only** (catches emails + single-token phone numbers;
+  not spaced phones or free-text names). Retention + restricted access + the `/privacy`
+  notice are the real backstop.
+
+- **Verify outcomes, not tool status.** Zapier reported "Ok" on a capture whose event was
+  stamped with the conversation's *Created At* (a Jul 1 sample), not ingestion time — so
+  it fell outside a naive "last N hours" check though it had landed fine. Always confirm
+  in PostHog, and mind the query window.
+
 ## Status
 
 - **Instrumentation: done** (SDK + provider + events). It is **opt-in** — nothing
@@ -103,7 +135,31 @@ _Variant (not wired):_ a weekly digest — Zapier **Schedule** trigger → **Web
 (POST)** to the Query API (`/api/projects/208396/query/`, HogQL) → email the team
 a top-searches/top-topics summary. Same Query API this dashboard already uses.
 
-## Chatbot conversation logging (Zapier → PostHog)
+## Chatbot conversation logging — LIVE via PostHog's Zapier app (2026-07-03)
+
+**What actually shipped (free path):** the free Zapier plan can't publish a Zap using
+**Webhooks by Zapier** (a premium app), so `/webhooks/chatbot-log` (below) could not be
+used. Instead the live pipeline is: **Carebot "Run Zap → end of conversation" → PostHog's
+own Zapier app "Capture Event"** (a standard, non-premium app) → event
+`chatbot_conversation_logged` (distinct_id = Chatbot Session Id, property `transcript` =
+Full Conversation Transcript, plus `chatbot_name`; Timestamp = the conversation's Created
+At). Zap id 371307022 ("Chatbot conversation ends"), published, 2 steps, €0/mo.
+
+**Redaction moved into PostHog** (since Zapier→PostHog is direct, our route's `redact()`
+can't run): a free **ingestion transformation** ("Redact PII from chatbot transcripts",
+hog function `019f291e-…`) tokenizes the transcript and swaps tokens matching an email
+regex or 6+ consecutive digits → `[email]`/`[phone]`. NOTE: the hog transformation VM has
+**no regex-replace** (`replaceRegexpAll`/`One` both unsupported at runtime) and `match`
+returns a boolean, so tokenize-and-swap is the only technique — it catches emails +
+single-token phones but **not spaced phones or free-text names**. Retention + restricted
+project access + the `/privacy` notice remain the real backstop.
+
+**The `/webhooks/chatbot-log` route below is retained but unused** — it's the cleaner
+design (redact-in-transit) and the path to switch to if the org ever moves to a paid
+Zapier plan; `/admin/conversations` reads `chatbot_conversation_logged` from PostHog
+regardless of which path produced it.
+
+## (Reference) Original design: our own webhook (Zapier → PostHog)
 
 The help chatbot is a Zapier Chatbot embedded in a **cross-origin iframe**, so its
 message text is invisible to our client JS (same-origin policy). We capture at two
@@ -140,16 +196,28 @@ layers:
 - **Short retention + restricted access.** Cap transcript retention and limit who can
   view the PostHog project.
 
-### Setup checklist (Zapier access available since 2026-07-03 — now unblocked)
+### Setup status (2026-07-03 — pipeline wired in production)
 
-- [ ] Generate `CHATBOT_LOG_SECRET` (`openssl rand -hex 32`); set it in
-      `.env.local` (and prod env) **and** as the Zapier webhook `Authorization:
-      Bearer …` header — they must match or the endpoint returns 401.
-- [ ] Build the Run Zap → **Webhooks by Zapier (POST)** to
-      `https://<site>/webhooks/chatbot-log` with that header.
-- [ ] Add the logging disclosure to the chatbot greeting + privacy policy
-      (mandatory — special-category data on this site).
-- [ ] Set a retention window in PostHog.
+- [x] `CHATBOT_LOG_SECRET` set in Vercel **Production** (the raw secret; the Zap
+      sends `Bearer <same secret>`). Endpoint live at
+      `https://lp.lisboaux.com/webhooks/chatbot-log`. Note: the raw secret and the
+      Zap's `Bearer …` value must match byte-for-byte — a trailing newline on the
+      Vercel value is the classic 401 cause; set both from one clean clipboard value.
+- [x] Zap built — Carebot **Logic → "Run Zap" (end of conversation)** trigger →
+      **Webhooks by Zapier (POST)** to the endpoint, Payload Type **JSON**, body
+      `{ conversation_id, transcript }` mapped from the conversation fields.
+- [x] **Privacy-policy disclosure is LIVE** at `/privacy` (linked in the site
+      footer): states conversations may be stored, PII-redacted, team-only, kept
+      for a limited period. This is the baseline written notice.
+- [ ] **⚠️ REQUIRED BEFORE THE SITE IS OFFICIALLY RELEASED TO THE PUBLIC —
+      in-chat greeting disclosure.** Add the RGPD notice to **Carebot's greeting**
+      (Zapier Chatbots → Instructions → Greeting), ideally in all five offered
+      languages (EN/FR/PT/ES/AR). **Deliberately deferred on 2026-07-03**; the
+      `/privacy` page is the baseline, this greeting line is the stronger
+      in-context notice. Do **not** promote/launch the site publicly without it.
+- [ ] Set a **retention window** in PostHog for `chatbot_conversation_logged`.
+- [ ] Replace the placeholder **contact email** on `/privacy` with the real one
+      before launch.
 
 ## Privacy / GDPR (decide before launch)
 
