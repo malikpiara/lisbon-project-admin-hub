@@ -26,7 +26,7 @@ Postgres); the UI is ours, built from the LP design system.
    Malik's machine; never print these).
 2. `pnpm install` → `pnpm dev`, open `/admin`.
 3. **Login:** `/admin` is gated on the Payload session. If you're bounced to
-   `/cms-admin/login`, sign in there (dev creds: `malik@hey.com` /
+   `/cms-admin/login`, sign in there (dev creds: `malik@roundtwenty.com` /
    `changeme123`) — the session is shared, so `/admin` then opens. The session
    **expires over long sessions**; re-login the same way. Payload's React login
    form needs a real submit: set `#field-email`/`#field-password` then
