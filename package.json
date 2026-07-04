@@ -10,7 +10,8 @@
     "lint": "eslint",
     "parity": "node scripts/ds-parity.mjs",
     "payload": "payload",
-    "seed:payload": "tsx scripts/seed-payload.ts"
+    "seed:payload": "tsx scripts/seed-payload.ts",
+    "promote:admin": "tsx scripts/promote-admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

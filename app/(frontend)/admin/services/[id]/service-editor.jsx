@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ChevronRight,
   Contact,
   ExternalLink,
@@ -14,6 +13,14 @@ import {
   X,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/admin/field";
 import { IconPicker } from "@/components/admin/icon-picker";
@@ -269,13 +276,21 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
       />
       <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
-          <Link
-            href="/admin/services"
-            className="inline-flex items-center gap-1.5 text-ds-xxs font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" />
-            All categories
-          </Link>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/admin/services">
+                  Services &amp; Information
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {draft.title || "Untitled category"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="mt-3 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">

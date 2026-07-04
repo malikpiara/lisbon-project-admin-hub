@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }) {
 
   return (
     <div className="flex min-h-dvh">
-      <AdminSidebar userEmail={user.email} />
+      <AdminSidebar userEmail={user.email} isAdmin={user.role === "admin"} />
       <div className="min-w-0 flex-1 bg-card">{children}</div>
     </div>
   );

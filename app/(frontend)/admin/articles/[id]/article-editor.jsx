@@ -4,6 +4,14 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { ExternalLink, FileText, HelpCircle, Link2, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, DirtyDot, SelectField } from "@/components/admin/field";
 import { DeleteButton } from "@/components/admin/delete-button";
@@ -302,24 +310,27 @@ export function ArticleEditor({ topic, service, services = [], audit }) {
       />
       <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
-          <nav className="text-ds-xxs font-medium text-muted-foreground">
-            <Link href="/admin/services" className="hover:text-foreground">
-              Services
-            </Link>
-            <span className="mx-1.5">/</span>
-            {service ? (
-              <>
-                <Link
-                  href={`/admin/services/${service.id}`}
-                  className="hover:text-foreground"
-                >
-                  {service.title}
-                </Link>
-                <span className="mx-1.5">/</span>
-              </>
-            ) : null}
-            <span className="text-foreground">{draft.title}</span>
-          </nav>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/admin/articles">Articles</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              {service ? (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href={`/admin/services/${service.id}`}>
+                      {service.title}
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </>
+              ) : null}
+              <BreadcrumbItem>
+                <BreadcrumbPage>{draft.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="mt-3 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">

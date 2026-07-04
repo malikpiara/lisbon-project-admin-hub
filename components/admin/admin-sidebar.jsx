@@ -17,9 +17,9 @@ import {
 import { cn } from "@/lib/utils";
 
 // The unified team-workspace sidebar for the /admin group — content editor
-// (Quick Access / Services / Topics), analytics (Insights / History) and team
-// management. The Payload CMS lives in its own app at /cms-admin (separate root
-// layout), so it's reached directly, not from here.
+// (Quick Access / Services / Articles), analytics (Insights / History) and
+// team management (admins only). The Payload CMS lives in its own app at
+// /cms-admin (separate root layout), so it's reached directly, not from here.
 const navGroups = [
   {
     title: "Content",
@@ -40,12 +40,14 @@ const navGroups = [
   },
   {
     title: "Admin",
+    adminOnly: true,
     items: [{ href: "/admin/users", label: "Team", icon: Users2 }],
   },
 ];
 
-export function AdminSidebar({ userEmail }) {
+export function AdminSidebar({ userEmail, isAdmin = false }) {
   const pathname = usePathname();
+  const groups = navGroups.filter((g) => !g.adminOnly || isAdmin);
   return (
     <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6">
       <div className="mb-6 px-2">
@@ -58,7 +60,7 @@ export function AdminSidebar({ userEmail }) {
       </div>
 
       <nav className="space-y-5">
-        {navGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="space-y-1">
             <p className="px-3 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
               {group.title}
@@ -103,6 +105,15 @@ export function AdminSidebar({ userEmail }) {
           className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           View live site
+          <ExternalLink className="size-3.5" />
+        </Link>
+        <Link
+          href="/components"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
+        >
+          Design system
           <ExternalLink className="size-3.5" />
         </Link>
       </div>

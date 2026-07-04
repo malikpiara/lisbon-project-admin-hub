@@ -142,7 +142,7 @@ const users = await payload.find({ collection: "users", limit: 1 });
 if (users.totalDocs === 0) {
   await payload.create({
     collection: "users",
-    data: { email, password, name: "Admin" },
+    data: { email, password, name: "Admin", role: "admin" },
   });
   console.log(`Created admin user: ${email} / ${password}`);
 }

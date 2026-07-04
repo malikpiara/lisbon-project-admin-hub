@@ -26,7 +26,7 @@ Postgres); the UI is ours, built from the LP design system.
    Malik's machine; never print these).
 2. `pnpm install` → `pnpm dev`, open `/admin`.
 3. **Login:** `/admin` is gated on the Payload session. If you're bounced to
-   `/cms-admin/login`, sign in there (dev creds: `admin@example.com` /
+   `/cms-admin/login`, sign in there (dev creds: `malik@hey.com` /
    `changeme123`) — the session is shared, so `/admin` then opens. The session
    **expires over long sessions**; re-login the same way. Payload's React login
    form needs a real submit: set `#field-email`/`#field-password` then
@@ -61,7 +61,7 @@ Postgres); the UI is ours, built from the LP design system.
 | Services | `admin/services/` + `[id]/` | Editor: basics, intro, icon, **editable contact-category filters**, contacts (reorder/duplicate), topic list (reorder), **version history + diff + restore** |
 | Articles | `admin/articles/` + `[id]/` | Searchable list; editor with **live `ArticlePreview`**, key links + sections + FAQs (reorder/duplicate), required markers. (Payload collection slug stays `topics`.) |
 | Insights | `admin/insights/` | Team-only analytics (PostHog); inherits the layout's auth gate + sidebar |
-| Team | `admin/users/` | Create / reset-password / remove volunteers; **self-delete guard**; "You" badge |
+| Team | `admin/users/` | **Admin-role only.** Create / edit profile / reset-password (with generator) / remove; two-tier roles (admin / editor); self-delete + self-demote guards; "You" badge |
 | History | `admin/history/` | Activity feed of every create/update/delete, with who + when |
 | Audit | `payload/fields/audit.ts`, `components/admin/audit-meta.jsx`, `lib/format-audit.js` | `createdBy`/`updatedBy` on every collection; labeled meta bar |
 | Audit log | `payload/collections/AuditLog.ts`, `lib/audit-log.js` | Append-only; best-effort `logAudit()` from each write action |

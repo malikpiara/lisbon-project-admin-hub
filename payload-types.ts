@@ -205,6 +205,10 @@ export interface Service {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * Admins manage the team (accounts, passwords, roles); editors manage content only
+   */
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -553,6 +557,7 @@ export interface QuickAccessSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

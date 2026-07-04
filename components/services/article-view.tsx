@@ -11,6 +11,14 @@ import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
 import { buttonVariants } from "@/components/ui/button";
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -111,26 +119,23 @@ export function ArticleView({
       {/* Hero */}
       <section className="bg-bg-page">
         <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
-          <nav
-            aria-label="Breadcrumb"
-            className="ds-section-x-padding pb-6 text-ds-xxs font-bold"
-          >
-            <Link
-              href="/"
-              className="text-primary underline underline-offset-[3px] hover:text-brand-link"
-            >
-              Home
-            </Link>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <Link
-              href={`/services/${service.slug}`}
-              className="text-primary underline underline-offset-[3px] hover:text-brand-link"
-            >
-              {service.breadcrumb}
-            </Link>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="text-foreground">{topic.title}</span>
-          </nav>
+          <Breadcrumb className="ds-section-x-padding pb-6">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/services/${service.slug}`}>
+                  {service.breadcrumb}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{topic.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="ds-section-padding rounded-none xl:rounded-[3.5rem]">
             <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
