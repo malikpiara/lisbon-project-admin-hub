@@ -26,8 +26,8 @@ export function AuditMeta({ audit, className = "" }) {
   if (!audit || (!audit.modified && !audit.created)) return null;
   return (
     <div className={cn("flex flex-wrap gap-x-12 gap-y-3", className)}>
-      <Stat label="Last modified" item={audit.modified} />
       <Stat label="Created" item={audit.created} />
+      <Stat label="Last modified" item={audit.modified} />
     </div>
   );
 }

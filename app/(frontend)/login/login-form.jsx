@@ -31,6 +31,7 @@ export function LoginForm() {
           name="password"
           autoComplete="current-password"
           required
+          placeholder="Enter your password"
         />
       </label>
 

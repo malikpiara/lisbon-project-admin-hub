@@ -58,16 +58,9 @@ export default async function LoginPage() {
         </div>
       </div>
 
-      {/* Cover side — brand panel, hidden on small screens (login-02 pattern) */}
-      <div className="relative hidden flex-col justify-between bg-brand-900 p-12 lg:flex">
-        <Image
-          src="/lisbon-project-logo.svg"
-          alt=""
-          width={108}
-          height={43}
-          unoptimized
-          className="h-10 w-auto"
-        />
+      {/* Cover side — brand panel, hidden on small screens (login-02 pattern).
+          Logo lives only on the form side; this panel is copy-only. */}
+      <div className="relative hidden flex-col justify-end bg-brand-900 p-12 lg:flex">
         <div className="max-w-md">
           <p className="font-heading text-ds-xl font-bold leading-tight text-brand-000">
             Supporting people who&rsquo;ve made Lisbon their new home.
