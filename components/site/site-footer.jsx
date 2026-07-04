@@ -1,13 +1,12 @@
 import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
 import {
-  IconArrowRight,
   IconFacebook,
   IconInstagram,
   IconLinkedin,
   IconMail,
 } from "@/components/icons/ds-icons";
+import { NewsletterForm } from "./newsletter-form";
 
 const socials = [
   { label: "Facebook", icon: IconFacebook, href: "#" },
@@ -31,35 +30,7 @@ export function SiteFooter() {
             Get monthly updates on events, programs, and community stories
           </p>
 
-          <div className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <label className="block">
-              <span className="mb-1.5 block text-ds-xs font-medium text-foreground">
-                First Name <span className="text-primary">*</span>
-              </span>
-              <input
-                type="text"
-                placeholder="Your first name"
-                className="h-11 w-full rounded-lg border-2 border-input bg-card px-4 text-ds-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1.5 block text-ds-xs font-medium text-foreground">
-                Email <span className="text-primary">*</span>
-              </span>
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="h-11 w-full rounded-lg border-2 border-input bg-card px-4 text-ds-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring"
-              />
-            </label>
-            <button
-              type="button"
-              className={buttonVariants({ className: "px-5" })}
-            >
-              Subscribe
-              <IconArrowRight className="size-4" />
-            </button>
-          </div>
+          <NewsletterForm />
         </div>
 
         <hr className="mt-12 border-t-2 border-secondary" />

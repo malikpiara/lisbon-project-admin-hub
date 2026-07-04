@@ -10,6 +10,7 @@ import { Topics } from "./payload/collections/Topics";
 import { QuickAccess } from "./payload/collections/QuickAccess";
 import { Users } from "./payload/collections/Users";
 import { AuditLog } from "./payload/collections/AuditLog";
+import { Subscribers } from "./payload/collections/Subscribers";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -43,7 +44,7 @@ export default buildConfig({
       afterNavLinks: ["/payload/components/NavLinks#NavLinks"],
     },
   },
-  collections: [Services, Topics, QuickAccess, Users, AuditLog],
+  collections: [Services, Topics, QuickAccess, Users, AuditLog, Subscribers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   db: postgresAdapter({

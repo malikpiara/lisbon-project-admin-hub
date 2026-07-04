@@ -90,6 +90,35 @@ Set `PAYLOAD_SECRET` and a Supabase `DATABASE_URI` in `.env.local` (see
 > **[docs/CMS-EVALUATION.md](docs/CMS-EVALUATION.md)**. The public site still
 > reads `localStorage` — wiring it to Payload is the next milestone.
 
+## Newsletter — MailerLite
+
+The public site footer has a newsletter signup form. The Lisbon Project migrated
+its **site** off MailerLite (onto this app) but keeps **MailerLite as the sending
+platform**, so it stays the single source of truth for subscribers — sends,
+unsubscribes, segments, and MailerLite's own double opt-in all live there.
+
+The signup writes through `lib/mailerlite.js` (upsert into MailerLite), wired in
+`components/site/newsletter-actions.js`.
+
+### Setup
+
+1. **MailerLite** → **Integrations** → **API** → generate a token.
+2. (Optional) **Subscribers** → **Groups** → open the group signups should land
+   in; copy the id from the URL.
+3. Paste into `.env.local` (see [`.env.example`](.env.example)):
+   - `MAILERLITE_API_KEY` — the token from step 1.
+   - `MAILERLITE_GROUP_ID` — optional; the group from step 2.
+
+### Parked until credentials exist
+
+While `MAILERLITE_API_KEY` is empty, `lib/mailerlite.js` is a **no-op** and the
+action **falls back to capturing signups in the Payload `subscribers` collection**
+(Supabase Postgres), so none are lost during the transition. Those rows are the
+import source for MailerLite once it's live — after that the local capture can be
+retired. Setting the key flips signups to MailerLite automatically, no code
+change. MailerLite's built-in double opt-in covers consent, so no custom
+opt-in/unsubscribe flow is needed here.
+
 ## Architecture & known issues
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) documents how content flows, the
@@ -101,4 +130,5 @@ or the design system.
 
 Deploy via the [Vercel Platform](https://vercel.com/new). Set both
 `GOOGLE_CALENDAR_API_KEY` and `GOOGLE_CALENDAR_ID` as Environment Variables
-in the project settings. Do not commit `.env.local`.
+in the project settings — plus `MAILERLITE_API_KEY` (and optional
+`MAILERLITE_GROUP_ID`) once MailerLite is live. Do not commit `.env.local`.
