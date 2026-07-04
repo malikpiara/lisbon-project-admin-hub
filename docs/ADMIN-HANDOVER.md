@@ -59,7 +59,7 @@ Postgres); the UI is ours, built from the LP design system.
 | Dashboard | `admin/page.js` | Counts + cards into each editor + Insights |
 | Quick Access | `admin/quick-access/` | Editor + reorder + per-card save-state + **unsaved-changes guard** (aggregated across cards) |
 | Services | `admin/services/` + `[id]/` | Editor: basics, intro, icon, **editable contact-category filters**, contacts (reorder/duplicate), topic list (reorder), **version history + diff + restore** |
-| Topics | `admin/topics/` + `[id]/` | Searchable list (140 topics); editor with **live `ArticlePreview`**, sections + FAQs (reorder/duplicate), required markers |
+| Articles | `admin/articles/` + `[id]/` | Searchable list; editor with **live `ArticlePreview`**, key links + sections + FAQs (reorder/duplicate), required markers. (Payload collection slug stays `topics`.) |
 | Insights | `admin/insights/` | Team-only analytics (PostHog); inherits the layout's auth gate + sidebar |
 | Team | `admin/users/` | Create / reset-password / remove volunteers; **self-delete guard**; "You" badge |
 | History | `admin/history/` | Activity feed of every create/update/delete, with who + when |

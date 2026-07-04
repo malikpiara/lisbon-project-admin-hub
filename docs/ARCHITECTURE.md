@@ -57,7 +57,8 @@ content.
 
 ## Mock article body (the "headless CMS")
 
-Each topic can carry an `article`: `{ heroLead, sections[], faqLead, faqs[] }`.
+Each topic can carry an `article`:
+`{ heroLead, keyLinks[], sections[], faqLead, faqs[] }`.
 
 - It is **undefined until first edited.** `lib/article-defaults.js`
   `defaultArticle(topic)` supplies fallback placeholder content;
@@ -69,6 +70,10 @@ Each topic can carry an `article`: `{ heroLead, sections[], faqLead, faqs[] }`.
   item per line; `section.cta` = optional button label; the panel background
   alternates by index. The hero subheading is now **per-topic** (it used to be a
   single shared constant).
+- `keyLinks` = `[{ label, href }]`, rendered by
+  `components/services/key-links.tsx` as the **first** content block on the
+  article (decided 2026-07-04, matching the old site's hierarchy). `/path`
+  hrefs navigate internally; `https://` hrefs open in a new tab.
 
 ## Design-system gotchas
 
