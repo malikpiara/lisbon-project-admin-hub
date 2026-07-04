@@ -7,6 +7,11 @@ const nextConfig = {
     // direct per-icon imports at build time so unused icons are tree-shaken.
     // (Vercel best practice: bundle-barrel-imports.)
     optimizePackageImports: ["lucide-react", "date-fns"],
+    // The app has two root layouts ((frontend) + (payload)), so Next can't
+    // compose a normal root not-found for unmatched URLs. globalNotFound lets
+    // app/global-not-found.tsx serve the branded 404 app-wide. See the Next 16
+    // not-found.js docs (§ global-not-found.js).
+    globalNotFound: true,
   },
 };
 
