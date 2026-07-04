@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Searchable Topics list — the teardown's "manage-at-scale" lesson: 140 topics
-// as cards is a scroll-wall, so filter by title / service / description.
-export function TopicsList({ topics }) {
+// Searchable Articles list — the teardown's "manage-at-scale" lesson: 140
+// articles as cards is a scroll-wall, so filter by title / service / description.
+export function ArticlesList({ topics }) {
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
@@ -25,7 +25,7 @@ export function TopicsList({ topics }) {
     <div className="mx-auto max-w-5xl px-8 py-10">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
-          Topics
+          Articles
         </h1>
         <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
           {topics.length} articles across all services.
@@ -50,12 +50,12 @@ export function TopicsList({ topics }) {
         {filtered.map((t) => (
           <Link
             key={t.id}
-            href={`/admin/topics/${t.id}`}
+            href={`/admin/articles/${t.id}`}
             className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
           >
             <span className="min-w-0">
               <span className="block truncate text-ds-xs font-bold text-foreground">
-                {t.title || "Untitled topic"}
+                {t.title || "Untitled article"}
               </span>
               <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
                 {t.serviceTitle}
@@ -67,7 +67,7 @@ export function TopicsList({ topics }) {
         ))}
         {filtered.length === 0 ? (
           <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
-            No topics match &ldquo;{q}&rdquo;.
+            No articles match &ldquo;{q}&rdquo;.
           </p>
         ) : null}
       </div>

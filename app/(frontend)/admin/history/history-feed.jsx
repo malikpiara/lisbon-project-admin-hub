@@ -15,14 +15,14 @@ const ACTION = {
 
 const TYPE_LABEL = {
   services: "category",
-  topics: "topic",
+  topics: "article",
   "quick-access": "quick access card",
   users: "team member",
 };
 
 function docHref(slug, id) {
   if (slug === "services") return `/admin/services/${id}`;
-  if (slug === "topics") return `/admin/topics/${id}`;
+  if (slug === "topics") return `/admin/articles/${id}`;
   if (slug === "users") return "/admin/users";
   return "/admin/quick-access";
 }

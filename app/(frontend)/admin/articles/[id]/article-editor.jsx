@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, FileText, HelpCircle, Plus } from "lucide-react";
+import { ExternalLink, FileText, HelpCircle, Link2, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, DirtyDot, SelectField } from "@/components/admin/field";
@@ -42,6 +42,11 @@ function fromPayload(topic) {
       cta: s.cta ?? "",
       ctaHref: s.ctaHref ?? "",
     })),
+    keyLinks: (a.keyLinks ?? []).map((l) => ({
+      _k: nextRowKey(),
+      label: l.label ?? "",
+      href: l.href ?? "",
+    })),
     faqLead: a.faqLead ?? "",
     faqs: (a.faqs ?? []).map((f) => ({
       _k: nextRowKey(),
@@ -70,6 +75,7 @@ function toPayload(d) {
         cta: s.cta,
         ctaHref: s.ctaHref,
       })),
+      keyLinks: d.keyLinks.map((l) => ({ label: l.label, href: l.href })),
       faqLead: d.faqLead,
       faqs: d.faqs.map((f) => ({ question: f.question, answer: f.answer })),
     },
@@ -79,7 +85,7 @@ function toPayload(d) {
   };
 }
 
-export function TopicEditor({ topic, service, services = [], audit }) {
+export function ArticleEditor({ topic, service, services = [], audit }) {
   const [draft, setDraft] = useState(() => ({
     ...fromPayload(topic),
     serviceId: service?.id ?? "",
@@ -90,8 +96,10 @@ export function TopicEditor({ topic, service, services = [], audit }) {
   const [phase, setPhase] = useState("idle"); // idle | saving | error
   const [isPending, startTransition] = useTransition();
   const sectionFlip = useFlip();
+  const keyLinkFlip = useFlip();
   const faqFlip = useFlip();
   const [flashSectionKey, setFlashSectionKey] = useState(null);
+  const [flashKeyLinkKey, setFlashKeyLinkKey] = useState(null);
   const [flashFaqKey, setFlashFaqKey] = useState(null);
 
   // Reorder by identity (`_k`): a row is "moved" when its key sits at a different
@@ -105,6 +113,14 @@ export function TopicEditor({ topic, service, services = [], audit }) {
     const si = savedSectionKeys.indexOf(s._k);
     return n + (si !== -1 && si !== i ? 1 : 0);
   }, 0);
+  const savedKeyLinkKeys = saved.keyLinks.map((l) => l._k);
+  const savedKeyLinkByK = Object.fromEntries(
+    saved.keyLinks.map((l) => [l._k, l])
+  );
+  const reorderedKeyLinkCount = draft.keyLinks.reduce((n, l, i) => {
+    const si = savedKeyLinkKeys.indexOf(l._k);
+    return n + (si !== -1 && si !== i ? 1 : 0);
+  }, 0);
   const savedFaqKeys = saved.faqs.map((f) => f._k);
   const savedFaqByK = Object.fromEntries(saved.faqs.map((f) => [f._k, f]));
   const reorderedFaqCount = draft.faqs.reduce((n, f, i) => {
@@ -115,7 +131,10 @@ export function TopicEditor({ topic, service, services = [], audit }) {
   // Honest diff: dirty derived from draft-vs-snapshot, so reverting clears it.
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const changeCount =
-    countChanges(draft, saved) + reorderedSectionCount + reorderedFaqCount;
+    countChanges(draft, saved) +
+    reorderedSectionCount +
+    reorderedKeyLinkCount +
+    reorderedFaqCount;
   const fieldDirty = (a, b) => (a ?? "") !== (b ?? "");
 
   const set = (patch) => {
@@ -156,6 +175,51 @@ export function TopicEditor({ topic, service, services = [], audit }) {
       const arr = [...d.sections];
       arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
       return { ...d, sections: arr };
+    });
+  };
+  const setKeyLink = (i, patch) => {
+    setDraft((d) => ({
+      ...d,
+      keyLinks: d.keyLinks.map((l, idx) =>
+        idx === i ? { ...l, ...patch } : l
+      ),
+    }));
+  };
+  const addKeyLink = () => {
+    setDraft((d) => ({
+      ...d,
+      keyLinks: [
+        ...d.keyLinks,
+        { _k: nextRowKey(), label: "New link", href: "" },
+      ],
+    }));
+  };
+  const removeKeyLink = (i) => {
+    setDraft((d) => ({
+      ...d,
+      keyLinks: d.keyLinks.filter((_, idx) => idx !== i),
+    }));
+  };
+  const moveKeyLink = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= draft.keyLinks.length) return;
+    const movedKey = draft.keyLinks[i]._k;
+    setDraft((d) => {
+      const arr = [...d.keyLinks];
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { ...d, keyLinks: arr };
+    });
+    setFlashKeyLinkKey(movedKey);
+    setTimeout(
+      () => setFlashKeyLinkKey((c) => (c === movedKey ? null : c)),
+      700
+    );
+  };
+  const duplicateKeyLink = (i) => {
+    setDraft((d) => {
+      const arr = [...d.keyLinks];
+      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
+      return { ...d, keyLinks: arr };
     });
   };
   const setFaq = (i, patch) => {
@@ -264,7 +328,7 @@ export function TopicEditor({ topic, service, services = [], audit }) {
               </span>
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-ds-xl font-bold text-foreground">
-                  {draft.title || "Untitled topic"}
+                  {draft.title || "Untitled article"}
                 </h1>
                 <p className="truncate font-mono text-ds-xxs text-muted-foreground">
                   /services/{serviceSlug}/{topic.slug}
@@ -360,6 +424,70 @@ export function TopicEditor({ topic, service, services = [], audit }) {
               dirty={fieldDirty(draft.heroLead, saved.heroLead)}
             />
           </div>
+        </Section>
+
+        <Section
+          title="Key links"
+          description="Shortcut links shown at the top of the article, before the content sections."
+          count={draft.keyLinks.length}
+          action={
+            <Button size="sm" onClick={addKeyLink}>
+              <Plus className="size-3.5" />
+              Add link
+            </Button>
+          }
+        >
+          {draft.keyLinks.length === 0 ? (
+            <EmptyState
+              icon={Link2}
+              label="No key links yet"
+              hint="Key links appear as a short list of shortcuts at the top of the article."
+            />
+          ) : (
+            <div className="space-y-2">
+              {draft.keyLinks.map((l, i) => {
+                const lc = savedKeyLinkByK[l._k];
+                const si = savedKeyLinkKeys.indexOf(l._k);
+                const moved = si !== -1 && si !== i;
+                return (
+                  <div key={l._k} ref={keyLinkFlip(l._k)}>
+                    <EditorRow
+                      title={l.label || "Untitled link"}
+                      subtitle={l.href}
+                      defaultOpen={l.label === "New link"}
+                      onDelete={() => removeKeyLink(i)}
+                      onMoveUp={() => moveKeyLink(i, -1)}
+                      onMoveDown={() => moveKeyLink(i, 1)}
+                      onDuplicate={() => duplicateKeyLink(i)}
+                      isFirst={i === 0}
+                      isLast={i === draft.keyLinks.length - 1}
+                      marked={moved}
+                      flashing={flashKeyLinkKey === l._k}
+                    >
+                      <div className="grid gap-4">
+                        <Field
+                          label="Label"
+                          required
+                          value={l.label}
+                          onChange={(v) => setKeyLink(i, { label: v })}
+                          dirty={fieldDirty(l.label, lc?.label)}
+                        />
+                        <Field
+                          label="Link"
+                          required
+                          hint="Use /path for an internal page or https://… for an external site."
+                          value={l.href}
+                          onChange={(v) => setKeyLink(i, { href: v })}
+                          dirty={fieldDirty(l.href, lc?.href)}
+                          placeholder="/path or https://…"
+                        />
+                      </div>
+                    </EditorRow>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Section>
 
         <Section

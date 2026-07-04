@@ -183,6 +183,16 @@ export const COMPONENT_THUMBNAILS: Record<string, ReactNode> = {
   "map-visit": <SystemGlyph name="location" />,
   "service-page": <SystemGlyph name="notes" />,
   "article-page": <SystemGlyph name="report" />,
+  "key-links": (
+    <div className="w-44 space-y-2.5">
+      {(["w-24", "w-32", "w-20"] as const).map((w) => (
+        <div key={w} className="flex items-center gap-1.5">
+          <div className={`h-2 ${w} rounded-full bg-primary/70`} />
+          <Icon name="ui-arrow-right" className="size-3 text-primary" />
+        </div>
+      ))}
+    </div>
+  ),
   footer: <SystemGlyph name="ui-mail-open" />,
   "topics-viewed-chart": <SystemGlyph name="health-chart" />,
 };

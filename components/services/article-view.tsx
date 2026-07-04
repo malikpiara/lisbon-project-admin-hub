@@ -6,6 +6,7 @@ import Link from "next/link";
 import { IconInfo } from "@/components/icons/ds-icons";
 
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
+import { KeyLinks, type KeyLink } from "@/components/services/key-links";
 import { MapVisit } from "@/components/home/map-visit";
 import { useAdmin } from "@/lib/admin-store";
 import { buttonVariants } from "@/components/ui/button";
@@ -35,6 +36,7 @@ type Faq = { question: string; answer: string };
 type Article = {
   heroLead: string;
   sections: ArticleSection[];
+  keyLinks?: KeyLink[];
   faqLead: string;
   faqs: Faq[];
 };
@@ -146,6 +148,10 @@ export function ArticleView({
       {/* Content sections */}
       <section className="bg-bg-page">
         <div className="mx-auto max-w-[1680px] space-y-8 px-4 pb-16 sm:px-6 lg:px-14">
+          {/* Key links lead the article ("I just need the portal link") —
+              decided 2026-07-04, matching the old site's hierarchy. */}
+          <KeyLinks links={article.keyLinks ?? []} />
+
           {article.sections.map((s, index) => {
             const paragraphs = splitParagraphs(s.body);
             const bullets = splitLines(s.bullets);

@@ -11,7 +11,7 @@ export const Topics: CollectionConfig = {
   slug: "topics",
   // Public website content: anyone can read; writes still require auth.
   access: { read: () => true },
-  labels: { singular: "Topic", plural: "Topics" },
+  labels: { singular: "Article", plural: "Articles" },
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "slug", "service", "order"],
@@ -49,6 +49,24 @@ export const Topics: CollectionConfig = {
       type: "group",
       fields: [
         { name: "heroLead", type: "textarea" },
+        {
+          name: "keyLinks",
+          type: "array",
+          labels: { singular: "Key link", plural: "Key links" },
+          admin: {
+            description:
+              'Shortcuts rendered as the "Key links" list at the top of the article',
+          },
+          fields: [
+            { name: "label", type: "text", required: true },
+            {
+              name: "href",
+              type: "text",
+              required: true,
+              admin: { description: "/path internal or https://… external" },
+            },
+          ],
+        },
         {
           name: "sections",
           type: "array",

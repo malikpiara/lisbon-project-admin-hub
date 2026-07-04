@@ -27,7 +27,7 @@ const navGroups = [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
       { href: "/admin/services", label: "Services & Information", icon: ListChecks },
-      { href: "/admin/topics", label: "Topics", icon: FileText },
+      { href: "/admin/articles", label: "Articles", icon: FileText },
     ],
   },
   {

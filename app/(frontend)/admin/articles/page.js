@@ -1,8 +1,8 @@
 import { authedPayload } from "@/lib/admin-auth";
-import { TopicsList } from "./topics-list";
+import { ArticlesList } from "./articles-list";
 
 export const metadata = {
-  title: "Topics · Admin",
+  title: "Articles · Admin",
 };
 
 export default async function AdminTopicsPage() {
@@ -36,5 +36,5 @@ export default async function AdminTopicsPage() {
     };
   });
 
-  return <TopicsList topics={rows} />;
+  return <ArticlesList topics={rows} />;
 }

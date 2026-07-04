@@ -1,5 +1,6 @@
 "use client";
 
+import { IconArrowRight } from "@/components/icons/ds-icons";
 import { splitLines, splitParagraphs } from "@/lib/article-defaults";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ export function ArticlePreview({ draft, topicTitle }) {
           Live preview
         </p>
         <h2 className="mt-2 font-heading text-ds-xl font-bold text-primary">
-          {topicTitle || "Untitled topic"}
+          {topicTitle || "Untitled article"}
         </h2>
         {draft.heroLead ? (
           <p className="mt-2 text-ds-s font-bold text-foreground">
@@ -26,6 +27,27 @@ export function ArticlePreview({ draft, topicTitle }) {
       </div>
 
       <div className="space-y-6 px-6 py-6">
+        {draft.keyLinks?.length ? (
+          <div>
+            <h3 className="font-heading text-ds-s font-bold text-brand-dark">
+              Key links
+            </h3>
+            <ul className="mt-3 space-y-1.5">
+              {draft.keyLinks.map((l, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-1 text-ds-xxs font-bold text-primary"
+                >
+                  <span className="underline underline-offset-[3px]">
+                    {l.label || "Untitled link"}
+                  </span>
+                  <IconArrowRight className="size-3.5 shrink-0" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         {draft.sections.map((s, i) => {
           const paragraphs = splitParagraphs(s.body);
           const bullets = splitLines(s.bullets);

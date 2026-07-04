@@ -244,6 +244,19 @@ export interface Topic {
   order?: number | null;
   article?: {
     heroLead?: string | null;
+    /**
+     * Shortcuts rendered as the "Key links" list at the top of the article
+     */
+    keyLinks?:
+      | {
+          label: string;
+          /**
+           * /path internal or https://… external
+           */
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
     sections?:
       | {
           heading: string;
@@ -481,6 +494,13 @@ export interface TopicsSelect<T extends boolean = true> {
     | T
     | {
         heroLead?: T;
+        keyLinks?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
         sections?:
           | T
           | {

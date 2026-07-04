@@ -47,8 +47,8 @@ export async function saveTopic(id, data) {
     docTitle: data.title,
     userId: user.id,
   });
-  revalidatePath(`/admin/topics/${id}`);
-  revalidatePath("/admin/topics");
+  revalidatePath(`/admin/articles/${id}`);
+  revalidatePath("/admin/articles");
   if (moved) {
     revalidatePath(`/admin/services/${prevServiceId}`);
     revalidatePath(`/admin/services/${nextServiceId}`);
@@ -65,7 +65,7 @@ export async function createTopic(serviceId) {
   const created = await payload.create({
     collection: "topics",
     data: {
-      title: "New topic",
+      title: "New article",
       slug: `new-topic-${existing.totalDocs + 1}`,
       service: serviceId,
       order: existing.totalDocs,
@@ -81,8 +81,8 @@ export async function createTopic(serviceId) {
     userId: user.id,
   });
   revalidatePath(`/admin/services/${serviceId}`);
-  revalidatePath("/admin/topics");
-  redirect(`/admin/topics/${created.id}`);
+  revalidatePath("/admin/articles");
+  redirect(`/admin/articles/${created.id}`);
 }
 
 // Persist a new order for a service's topics (order = position on the page).
@@ -94,7 +94,7 @@ export async function reorderTopics(ids, serviceId) {
     )
   );
   if (serviceId) revalidatePath(`/admin/services/${serviceId}`);
-  revalidatePath("/admin/topics");
+  revalidatePath("/admin/articles");
   revalidatePath("/");
 }
 
@@ -112,6 +112,6 @@ export async function deleteTopic(id, serviceId) {
     userId: user.id,
   });
   revalidatePath("/admin/services");
-  revalidatePath("/admin/topics");
+  revalidatePath("/admin/articles");
   redirect(serviceId ? `/admin/services/${serviceId}` : "/admin/services");
 }

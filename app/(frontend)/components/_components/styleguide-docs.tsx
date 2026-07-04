@@ -81,6 +81,7 @@ import { MapVisit } from "@/components/home/map-visit";
 import { QuickAccess } from "@/components/home/quick-access";
 import { ServicesGrid } from "@/components/home/services-grid";
 import { ArticleView } from "@/components/services/article-view";
+import { KeyLinks } from "@/components/services/key-links";
 import { ServiceHero } from "@/components/services/service-hero";
 import { TopicsGrid } from "@/components/services/topics-grid";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -2023,6 +2024,42 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     api: [
       { name: "slug", type: "string", defaultValue: "-", description: "Parent service slug." },
       { name: "topicSlug", type: "string", defaultValue: "-", description: "Article topic slug." },
+    ],
+  },
+  {
+    slug: "key-links",
+    title: "Key Links",
+    category: "System components",
+    source: "components/services/key-links.tsx",
+    links: [{ label: "View live at /services/family-child-support/basic-education", href: "/services/family-child-support/basic-education" }],
+    description: "Article section listing shortcut links — the standard section header over 13px bold teal link rows with a chevron.",
+    preview: (
+      <KeyLinks
+        links={[
+          { label: "ePortugal — public services portal", href: "https://eportugal.gov.pt" },
+          { label: "AIMA — migration and asylum agency", href: "https://aima.gov.pt" },
+          { label: "Lisbon city council", href: "https://www.lisboa.pt" },
+          { label: "Community events calendar", href: "/calendar" },
+        ]}
+      />
+    ),
+    fullWidthPreview: true,
+    previewHeight: 460,
+    installation: "Import KeyLinks from the services components.",
+    importCode: `import { KeyLinks } from "@/components/services/key-links"`,
+    usage: "Use inside article pages for the editor-managed list of shortcuts; ArticleView renders it from the article's keyLinks at the top of the article, before the content sections.",
+    usageCode: `<KeyLinks\n  links={[\n    { label: "ePortugal — public services portal", href: "https://eportugal.gov.pt" },\n    { label: "Community events calendar", href: "/calendar" },\n  ]}\n/>`,
+    composition: [
+      "Header reuses the article-section pattern: brand-dark icon badge (info glyph) + xxxl brand-dark title.",
+      "Each row is a 13px bold teal (brand-500) underlined label with a 16px chevron, 8px between rows.",
+      "https:// links open in a new tab; /path links navigate in place via next/link.",
+      "Renders nothing when the links array is empty.",
+    ],
+    examples: [],
+    api: [
+      { name: "links", type: "{ label: string; href: string }[]", defaultValue: "-", description: "The shortcut rows; edited per-article in the admin topic editor." },
+      { name: "title", type: "string", defaultValue: '"Key links"', description: "Section heading." },
+      { name: "className", type: "string", defaultValue: "-", description: "Merged onto the section panel via cn()." },
     ],
   },
   {

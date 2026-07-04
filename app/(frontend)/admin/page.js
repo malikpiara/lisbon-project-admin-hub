@@ -35,9 +35,9 @@ export default async function AdminDashboard() {
       hint: "Categories on the home grid.",
     },
     {
-      href: "/admin/topics",
+      href: "/admin/articles",
       icon: FileText,
-      label: "Topics",
+      label: "Articles",
       count: topics.totalDocs,
       noun: "articles",
       hint: "Articles across all categories.",

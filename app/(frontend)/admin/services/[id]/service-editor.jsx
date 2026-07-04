@@ -36,7 +36,7 @@ import {
   restoreServiceVersion,
   saveService,
 } from "../actions";
-import { createTopic, reorderTopics } from "../../topics/actions";
+import { createTopic, reorderTopics } from "../../articles/actions";
 
 // Stable client-only key per contact row so reordering can animate (FLIP) and
 // mark the moved row by identity, independent of array index. Stripped before
@@ -438,14 +438,14 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         </Section>
 
         <Section
-          title="Topics"
+          title="Articles"
           count={topicOrder.length}
-          description="Each topic is an article on this category's page. Open one to edit its content."
+          description="The articles on this category's page. Open one to edit its content."
           action={
             <form action={createTopic.bind(null, service.id)}>
               <Button size="sm" type="submit">
                 <Plus className="size-3.5" />
-                Add topic
+                Add article
               </Button>
             </form>
           }
@@ -453,8 +453,8 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
           {topicOrder.length === 0 ? (
             <EmptyState
               icon={FileText}
-              label="No topics yet"
-              hint="Topics become the article cards on this category's page."
+              label="No articles yet"
+              hint="Articles become the cards on this category's page."
             />
           ) : (
             <div className="space-y-2">
@@ -473,12 +473,12 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                     )}
                   >
                     <Link
-                      href={`/admin/topics/${t.id}`}
+                      href={`/admin/articles/${t.id}`}
                       className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 outline-none focus-visible:bg-secondary/40"
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-ds-xs font-bold text-foreground">
-                          {t.title || "Untitled topic"}
+                          {t.title || "Untitled article"}
                         </span>
                         {t.description ? (
                           <span className="block truncate text-ds-xxs font-medium text-muted-foreground">

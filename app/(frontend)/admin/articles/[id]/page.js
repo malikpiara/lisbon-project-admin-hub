@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
 import { auditLabels } from "@/lib/format-audit";
-import { TopicEditor } from "./topic-editor";
+import { ArticleEditor } from "./article-editor";
 
 export const metadata = {
-  title: "Edit topic · Admin",
+  title: "Edit article · Admin",
 };
 
 export default async function AdminTopicEditPage({ params }) {
@@ -47,7 +47,7 @@ export default async function AdminTopicEditPage({ params }) {
   }));
 
   return (
-    <TopicEditor
+    <ArticleEditor
       topic={topicForClient}
       service={service}
       services={services}

@@ -65,6 +65,10 @@ function toArticle(topic) {
       bullets: splitLines(s.bullets).map((text) => ({ text })),
       ...(s.cta ? { cta: s.cta } : {}),
     })),
+    keyLinks: (a.keyLinks ?? []).map((l) => ({
+      label: l.label,
+      href: l.href,
+    })),
     faqs: (a.faqs ?? []).map((f) => ({
       question: f.question,
       answer: f.answer,
