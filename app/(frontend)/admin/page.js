@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
           icon: MessagesSquare,
           label: "Conversations",
           hint: "What people ask the help chatbot.",
-          meta: "PII-redacted",
+          meta: "Personal details hidden",
         },
         {
           href: "/admin/history",
