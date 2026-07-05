@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 // Text-only on a brand field — ImageResponse only supports flexbox + a subset of
 // CSS, and keeping it font-import-free makes it robust at build time. A route
 // deeper in the tree can override this with its own opengraph-image later.
-export const alt = `${SITE.name} — ${SITE.description}`;
+export const alt = `${SITE.name} — services for migrants and refugees in Lisbon`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

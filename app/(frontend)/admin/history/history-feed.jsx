@@ -101,12 +101,14 @@ export function HistoryFeed({ entries }) {
                     <span className="font-bold">{e.who}</span> {a.verb} the {type}{" "}
                     <span className="font-bold">{e.docTitle}</span>
                   </p>
-                  <p
-                    className="mt-0.5 text-ds-xxs font-medium text-muted-foreground"
-                    title={e.atLabel}
-                  >
-                    {e.timeLabel}
-                  </p>
+                  {e.timeLabel ? (
+                    <p
+                      className="mt-0.5 text-ds-xxs font-medium text-muted-foreground"
+                      title={e.atLabel}
+                    >
+                      {e.timeLabel}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             );

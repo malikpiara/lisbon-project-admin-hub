@@ -7,7 +7,7 @@ import { MobileNav } from "./_components/mobile-nav";
 import { StyleguideNav } from "./_components/styleguide-nav";
 
 export const metadata = {
-  title: "Component library · Lisbon Project",
+  title: "Component library",
 };
 
 export default function StyleguideLayout({ children }: { children: ReactNode }) {

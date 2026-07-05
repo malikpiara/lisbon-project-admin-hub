@@ -5,7 +5,7 @@ import config from "@payload-config";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Payload demo · Lisbon Project" };
+export const metadata = { title: "Payload demo" };
 
 // Proof-of-life page: reads service content straight from Payload's Local API
 // (no HTTP hop) in a Server Component. It is intentionally separate from the

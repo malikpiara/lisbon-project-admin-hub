@@ -45,7 +45,7 @@ export default async function AdminHistoryPage() {
         (d.user && typeof d.user === "object"
           ? d.user.name || d.user.email
           : null) || "Unknown",
-      dayLabel: dt ? dayLabelOf(dt) : "",
+      dayLabel: dt ? dayLabelOf(dt) : "Earlier",
       // Row shows the time; the day lives in the group header. Full date kept for
       // the hover title.
       timeLabel: dt

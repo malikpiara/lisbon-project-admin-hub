@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props) {
   if (!doc) return {};
 
   return {
-    title: `${doc.title} · Component library · Lisbon Project`,
+    title: `${doc.title} · Component library`,
     description: doc.description,
   };
 }
