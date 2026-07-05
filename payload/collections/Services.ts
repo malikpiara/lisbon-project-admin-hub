@@ -1,6 +1,10 @@
 import type { CollectionConfig } from "payload";
 
-import { iconOptions, toneOptions } from "../../lib/admin-default-data";
+import {
+  iconOptions,
+  legacyIconKeys,
+  toneOptions,
+} from "../../lib/admin-default-data";
 import { auditFields } from "../fields/audit";
 
 // Mirrors a service category from lib/admin-default-data.js. Contacts are
@@ -54,8 +58,10 @@ export const Services: CollectionConfig = {
       name: "iconKey",
       label: "Icon",
       type: "select",
-      options: [...iconOptions],
-      defaultValue: "Building2",
+      // DS names first (what the picker offers); legacy lucide-era keys stay
+      // valid so pre-DS services keep saving until their icon is re-picked.
+      options: [...iconOptions, ...legacyIconKeys],
+      defaultValue: "building",
     },
     { name: "contactsTitle", type: "text" },
     { name: "contactsSubtitle", type: "textarea" },

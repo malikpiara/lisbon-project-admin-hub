@@ -48,7 +48,15 @@ export default buildConfig({
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URI },
+    // Supabase's session-mode pooler (port 5432) caps ALL clients at 15, and
+    // pg's default is 10 connections per process — one dev server plus a few
+    // Vercel lambdas exhausts the pool and takes /admin down (EMAXCONNSESSION,
+    // seen 2026-07-04). Keep per-process usage tiny; on Vercel, DATABASE_URI
+    // should point at the transaction pooler (port 6543), which multiplexes.
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+      max: Number(process.env.DATABASE_POOL_MAX ?? 3),
+    },
   }),
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
 });

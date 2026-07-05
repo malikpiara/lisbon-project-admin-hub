@@ -1,12 +1,14 @@
 "use client";
 
 import { iconOptions } from "@/lib/admin-default-data";
-import { getServiceIcon } from "@/lib/service-icons";
+import { getServiceIcon, legacyIconToDsName } from "@/lib/service-icons";
 import { cn } from "@/lib/utils";
 
-// Visual icon picker — renders the real glyphs so the editor recognises the
-// icon instead of decoding a name like "Building2" from a dropdown.
+// Visual icon picker over the DS iconography (same set + names as
+// /components/icons). Services that still store a legacy lucide-era key
+// highlight the DS tile with the identical glyph; picking writes the DS name.
 export function IconPicker({ value, onChange, label, className = "" }) {
+  const current = legacyIconToDsName[value] ?? value;
   return (
     <div className={cn("block", className)}>
       {label ? (
@@ -17,7 +19,7 @@ export function IconPicker({ value, onChange, label, className = "" }) {
       <div className="grid grid-cols-8 gap-2 sm:grid-cols-10">
         {iconOptions.map((key) => {
           const Icon = getServiceIcon(key);
-          const selected = value === key;
+          const selected = current === key;
           return (
             <button
               key={key}
@@ -34,7 +36,7 @@ export function IconPicker({ value, onChange, label, className = "" }) {
                   : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
               )}
             >
-              <Icon className="size-5" strokeWidth={1.9} />
+              <Icon className="size-5" />
             </button>
           );
         })}
