@@ -1,5 +1,4 @@
 import { JetBrains_Mono, Quicksand } from "next/font/google";
-import Link from "next/link";
 
 import "./globals.css";
 import { StatusScreen } from "@/components/status-screen";
@@ -39,15 +38,18 @@ export default function GlobalNotFound() {
           title="Page not found"
           description="The page you're looking for may have moved, or it never existed. Let's get you back on track."
         >
-          <Link href="/" className={buttonVariants()}>
+          {/* Plain <a> (not next/link): global-not-found renders outside the app
+              router's root layouts, so a soft navigation would change the URL
+              without rendering the target. A full document load is correct here. */}
+          <a href="/" className={buttonVariants()}>
             Back to homepage
-          </Link>
-          <Link
+          </a>
+          <a
             href="/services"
             className={buttonVariants({ variant: "secondary" })}
           >
             Browse services
-          </Link>
+          </a>
         </StatusScreen>
       </body>
     </html>

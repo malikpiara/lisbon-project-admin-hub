@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { JetBrains_Mono, Quicksand } from "next/font/google";
-import Link from "next/link";
 
 import "./globals.css";
 import { StatusScreen } from "@/components/status-screen";
@@ -59,9 +58,11 @@ export default function GlobalError({
           >
             Try again
           </button>
-          <Link href="/" className={buttonVariants({ variant: "secondary" })}>
+          {/* Plain <a> (not next/link): global-error replaces the root layout, so
+              a soft navigation can't render the target. Full document load. */}
+          <a href="/" className={buttonVariants({ variant: "secondary" })}>
             Back to homepage
-          </Link>
+          </a>
         </StatusScreen>
       </body>
     </html>
