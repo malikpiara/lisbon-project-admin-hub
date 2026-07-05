@@ -3,6 +3,8 @@ import Link from "next/link";
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { getService, listServiceSlugs } from "@/lib/services-data";
 import { getServiceIcon } from "@/lib/service-icons";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbSchema } from "@/lib/site";
 
 export const metadata = {
   title: "Services and information",
@@ -42,7 +44,14 @@ export default function ServicesIndexPage() {
   const services = listServiceSlugs().map((slug) => getService(slug));
 
   return (
-    <section className="bg-bg-page">
+    <>
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Services and information", path: "/services" },
+        ])}
+      />
+      <section className="bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 py-12 sm:px-6 lg:px-14 lg:py-16">
         <nav aria-label="Breadcrumb" className="mb-6 text-ds-xxs font-bold">
           <ol className="flex items-center gap-1.5 text-muted-foreground">
@@ -105,5 +114,6 @@ export default function ServicesIndexPage() {
         </ul>
       </div>
     </section>
+    </>
   );
 }

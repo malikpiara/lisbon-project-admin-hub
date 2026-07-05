@@ -6,7 +6,12 @@ import {
 } from "@/components/calendar/big-calendars-lazy";
 import { CollapsibleSection } from "@/components/calendar/collapsible-section";
 
-export const metadata = { title: "Calendar — prototype" };
+export const metadata = {
+  title: "Events calendar",
+  description:
+    "Upcoming events, workshops and activities at the Lisbon Project for our community in Lisbon.",
+  alternates: { canonical: "/calendar" },
+};
 
 export default async function CalendarPage() {
   let events = [];

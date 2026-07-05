@@ -2,6 +2,7 @@ import { JetBrains_Mono, Quicksand } from "next/font/google";
 import "../globals.css";
 import { AdminProvider } from "@/lib/admin-store";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
+import { SITE, SITE_URL } from "@/lib/site";
 
 const jetBrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -14,10 +15,31 @@ const quicksand = Quicksand({
   subsets: ["latin"],
 });
 
+// Shared by the public site, /admin and /login. The default title + description
+// are public-facing (the admin/login routes set their own titles and opt out of
+// indexing). metadataBase makes every relative canonical / OG url resolve to the
+// real host. `%s` template appends the brand to each page's own title.
 export const metadata = {
-  title: "Lisbon Project · Admin Hub",
-  description:
-    "Information platform summarizing the most common administrative processes, sharing tips and mapping external services.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE.name} — services and support for migrants and refugees in Lisbon`,
+    template: `%s · ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "en_GB",
+    title: `${SITE.name} — services and support for migrants and refugees in Lisbon`,
+    description: SITE.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE.name,
+    description: SITE.description,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }) {

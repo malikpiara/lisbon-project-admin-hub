@@ -8,7 +8,10 @@ import config from "@payload-config";
 import { LoginForm } from "./login-form";
 
 export const metadata = {
-  title: "Sign in · Admin Hub",
+  // Absolute title bypasses the public brand template; noindex keeps the login
+  // out of search results.
+  title: { absolute: "Sign in · Admin Hub" },
+  robots: { index: false, follow: false },
 };
 
 export default async function LoginPage() {

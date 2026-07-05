@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy · Lisbon Project",
+  title: "Privacy Policy",
   description:
     "How the Lisbon Project Association collects, uses, and protects your information.",
+  alternates: { canonical: "/privacy" },
 };
 
 // Plain-language privacy notice covering what this site actually does: PostHog
