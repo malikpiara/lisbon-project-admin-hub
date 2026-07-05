@@ -26,6 +26,20 @@ function generatePassword() {
   return `${chars.slice(0, 4).join("")}-${chars.slice(4, 8).join("")}-${chars.slice(8).join("")}`;
 }
 
+// Initials for the row avatar: first + last from a name, else the first two
+// letters of the email local part. A small anchor that makes the team list
+// scannable at a glance.
+function initials(name, email) {
+  const src = (name || "").trim();
+  if (src) {
+    const parts = src.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2)
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return src.slice(0, 2).toUpperCase();
+  }
+  return (email || "?").slice(0, 2).toUpperCase();
+}
+
 // Label + InputPassword + optional dice button, styled like Field.
 function PasswordField({ label, value, onChange, hint, onGenerate }) {
   return (
@@ -210,7 +224,14 @@ function UserRow({ user, onChanged }) {
     <Card>
       <div className="flex flex-col gap-3 px-4 xl:px-6">
         <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              aria-hidden
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-ds-xxs font-bold text-primary"
+            >
+              {initials(user.name, user.email)}
+            </span>
+            <div className="min-w-0">
             <p className="truncate text-ds-xs font-bold text-foreground">
               {user.name || "—"}
               <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-ds-xxs font-bold text-muted-foreground">
@@ -225,6 +246,7 @@ function UserRow({ user, onChanged }) {
             <p className="truncate text-ds-xxs font-medium text-muted-foreground">
               {user.email}
             </p>
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {mode ? null : (

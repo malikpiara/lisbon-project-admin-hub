@@ -63,44 +63,70 @@ export function HistoryFeed({ entries }) {
         />
       </div>
 
-      <div className="mt-4 space-y-0.5">
-        {filtered.map((e) => {
-          const a = ACTION[e.action] ?? ACTION.updated;
-          const Icon = a.icon;
-          const type = TYPE_LABEL[e.collectionSlug] || e.collectionSlug;
-          const row = (
-            <div className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary/40">
-              <span
-                className={cn(
-                  "mt-0.5 grid size-7 shrink-0 place-items-center rounded-md bg-secondary",
-                  a.cls
-                )}
-              >
-                <Icon className="size-4" strokeWidth={2} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-ds-xs font-medium text-foreground">
-                  <span className="font-bold">{e.who}</span> {a.verb} the {type}{" "}
-                  <span className="font-bold">{e.docTitle}</span>
+      <div className="mt-4">
+        {(() => {
+          // Walk the (already newest-first) list and drop in a day header each
+          // time the day changes — turns a flat log into scannable date buckets.
+          let lastDay = null;
+          const items = [];
+          for (const e of filtered) {
+            const a = ACTION[e.action] ?? ACTION.updated;
+            const Icon = a.icon;
+            const type = TYPE_LABEL[e.collectionSlug] || e.collectionSlug;
+
+            if (e.dayLabel && e.dayLabel !== lastDay) {
+              lastDay = e.dayLabel;
+              items.push(
+                <p
+                  key={`day-${e.id}`}
+                  className="px-3 pb-1 pt-6 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground first:pt-0"
+                >
+                  {e.dayLabel}
                 </p>
-                <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
-                  {e.atLabel}
-                </p>
+              );
+            }
+
+            const row = (
+              <div className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary/40">
+                <span
+                  className={cn(
+                    "mt-0.5 grid size-7 shrink-0 place-items-center rounded-md bg-secondary",
+                    a.cls
+                  )}
+                >
+                  <Icon className="size-4" strokeWidth={2} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-ds-xs font-medium text-foreground">
+                    <span className="font-bold">{e.who}</span> {a.verb} the {type}{" "}
+                    <span className="font-bold">{e.docTitle}</span>
+                  </p>
+                  <p
+                    className="mt-0.5 text-ds-xxs font-medium text-muted-foreground"
+                    title={e.atLabel}
+                  >
+                    {e.timeLabel}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-          return e.action !== "deleted" && e.docId ? (
-            <Link
-              key={e.id}
-              href={docHref(e.collectionSlug, e.docId)}
-              className="block rounded-lg outline-none focus-visible:bg-secondary/40"
-            >
-              {row}
-            </Link>
-          ) : (
-            <div key={e.id}>{row}</div>
-          );
-        })}
+            );
+
+            items.push(
+              e.action !== "deleted" && e.docId ? (
+                <Link
+                  key={e.id}
+                  href={docHref(e.collectionSlug, e.docId)}
+                  className="block rounded-lg outline-none focus-visible:bg-secondary/40"
+                >
+                  {row}
+                </Link>
+              ) : (
+                <div key={e.id}>{row}</div>
+              )
+            );
+          }
+          return items;
+        })()}
         {filtered.length === 0 ? (
           <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
             {entries.length === 0
