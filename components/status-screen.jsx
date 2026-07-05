@@ -23,7 +23,7 @@ export function StatusScreen({
 }) {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center bg-bg-mint px-6 py-16">
-      <div className="w-full max-w-md rounded-lg border-2 border-secondary bg-card px-8 py-10 text-center shadow-sm">
+      <div className="animate-enter w-full max-w-md rounded-lg border-2 border-secondary bg-card px-8 py-10 text-center shadow-sm">
         <div className="mx-auto flex size-14 items-center justify-center rounded-lg border-2 border-bg-mint bg-brand-000 text-primary">
           <Icon className="size-7" />
         </div>
