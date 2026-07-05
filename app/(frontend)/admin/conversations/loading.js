@@ -12,7 +12,7 @@ function Line({ className = "" }) {
 export default function Loading() {
   return (
     <main
-      className="mx-auto max-w-4xl px-6 py-16"
+      className="mx-auto max-w-5xl px-8 py-10"
       aria-busy="true"
       aria-label="Loading conversations"
     >

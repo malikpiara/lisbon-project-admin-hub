@@ -43,7 +43,7 @@ export function HistoryFeed({ entries }) {
   }, [q, entries]);
 
   return (
-    <div className="mx-auto max-w-3xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 py-10">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
           History

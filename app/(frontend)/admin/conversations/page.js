@@ -25,7 +25,7 @@ export default async function AdminConversationsPage() {
     : "Set POSTHOG_PERSONAL_API_KEY to read captured conversations here.";
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
+    <main className="mx-auto max-w-5xl px-8 py-10">
       <header className="mb-8">
         <h1 className="font-heading text-ds-xxl font-bold text-brand-dark">
           Assistant conversations

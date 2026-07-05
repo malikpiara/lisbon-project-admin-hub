@@ -42,7 +42,7 @@ export default async function InsightsPage() {
   const gapsData = configured ? (gaps ?? []) : [];
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-16">
+    <main className="mx-auto max-w-5xl px-8 py-10">
       <header className="mb-10">
         <h1 className="font-heading text-ds-xxl font-bold text-brand-dark">
           Insights
