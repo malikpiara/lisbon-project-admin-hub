@@ -40,11 +40,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-brand-yellow: var(--brand-yellow);
-  --color-brand-yellow-soft: var(--brand-yellow-soft);
   --color-bg-page: var(--bg-page);
   --color-bg-mint: var(--bg-mint);
-  --color-bg-water: var(--bg-water);
   --color-brand-dark: var(--brand-dark);
   --color-brand-deep: var(--brand-deep);
   --color-brand-link: var(--brand-link);
@@ -179,11 +176,8 @@
   --ring: var(--brand-primary);
 
   /* Legacy brand aliases (kept for existing utilities; now resolve through primitives) */
-  --brand-yellow: oklch(0.86 0.14 90);     /* yellow accent — not in DS variable set */
-  --brand-yellow-soft: oklch(0.93 0.09 92);
   --bg-page: var(--brand-100);
   --bg-mint: var(--brand-300);
-  --bg-water: #90DAEC;                       /* not in DS variable set — one-off; flag for review */
   --brand-dark: var(--brand-700);
   --brand-deep: var(--brand-1000);
   --brand-link: var(--brand-600);
