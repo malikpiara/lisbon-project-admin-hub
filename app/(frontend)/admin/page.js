@@ -55,13 +55,16 @@ export default async function AdminDashboard() {
   const { payload, user } = await authedPayload();
   const isAdmin = user.role === "admin";
 
+  // We only need the counts here. `limit: 0` tells Payload to return *every*
+  // row (it would fetch all 141 topics just to show "141"); `limit: 1` returns
+  // the same `totalDocs` while fetching a single row. Run them in parallel.
   const [quickAccess, services, topics, activity, team] = await Promise.all([
-    payload.find({ collection: "quick-access", limit: 0, depth: 0 }),
-    payload.find({ collection: "services", limit: 0, depth: 0 }),
-    payload.find({ collection: "topics", limit: 0, depth: 0 }),
-    payload.find({ collection: "audit-log", limit: 0, depth: 0 }),
+    payload.find({ collection: "quick-access", limit: 1, depth: 0 }),
+    payload.find({ collection: "services", limit: 1, depth: 0 }),
+    payload.find({ collection: "topics", limit: 1, depth: 0 }),
+    payload.find({ collection: "audit-log", limit: 1, depth: 0 }),
     isAdmin
-      ? payload.find({ collection: "users", limit: 0, depth: 0 })
+      ? payload.find({ collection: "users", limit: 1, depth: 0 })
       : Promise.resolve(null),
   ]);
 
