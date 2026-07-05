@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { authedPayload } from "@/lib/admin-auth";
 
@@ -18,7 +20,13 @@ export default async function AdminLayout({ children }) {
   return (
     <div className="flex min-h-dvh">
       <AdminSidebar userEmail={user.email} isAdmin={user.role === "admin"} />
-      <div className="min-w-0 flex-1 bg-card">{children}</div>
+      <div className="min-w-0 flex-1 bg-card">
+        {/* Cross-fade the content pane on route change. The <ViewTransition>
+            boundary persists while its children swap per route, so React
+            animates old↔new; the sidebar sits outside it and stays put. Timing +
+            reduced-motion live in globals.css (::view-transition-*). */}
+        <ViewTransition>{children}</ViewTransition>
+      </div>
     </div>
   );
 }

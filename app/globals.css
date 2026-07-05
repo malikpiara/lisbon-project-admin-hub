@@ -446,26 +446,17 @@
   animation: entry-appear 260ms var(--ease-out-cubic) both;
 }
 
-/* Route transition: the admin content pane fades in (with a whisper of scale) as
-   you move between routes — applied by admin/template.js. Note this is a one-way
-   fade-in, NOT a true cross-fade. A real old↔new cross-fade (like Almond's) needs
-   the native View Transitions API triggered on navigation; Next App Router can't
-   do that on the stable React build (React's <ViewTransition> is experimental-
-   channel only) without a small library (next-view-transitions). Tracked as a
-   follow-up. */
-@keyframes ds-fade {
-  from {
-    opacity: 0;
-    transform: scale(0.99);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* View Transitions — the admin content pane cross-fades old↔new on route change,
+   via the <ViewTransition> boundary in admin/layout.js (React's native component;
+   App Router runs on the canary React that Next bundles). Calm timing, close to
+   the Almond project's root cross-fade. Reduced-motion is handled in the guard
+   below — the `*` element guard can't reach these document-level pseudo-elements. */
+::view-transition-group(*) {
+  animation-duration: 260ms;
 }
-
-.animate-fade {
-  animation: ds-fade 240ms var(--ease-out-cubic) both;
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-timing-function: var(--ease-out-cubic);
 }
 
 /* ============================================================
@@ -485,6 +476,14 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* View-transition pseudo-elements live on the document, not on `*`, so the
+     guard above can't reach them — reset them here so routes swap instantly. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
 }
 

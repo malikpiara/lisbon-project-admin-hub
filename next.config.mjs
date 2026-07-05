@@ -31,6 +31,11 @@ const nextConfig = {
     // app/global-not-found.tsx serve the branded 404 app-wide. See the Next 16
     // not-found.js docs (§ global-not-found.js).
     globalNotFound: true,
+    // Enables React's native <ViewTransition>. App Router runs on the canary
+    // React that Next bundles (which includes ViewTransition) — no react@canary
+    // install needed. The admin layout wraps its content pane in one so routes
+    // cross-fade; unsupported browsers just swap instantly. Next 16 VT guide.
+    viewTransition: true,
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
