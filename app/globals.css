@@ -446,20 +446,26 @@
   animation: entry-appear 260ms var(--ease-out-cubic) both;
 }
 
-/* Route transition: opacity only, fast. Used by admin/template.js so moving
-   between admin routes fades gently instead of snapping — deliberately movement-
-   free (no translate) since it plays on every navigation of a tool used often. */
+/* Route transition: the admin content pane fades in (with a whisper of scale) as
+   you move between routes — applied by admin/template.js. Note this is a one-way
+   fade-in, NOT a true cross-fade. A real old↔new cross-fade (like Almond's) needs
+   the native View Transitions API triggered on navigation; Next App Router can't
+   do that on the stable React build (React's <ViewTransition> is experimental-
+   channel only) without a small library (next-view-transitions). Tracked as a
+   follow-up. */
 @keyframes ds-fade {
   from {
     opacity: 0;
+    transform: scale(0.99);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 .animate-fade {
-  animation: ds-fade 160ms var(--ease-out-cubic) both;
+  animation: ds-fade 240ms var(--ease-out-cubic) both;
 }
 
 /* ============================================================

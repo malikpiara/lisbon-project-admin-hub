@@ -14,7 +14,10 @@ import { Card } from "@/components/ui/card";
 import { authedPayload } from "@/lib/admin-auth";
 
 export const metadata = {
-  title: "Admin · Lisbon Project",
+  // `absolute` bypasses the root brand template. The admin layout's passthrough
+  // template ("%s") only applies to DEEPER segments, not this index page, so
+  // without absolute the root "%s · The Lisbon Project" would double-brand it.
+  title: { absolute: "Admin Hub" },
 };
 
 // One card per destination. Grouped to mirror the sidebar (Content / Analytics /
