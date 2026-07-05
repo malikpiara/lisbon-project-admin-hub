@@ -417,23 +417,33 @@
    very bottom of this file.
    ============================================================ */
 
-/* Entrance: fade while rising a few px. `both` holds the from-state
-   through any delay, so a staggered list never flashes its final
-   position for a frame before starting. For a stagger, give each item an
-   inline `animation-delay` (cap the index so a long list doesn't crawl). */
-@keyframes ds-enter {
+/* Easing tokens (Emil Kowalski / animations.dev) — the shared motion vocabulary
+   with the Almond (mindful) project, so easings copy-paste 1:1 across them. */
+:root {
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-decelerate: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Entrance: fade while rising a few px. `both` holds the from-state through any
+   delay, so a staggered list never flashes its final position for a frame before
+   starting. For a stagger, give each item an inline `animation-delay` (cap the
+   index so a long list doesn't crawl). Keyframe + class name match Almond's
+   `entry-appear` for cross-project parity. */
+@keyframes entry-appear {
   from {
     opacity: 0;
     transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
   }
 }
 
-.animate-enter {
-  animation: ds-enter 260ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+.animate-entry-appear {
+  animation: entry-appear 260ms var(--ease-out-cubic) both;
 }
 
 /* Route transition: opacity only, fast. Used by admin/template.js so moving
@@ -449,7 +459,7 @@
 }
 
 .animate-fade {
-  animation: ds-fade 160ms ease-out both;
+  animation: ds-fade 160ms var(--ease-out-cubic) both;
 }
 
 /* ============================================================

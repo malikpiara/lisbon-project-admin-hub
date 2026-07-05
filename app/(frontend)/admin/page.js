@@ -26,7 +26,7 @@ function DashCard({ href, icon: Icon, label, hint, meta, delay = 0 }) {
     <Link
       href={href}
       style={{ animationDelay: `${delay}ms` }}
-      className="group animate-enter rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="group animate-entry-appear rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     >
       <Card className="h-full transition-shadow group-hover:shadow-md">
         <div className="flex items-start gap-4 px-4 xl:px-6">

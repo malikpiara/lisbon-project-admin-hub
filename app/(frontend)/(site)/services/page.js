@@ -3,6 +3,7 @@ import Link from "next/link";
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { getService, listServiceSlugs } from "@/lib/services-data";
 import { getServiceIcon } from "@/lib/service-icons";
+import { defaultAdminData } from "@/lib/admin-default-data";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
 
@@ -19,26 +20,12 @@ export const metadata = {
 // of the whole services tree and the destination for the "Browse services" CTA
 // on the 404 page. Keeps the same card visual language as the home grid.
 //
-// Local slug→glyph map: the server seed carries no per-service iconKey (that
-// lives in the client store), so we map each category to its DS glyph here. This
-// is display-only and scoped to this page, so it can't affect the admin/home
-// icon behaviour.
-const CATEGORY_ICON = {
-  "emergency-contacts": "PhoneCall",
-  administration: "Building2",
-  "education-training": "GraduationCap",
-  "family-child-support": "UsersRound",
-  "legal-assistance": "Scale",
-  "health-wellbeing": "HeartPulse",
-  housing: "Home",
-  immigration: "IdCard",
-  "community-integration": "HandHeart",
-  transport: "Bus",
-  "disability-support": "Accessibility",
-  "legal-assistance-2": "Scale",
-  "essential-support": "Package",
-  "gender-sexuality": "Rainbow",
-};
+// slug → DS icon key, read from the same seed the admin and home grid use
+// (defaultAdminData) so this hub can't drift from them. The server route seed
+// (services-data) carries no iconKey, which is why it's sourced here.
+const ICON_BY_SLUG = Object.fromEntries(
+  defaultAdminData.services.map((s) => [s.slug, s.iconKey]),
+);
 
 export default function ServicesIndexPage() {
   const services = listServiceSlugs().map((slug) => getService(slug));
@@ -82,11 +69,11 @@ export default function ServicesIndexPage() {
 
         <ul className="grid list-none grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-4">
           {services.map((service, i) => {
-            const Icon = getServiceIcon(CATEGORY_ICON[service.slug]);
+            const Icon = getServiceIcon(ICON_BY_SLUG[service.slug]);
             return (
               <li
                 key={service.slug}
-                className="animate-enter"
+                className="animate-entry-appear"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
                 <Link
