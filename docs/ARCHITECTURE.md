@@ -10,9 +10,10 @@ Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
 `shadcn` (base-nova). The public site is still a localStorage prototype (below);
 the chosen CMS is **Payload on Supabase Postgres** (see CMS-EVALUATION.md).
 
-- `app/(frontend)/(site)` — the public site (home, services, article, calendar)
-- `app/(frontend)/admin` — the mock CMS (localStorage; still feeds the public site)
+- `app/(frontend)/(site)` — the public site (home, `/services` + detail, article, calendar, privacy)
+- `app/(frontend)/admin` — the **Payload-backed team workspace** (custom admin UI; reads Payload, not the localStorage store — see [ADMIN-HANDOVER.md](./ADMIN-HANDOVER.md))
 - `app/(frontend)/components` — the design-system gallery (`/components`)
+- SEO surfaces: `app/robots.ts`, `app/sitemap.ts`, `app/manifest.ts`, `app/llms.txt/route.ts`, `app/(frontend)/(site)/opengraph-image.tsx` (all env-driven off `lib/site.ts`; see [SEO-AUDIT.md](./SEO-AUDIT.md))
 - `app/(frontend)/payload-demo` — server-rendered read demo (Payload Local API)
 - `app/(payload)` — **the CMS**: Payload admin + API (`/cms-admin`, `/api/*`), on Supabase Postgres
 
@@ -29,9 +30,11 @@ removed after the decision — see [CMS-EVALUATION.md](./CMS-EVALUATION.md).
 ## Data flow — read this first
 
 There is **one** content store. `AdminProvider` (`lib/admin-store.js`) wraps the
-**entire `(frontend)` app** in its root layout (`app/(frontend)/layout.js`), so
-the public site and `/admin` share it. (The `(payload)` group has its own root
-layout and does **not** use this store — Payload reads Supabase Postgres.)
+**entire `(frontend)` app** in its root layout (`app/(frontend)/layout.js`). The
+**public site** reads it (client-side) — this is what still feeds the public
+pages. The Payload-backed **`/admin`** is wrapped by the provider too but reads
+Payload's Local API, **not** this store. (The `(payload)` group has its own root
+layout and also doesn't use it — Payload reads Supabase Postgres.)
 
 - State seeds from `defaultAdminData` (`lib/admin-default-data.js`), persists to
   `localStorage["lp-admin-data-v1"]`, and is re-read on mount.
@@ -114,6 +117,12 @@ Each topic can carry an `article`:
   (palette ToC) instead of the generic Installation/Usage/Composition.
   `components/ui/tooltip.tsx` is a new Base UI wrapper (inverted dark chip that
   auto-adapts to dark) reused app-wide.
+- **Motion layer** (`app/globals.css`, bottom). Entrances use the `.animate-enter`
+  helper (`ds-enter` keyframe — ease-out, 260ms, transform+opacity only); stagger
+  a list by giving items an inline `animation-delay`. A single global
+  `prefers-reduced-motion: reduce` guard neutralises **all** animation/transition
+  (the one sanctioned place for `!important` — it must beat utility classes). Add
+  new motion through this layer so reduced-motion stays covered for free.
 
 ## Known inconsistencies / things to be aware of
 
@@ -141,11 +150,11 @@ public release.
   `social-care` shifts orange→red and `community-life` red→magenta across modes,
   while the other three programme areas keep their hue. Confirm these are
   intentional or fix at source.
-- [ ] **Legacy / off-DS tokens to clean up** (`app/globals.css`). Remove the
-  one-off aliases `--bg-water` (#90DAEC), `--brand-yellow`, `--brand-yellow-soft`
-  (~1 use each). Map the off-token values `--secondary-foreground` (#155E57) and
-  `--muted` (#E8F6F4) to real DS tokens once Button/Tag are built (both carry a
-  TODO in the file).
+- [x] **Legacy / off-DS tokens** (`app/globals.css`). Removed the unused one-off
+  aliases `--bg-water`, `--brand-yellow`, `--brand-yellow-soft` (2026-07-05 — zero
+  usages anywhere). Still open: map the off-token values `--secondary-foreground`
+  (#155E57) and `--muted` (#E8F6F4) to real DS tokens once Button/Tag are built
+  (both carry a TODO in the file).
 - [ ] **Dark mode has no toggle.** Tokens are defined in `.dark` but nothing
   switches it. When a toggle lands, the `/components/colors` swatches must re-read
   their hex on theme change — they currently read at mount/visibility, not on a

@@ -63,19 +63,24 @@ setting is on.
 the same fetched payload is served for 5 minutes per server instance. At
 expected traffic this is well under any Google Calendar API quota.
 
-## Mock CMS
+## Admin Hub (`/admin`)
 
-`/admin` is a localStorage-backed editor for the Quick Access section, the
-14 services, per-service topics/contacts, and each topic's full **article body
-and FAQ** (`/admin/services/[slug]/[topic]`). There is no backend; content lives
-in `localStorage["lp-admin-data-v1"]`.
+`/admin` is the **Payload-backed team workspace** — a custom UI (built from the
+LP design system) over Payload's headless engine: a dashboard, editors for Quick
+Access / services / articles, plus Insights, chatbot Conversations, an activity
+History, and Team management. It reads through Payload's Local API and writes via
+auth-gated server actions, and is meant to replace Payload's default admin
+(`/cms-admin`) for non-technical volunteers. Full detail in
+**[docs/ADMIN-HANDOVER.md](docs/ADMIN-HANDOVER.md)**.
 
-> **It is not isolated from the public site.** A single `AdminProvider` wraps the
-> whole app, so the public home/service/article pages read the same store. Edits
-> in `/admin` preview live on the public pages **in the same browser**; a fresh
-> browser or another visitor sees the seed defaults. See
+> **The public site still renders from a localStorage store, not Payload.** A
+> single `AdminProvider` seeds `localStorage["lp-admin-data-v1"]`, and the public
+> home/service/article pages read it client-side — so those pages are seed-only
+> content today, and wiring them to Payload is the next milestone. (The earlier
+> localStorage *editor* that lived at `/admin` was removed; the store stays
+> because the public site renders from it.) See
 > [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow, the two seed
-> sources, the mock article model, and the design-system gotchas.
+> sources, the article model, and the design-system gotchas.
 
 ## CMS — Payload on Supabase Postgres
 
@@ -119,12 +124,14 @@ retired. Setting the key flips signups to MailerLite automatically, no code
 change. MailerLite's built-in double opt-in covers consent, so no custom
 opt-in/unsubscribe flow is needed here.
 
-## Architecture & known issues
+## Documentation
 
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) documents how content flows, the
-non-standard radius scale, the `cn()`/tailwind-merge setup, how `tone` works,
-and the running list of known inconsistencies. Read it before changing data flow
-or the design system.
+Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data flow, the
+non-standard radius scale, the `cn()`/tailwind-merge setup, how `tone` works, and
+the known-issues + pre-release checklist) — read it before changing data flow or
+the design system. A full index of everything in `docs/` — including the SEO, AI
+discoverability and security audits added 2026-07-05 — is in
+**[docs/README.md](docs/README.md)**.
 
 ## Deploy on Vercel
 

@@ -25,13 +25,13 @@ Postgres); the UI is ours, built from the LP design system.
 1. `.env.local` needs `PAYLOAD_SECRET` + Supabase `DATABASE_URI` (already set on
    Malik's machine; never print these).
 2. `pnpm install` → `pnpm dev`, open `/admin`.
-3. **Login:** `/admin` is gated on the Payload session. If you're bounced to
-   `/cms-admin/login`, sign in there (dev creds: `malik@roundtwenty.com` /
-   `changeme123`) — the session is shared, so `/admin` then opens. The session
-   **expires over long sessions**; re-login the same way. Payload's React login
-   form needs a real submit: set `#field-email`/`#field-password` then
-   `form.requestSubmit()` — a synthetic `.click()` on the button does **not**
-   submit it.
+3. **Login:** `/admin` is gated on the Payload session and redirects to
+   **`/login`** — the custom DS-styled sign-in (`app/(frontend)/login/`), which
+   authenticates against the same Payload `users` collection and sets the shared
+   `payload-token` cookie. Dev creds: `malik@roundtwenty.com` / `changeme123`.
+   The session **expires over long sessions**; re-login the same way. (The
+   Payload-native `/cms-admin/login` still exists and shares the session, but the
+   app no longer routes there.)
 
 ## How it works (the headless pattern)
 
@@ -88,9 +88,10 @@ broke deploys before; typecheck before pushing.)
 
 ## What's left to retire `/cms-admin`
 
-1. **Custom login — the keystone.** Everything still redirects to
-   `/cms-admin/login`. Until `/admin` has its own login (+ forgot-password), we
-   can't drop the default admin. **Recommended next.**
+1. **Custom login — done.** `/admin` now has its own DS-styled login at `/login`
+   (`app/(frontend)/login/`, `login/actions.js`) and redirects there, not to
+   `/cms-admin/login`. Remaining gap: **forgot-password / password-reset email**
+   (self-serve), which still needs the Payload-native flow.
 2. **Slug control.** No way to view/edit a doc's slug in `/admin` yet.
 3. **Topic → service reassignment.** A topic can't be moved between categories.
 4. Optional polish: my-account page, reorder loading/feedback states,
