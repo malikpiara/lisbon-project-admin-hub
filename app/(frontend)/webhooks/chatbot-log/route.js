@@ -10,6 +10,8 @@
 //
 // Mounted at /webhooks/chatbot-log (not /api/*, which Payload's catch-all owns).
 
+import { redactPII } from "@/lib/redact-pii";
+
 const POSTHOG_HOST =
   process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -19,16 +21,6 @@ const WEBHOOK_SECRET = process.env.CHATBOT_LOG_SECRET;
 // obtains the secret) shouldn't be able to stuff megabytes into PostHog.
 // ~50k chars is far beyond any real conversation.
 const MAX_TRANSCRIPT_CHARS = 50_000;
-
-// Best-effort redaction of the most obvious direct identifiers. This is a floor,
-// not a guarantee — on a site serving vulnerable people, treat the transcript as
-// special-category data and keep retention short regardless.
-function redact(text) {
-  if (typeof text !== "string") return text;
-  return text
-    .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]")
-    .replace(/\+?\d[\d\s().-]{7,}\d/g, "[phone]");
-}
 
 export async function POST(request) {
   // Refuse to behave as an open logging endpoint: with no secret configured we
@@ -57,7 +49,7 @@ export async function POST(request) {
 
   const conversationId =
     body.conversation_id ?? body.conversationId ?? body.id ?? "unknown";
-  const transcript = redact(String(body.transcript ?? "")).slice(
+  const transcript = redactPII(String(body.transcript ?? "")).slice(
     0,
     MAX_TRANSCRIPT_CHARS,
   );
