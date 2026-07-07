@@ -1,15 +1,27 @@
+import { notFound } from "next/navigation";
+
 import { ServiceCategoryView } from "@/components/services/service-category-view";
-import { getService, listServiceSlugs } from "@/lib/services-data";
+import {
+  getPublicService,
+  getPublicContacts,
+  getPublicServices,
+} from "@/lib/content";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
 
-export function generateStaticParams() {
-  return listServiceSlugs().map((slug) => ({ slug }));
+// Rendered on-demand (ISR), not prebuilt at `next build`: prerendering every
+// category + article page would open (build workers × DB pool) connections at
+// once and blow past the Supabase session pooler's 15-client cap. Each page
+// instead renders on first request, caches its HTML, and is invalidated by the
+// admin's revalidatePublicContent(). Prod may switch this back to full SSG once
+// DATABASE_URI points at the transaction pooler (see RELEASE-CHECKLIST §3).
+export async function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getPublicService(slug);
   if (!service) return {};
   // Title carries no brand — the root layout's title template appends it.
   return {
@@ -21,20 +33,31 @@ export async function generateMetadata({ params }) {
 
 export default async function ServiceCategoryPage({ params }) {
   const { slug } = await params;
-  const service = getService(slug);
+  const [service, contacts, services] = await Promise.all([
+    getPublicService(slug),
+    getPublicContacts(),
+    getPublicServices(),
+  ]);
+
+  if (!service) notFound();
+
+  // The filter dropdown lists every service category — same list on every page.
+  const categories = services.map((s) => ({ value: s.slug, label: s.title }));
 
   return (
     <>
-      {service ? (
-        <JsonLd
-          data={breadcrumbSchema([
-            { name: "Home", path: "/" },
-            { name: "Services and information", path: "/services" },
-            { name: service.title, path: `/services/${slug}` },
-          ])}
-        />
-      ) : null}
-      <ServiceCategoryView slug={slug} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Services and information", path: "/services" },
+          { name: service.title, path: `/services/${slug}` },
+        ])}
+      />
+      <ServiceCategoryView
+        service={service}
+        contacts={contacts}
+        categories={categories}
+      />
     </>
   );
 }

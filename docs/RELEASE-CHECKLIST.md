@@ -13,23 +13,23 @@ below them. Detail lives in the linked docs; this page is only the list.
 
 ---
 
-## 1. Wire the public site to Payload — THE release blocker
+## 1. Wire the public site to Payload — THE release blocker ✅ DONE (2026-07-07)
 
-The public pages still render client-side from the **localStorage mock
-store** (`AdminProvider` / `lib/admin-store.js`), *not* from Payload. Until
-this lands, nothing the team edits in `/admin` reaches a visitor, and
-publish/approve gates nothing real.
+The public pages now render **server-side from published Payload content**
+through the `lib/content.js` adapter; the localStorage mock store was removed.
+What the team edits in `/admin` now reaches visitors.
 
-- [ ] Public pages read **published** Payload content server-side (SSG/ISR
-      or per-request) — services, articles, quick access, home.
-- [ ] This also closes the **one high-impact SEO issue**: crawlers currently
-      see empty client-rendered pages ([SEO-AUDIT.md](./SEO-AUDIT.md)).
-- [ ] Then retire the localStorage read-path (`AdminProvider`/`useAdmin`) —
-      only after the pages are wired; the public site renders from it today
-      ([ARCHITECTURE.md](./ARCHITECTURE.md)).
-- [ ] Re-check `revalidatePath` calls in the admin actions once the public
-      routes exist (several already call `revalidatePath("/")` in
-      anticipation).
+- [x] Public pages read **published** Payload content server-side — home,
+      services index, category pages, articles, quick access, contacts.
+- [x] Closes the **high-impact SEO issue** — pages are server-rendered, so
+      crawlers get real HTML instead of empty client shells
+      ([SEO-AUDIT.md](./SEO-AUDIT.md)).
+- [x] Retired the localStorage read-path — `AdminProvider`/`useAdmin` removed,
+      `lib/admin-store.js` deleted.
+- [x] Admin actions call `revalidatePublicContent()`
+      (`lib/revalidate-public.js`) so edits refresh the affected public routes.
+- [ ] Still verify end-to-end in prod once deployed (SSG + on-demand
+      revalidate): edit in `/admin` → confirm the live page updates.
 
 ## 2. Database: migrations before any real deploy
 

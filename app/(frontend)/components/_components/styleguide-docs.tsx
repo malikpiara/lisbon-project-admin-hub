@@ -2010,7 +2010,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     source: "components/services/article-view.tsx",
     links: [{ label: "View live at /services/family-child-support/basic-education", href: "/services/family-child-support/basic-education" }],
     description: "Article view composition with hero, alternating content panels, FAQ, map, and footer-ready spacing.",
-    preview: <ArticleView slug="family-child-support" topicSlug="basic-education" />,
+    preview: <ArticleView service={familyService} topic={familyService.topics[0]} />,
     fullWidthPreview: true,
     previewHeight: 800,
     installation: "Import the route-level article view.",
@@ -2023,8 +2023,8 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     ],
     examples: [],
     api: [
-      { name: "slug", type: "string", defaultValue: "-", description: "Parent service slug." },
-      { name: "topicSlug", type: "string", defaultValue: "-", description: "Article topic slug." },
+      { name: "service", type: "{ slug, title, iconKey }", defaultValue: "-", description: "Parent service (resolved from Payload by the route)." },
+      { name: "topic", type: "{ slug, title, description, article }", defaultValue: "-", description: "The article (resolved from Payload by the route)." },
     ],
   },
   {

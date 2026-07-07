@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 // Saves the service doc (basics + intro + contacts-page header). `data` is
 // already mapped to Payload's shape by the editor; fields we don't send (slug,
@@ -26,7 +27,7 @@ export async function saveService(id, data) {
   });
   revalidatePath("/admin/services");
   revalidatePath(`/admin/services/${id}`);
-  revalidatePath("/"); // home grid — live once the public site reads Payload
+  revalidatePublicContent(); // home grid, All Contacts categories, service page
 }
 
 export async function createService() {
@@ -54,6 +55,7 @@ export async function createService() {
     userId: user.id,
   });
   revalidatePath("/admin/services");
+  revalidatePublicContent();
   redirect(`/admin/services/${created.id}`);
 }
 
@@ -66,7 +68,7 @@ export async function reorderServices(ids) {
     )
   );
   revalidatePath("/admin/services");
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 
 // PROTOTYPE (#2): restore a past version as the current document.
@@ -86,7 +88,7 @@ export async function restoreServiceVersion(versionId, serviceId) {
   });
   revalidatePath("/admin/services");
   revalidatePath(`/admin/services/${serviceId}`);
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 
 export async function deleteService(id) {
@@ -103,5 +105,6 @@ export async function deleteService(id) {
     userId: user.id,
   });
   revalidatePath("/admin/services");
+  revalidatePublicContent();
   redirect("/admin/services");
 }

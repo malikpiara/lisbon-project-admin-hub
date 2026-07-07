@@ -1,6 +1,5 @@
 import { JetBrains_Mono, Quicksand } from "next/font/google";
 import "../globals.css";
-import { AdminProvider } from "@/lib/admin-store";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { SITE, SITE_URL } from "@/lib/site";
 
@@ -49,9 +48,7 @@ export default function RootLayout({ children }) {
       className={`${jetBrainsMono.variable} ${quicksand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <PostHogProvider>
-          <AdminProvider>{children}</AdminProvider>
-        </PostHogProvider>
+        <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
   );

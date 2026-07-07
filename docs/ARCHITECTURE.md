@@ -29,34 +29,30 @@ removed after the decision — see [CMS-EVALUATION.md](./archive/CMS-EVALUATION.
 
 ## Data flow — read this first
 
-There is **one** content store. `AdminProvider` (`lib/admin-store.js`) wraps the
-**entire `(frontend)` app** in its root layout (`app/(frontend)/layout.js`). The
-**public site** reads it (client-side) — this is what still feeds the public
-pages. The Payload-backed **`/admin`** is wrapped by the provider too but reads
-Payload's Local API, **not** this store. (The `(payload)` group has its own root
-layout and also doesn't use it — Payload reads Supabase Postgres.)
+The **public site reads Payload, server-side** (since 2026-07-07). The public
+pages — home, services index, category pages (`/services/[slug]`) and articles
+(`/services/[slug]/[topic]`) — are **async server components** that fetch
+**published** content through `lib/content.js`, a thin adapter over Payload's
+Local API that maps each doc to the exact shape the presentational components
+expect. They render statically and revalidate on demand.
 
-- State seeds from `defaultAdminData` (`lib/admin-default-data.js`), persists to
-  `localStorage["lp-admin-data-v1"]`, and is re-read on mount.
-- The public home, service, and article pages are **client components** that
-  read this store via `useAdmin()`. They are **not** statically-rendered
-  content: the static HTML shows the seed defaults, then hydrates to whatever is
-  in localStorage.
-- **Consequence:** editing in `/admin` **does** change the public pages **in the
-  same browser** (shared localStorage). A fresh browser / another visitor sees
-  the seed defaults. Older copy that called `/admin` "isolated" is wrong — it
-  is a same-browser live preview, not an isolated draft.
+- The custom **`/admin`** writes Payload via server actions; each write calls
+  `revalidatePublicContent()` (`lib/revalidate-public.js`) to refresh the
+  affected public routes (`/`, `/services`, `/services/[slug]`,
+  `/services/[slug]/[topic]`). The raw CMS lives at `/cms-admin` (the
+  `(payload)` group, its own root layout). **Payload on Supabase Postgres is the
+  single content source** for both.
+- The old localStorage store (`AdminProvider` / `useAdmin` /
+  `lib/admin-store.js`) was **removed**. The public pages no longer hydrate from
+  localStorage — the server HTML is the content (fixes the SEO gap where
+  crawlers saw empty client shells).
 
-### Two seed sources — don't confuse them
+### Seed source — for `pnpm seed:payload` only
 
-| Source | Used by | For |
-| --- | --- | --- |
-| `lib/services-data.js` | `generateStaticParams` / `generateMetadata` (server) | which slugs/topics exist, page `<title>` |
-| `lib/admin-default-data.js` | the client store (seeds from `services-data.js`) | the content actually rendered |
-
-The rendered content comes from the **client store**, not directly from
-`services-data.js`. Static params/metadata can therefore differ from edited
-content.
+`lib/services-data.js` + `lib/admin-default-data.js` are now **only** the seed
+that `scripts/seed-payload.ts` loads into Payload. They no longer feed the
+running site — the public pages, `generateStaticParams` and `generateMetadata`
+all read Payload via `lib/content.js`.
 
 ## Mock article body (the "headless CMS")
 

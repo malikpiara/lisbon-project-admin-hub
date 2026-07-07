@@ -1,9 +1,8 @@
 import Link from "next/link";
 
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
-import { getService, listServiceSlugs } from "@/lib/services-data";
-import { getServiceIcon } from "@/lib/service-icons";
-import { defaultAdminData } from "@/lib/admin-default-data";
+import { getPublicServices } from "@/lib/content";
+import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
 
@@ -14,21 +13,12 @@ export const metadata = {
   alternates: { canonical: "/services" },
 };
 
-// Server-rendered index of every service category. Unlike the category detail
-// pages (client-rendered from the localStorage store), this hub reads the seed
-// directly on the server, so its links are in the initial HTML — a crawlable map
-// of the whole services tree and the destination for the "Browse services" CTA
-// on the 404 page. Keeps the same card visual language as the home grid.
-//
-// slug → DS icon key, read from the same seed the admin and home grid use
-// (defaultAdminData) so this hub can't drift from them. The server route seed
-// (services-data) carries no iconKey, which is why it's sourced here.
-const ICON_BY_SLUG = Object.fromEntries(
-  defaultAdminData.services.map((s) => [s.slug, s.iconKey]),
-);
-
-export default function ServicesIndexPage() {
-  const services = listServiceSlugs().map((slug) => getService(slug));
+// Server-rendered index of every service category, read from Payload (the CMS).
+// Its links are in the initial HTML — a crawlable map of the whole services tree
+// and the destination for the "Browse services" CTA on the 404 page. Keeps the
+// same card visual language as the home grid.
+export default async function ServicesIndexPage() {
+  const services = await getPublicServices();
 
   return (
     <>
@@ -69,7 +59,9 @@ export default function ServicesIndexPage() {
 
         <ul className="grid list-none grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-4">
           {services.map((service, i) => {
-            const Icon = getServiceIcon(ICON_BY_SLUG[service.slug]);
+            const Icon = getServiceIcon(
+              getServiceIconKey(service.slug, service.iconKey)
+            );
             return (
               <li
                 key={service.slug}
@@ -89,7 +81,7 @@ export default function ServicesIndexPage() {
                         {service.title}
                       </h2>
                       <p className="mt-1 line-clamp-2 text-ds-xxs font-medium text-foreground">
-                        {service.intro?.[0]}
+                        {service.shortDescription || service.intro?.[0]}
                       </p>
                     </div>
                     <IconArrowRight className="mt-1 size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />

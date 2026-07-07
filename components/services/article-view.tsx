@@ -8,7 +8,6 @@ import { IconInfo } from "@/components/icons/ds-icons";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { KeyLinks, type KeyLink } from "@/components/services/key-links";
 import { MapVisit } from "@/components/home/map-visit";
-import { useAdmin } from "@/lib/admin-store";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -52,29 +51,24 @@ type Topic = {
   slug: string;
   title: string;
   description: string;
-  article?: Article;
+  article?: Article | null;
 };
-type Service = {
+type ServiceMeta = {
   slug: string;
   title: string;
   iconKey?: string;
-  topics: Topic[];
 };
 
+// Presentational: the route fetches the article from Payload and passes it in
+// (a missing slug/topic 404s server-side via notFound()). Client only for the
+// analytics capture.
 export function ArticleView({
-  slug,
-  topicSlug,
+  service,
+  topic,
 }: {
-  slug: string;
-  topicSlug: string;
+  service: ServiceMeta;
+  topic: Topic;
 }) {
-  const { data, hydrated } = useAdmin() as {
-    data: { services: Service[] };
-    hydrated: boolean;
-  };
-  const service = data.services.find((s) => s.slug === slug);
-  const topic = service?.topics.find((t) => t.slug === topicSlug);
-
   // Analytics: `topic_viewed` (object-action, past tense) — the "information"
   // half of "services & information people visit most". See docs/ANALYTICS.md.
   const posthog = usePostHog();
@@ -88,22 +82,7 @@ export function ArticleView({
     });
   }, [service?.slug, topic?.slug, posthog]);
 
-  if (!service || !topic) {
-    if (!hydrated) return null;
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
-        <h1 className="font-heading text-ds-xxl font-medium text-foreground">
-          Article not found
-        </h1>
-        <Link
-          href="/"
-          className="mt-6 inline-block text-ds-s font-medium text-primary hover:underline"
-        >
-          Back to home
-        </Link>
-      </div>
-    );
-  }
+  if (!service || !topic) return null;
 
   const article: Article = topic.article ?? defaultArticle(topic);
   // Per the article spec (Proposal 949:4028), content-section chips carry the

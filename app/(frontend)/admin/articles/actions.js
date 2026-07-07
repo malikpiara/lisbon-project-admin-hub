@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs) and the `service` relationship. `data` is already mapped to Payload's
@@ -65,7 +66,7 @@ export async function saveTopic(id, data) {
     revalidatePath(`/admin/services/${prevServiceId}`);
     revalidatePath(`/admin/services/${nextServiceId}`);
   }
-  revalidatePath("/"); // article pages — live once the public site reads Payload
+  revalidatePublicContent(); // the article page + its parent category page
 }
 
 export async function createTopic(serviceId) {
@@ -98,6 +99,7 @@ export async function createTopic(serviceId) {
   });
   revalidatePath(`/admin/services/${serviceId}`);
   revalidatePath("/admin/articles");
+  revalidatePublicContent();
   redirect(`/admin/articles/${created.id}`);
 }
 
@@ -111,7 +113,7 @@ export async function reorderTopics(ids, serviceId) {
   );
   if (serviceId) revalidatePath(`/admin/services/${serviceId}`);
   revalidatePath("/admin/articles");
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 
 export async function deleteTopic(id, serviceId) {
@@ -129,5 +131,6 @@ export async function deleteTopic(id, serviceId) {
   });
   revalidatePath("/admin/services");
   revalidatePath("/admin/articles");
+  revalidatePublicContent();
   redirect(serviceId ? `/admin/services/${serviceId}` : "/admin/services");
 }

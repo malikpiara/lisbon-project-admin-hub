@@ -115,12 +115,12 @@ broke deploys before; typecheck before pushing.)
 
 ## Still true from the broader project
 
-- **Public read-path is unchanged:** the public site still reads the
-  **localStorage** store (`AdminProvider`/`useAdmin`, `lib/admin-store.js`), *not*
-  Payload. The localStorage *editor* was removed with the mockup, so that content
-  is now effectively read-only seed data until the public pages are wired to
-  Payload — a separate, larger task. Don't delete the store: the public site
-  renders from it.
+- **Public read-path (2026-07-07): the public site now reads Payload,
+  server-side.** The public pages fetch published content via `lib/content.js`
+  (SSG + `revalidatePublicContent()` on admin writes); the localStorage store
+  (`AdminProvider`/`useAdmin`/`lib/admin-store.js`) was **removed**. So `/admin`
+  edits now reach visitors — the release blocker is closed. `lib/services-data.js`
+  + `lib/admin-default-data.js` survive only as the `pnpm seed:payload` seed.
 - Gotchas that bit during the build: same-eval preview reads are stale (split
   click + read into separate `preview_eval` calls); `[id]`/`(frontend)` paths need
   `GIT_LITERAL_PATHSPECS=1` for `git add`.

@@ -1,14 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
-import { useAdmin } from "@/lib/admin-store";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 
-export function ServicesGrid() {
-  const { data } = useAdmin();
-  const services = data.services;
-
+export function ServicesGrid({ services = [] }) {
   return (
     <section id="services" className="scroll-mt-24 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">

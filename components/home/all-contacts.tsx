@@ -1,23 +1,21 @@
-"use client";
-
 import {
   ContactsSection,
   type CategoryOption,
   type Contact,
 } from "@/components/shared/contacts-section";
-import { useAdmin } from "@/lib/admin-store";
 
-type ServiceData = { slug: string; title: string };
+type ServiceOption = { slug: string; title: string };
 
-export function AllContacts() {
-  // The home table shows the WHOLE directory: every contact from every service,
-  // with the filter defaulting to "All Contacts". The dropdown lists all service
-  // categories (the same list every category page uses).
-  const { data } = useAdmin() as {
-    data: { services: ServiceData[]; contacts: Contact[] };
-  };
-
-  const categories: CategoryOption[] = data.services.map((s) => ({
+export function AllContacts({
+  services = [],
+  contacts = [],
+}: {
+  services?: ServiceOption[];
+  contacts?: Contact[];
+}) {
+  // The home table shows the WHOLE directory; the dropdown lists every service
+  // category (same list every category page uses), default "All Contacts".
+  const categories: CategoryOption[] = services.map((s) => ({
     value: s.slug,
     label: s.title,
   }));
@@ -27,7 +25,7 @@ export function AllContacts() {
       <ContactsSection
         title="All Contacts"
         subtitle="Key contact information across every service in Lisbon"
-        contacts={data.contacts}
+        contacts={contacts}
         categories={categories}
         defaultCategory="all"
       />

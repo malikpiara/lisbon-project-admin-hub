@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 // WRITE path for the global contacts directory. Contacts live in their own
 // Payload collection now (category == service, many-to-many via `categories`),
@@ -27,7 +28,7 @@ export async function saveContact(id, data) {
   });
   revalidatePath("/admin/contacts");
   revalidatePath(`/admin/contacts/${id}`);
-  revalidatePath("/"); // home "All Contacts" — live once the public site reads Payload
+  revalidatePublicContent(); // home "All Contacts" + every category page's table
 }
 
 export async function createContact() {
@@ -60,6 +61,7 @@ export async function createContact() {
     userId: user.id,
   });
   revalidatePath("/admin/contacts");
+  revalidatePublicContent();
   redirect(`/admin/contacts/${created.id}`);
 }
 
@@ -77,6 +79,6 @@ export async function deleteContact(id) {
     userId: user.id,
   });
   revalidatePath("/admin/contacts");
-  revalidatePath("/");
+  revalidatePublicContent();
   redirect("/admin/contacts");
 }

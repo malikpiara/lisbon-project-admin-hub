@@ -15,7 +15,7 @@ function HeroIllustration() {
   );
 }
 
-export function Hero() {
+export function Hero({ quickAccess = [] }) {
   return (
     <section className="bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
@@ -48,7 +48,7 @@ export function Hero() {
               processes, sharing tips and mapping external services.
             </p>
           </div>
-          <QuickAccess embedded />
+          <QuickAccess embedded items={quickAccess} />
         </div>
       </div>
     </section>
