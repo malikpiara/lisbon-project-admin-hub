@@ -58,7 +58,8 @@ Postgres); the UI is ours, built from the LP design system.
 | Shell | `admin/layout.js`, `components/admin/admin-sidebar.jsx` | Sticky sidebar (`h-dvh`) from `md` up; below `md` a slim top bar + hamburger drawer (same nav markup via shared `SidebarContent`; closes on navigate / Escape / backdrop). Grouped nav (Content / Analytics / Admin), signed-in footer |
 | Dashboard | `admin/page.js` | Counts + cards into each editor + Insights |
 | Quick Access | `admin/quick-access/` | Editor + reorder + per-card save-state + **unsaved-changes guard** (aggregated across cards) |
-| Services | `admin/services/` + `[id]/` | Editor: basics, intro, icon, **editable contact-category filters**, contacts (reorder/duplicate), topic list (reorder), **version history + diff + restore** |
+| Services | `admin/services/` + `[id]/` | Editor: basics, intro, icon, contacts-page header, topic list (reorder), **version history + diff + restore**. (Contacts + the old per-service category filters moved out — see Contacts.) |
+| Contacts | `admin/contacts/` + `[id]/` | **Global contacts directory** — one contact per organization, tagged with the service categories it belongs to (`categories`, many-to-many). List → editor with a category multiselect. The home "All Contacts" table and every category page render from this one list; the category filter == the services. |
 | Articles | `admin/articles/` + `[id]/` | Searchable list; editor with **live `ArticlePreview`**, key links + sections + FAQs (reorder/duplicate), required markers. (Payload collection slug stays `topics`.) |
 | Insights | `admin/insights/` | Team-only analytics (PostHog); inherits the layout's auth gate + sidebar |
 | Team | `admin/users/` | **Admin-role only.** Invite-link flow: creating a member (no password field) mints a single-use link (7-day expiry) the admin sends over any channel; the person chooses their own password on the public `/welcome` page and is signed straight in. "Reset password" mints the same kind of link (3-day expiry); only your *own* password is ever typed directly. Two-tier roles (admin / editor); self-delete + self-demote guards; "You" badge |
@@ -78,7 +79,7 @@ The Postgres adapter auto-pushes schema diffs on dev restart. These were added
 that way and have **no migration files yet**:
 
 - `ordered` (Topics) + `ctaHref` (Topic sections)
-- `categoryFilters` editor surface (Services)
+- **`Contacts` collection** (global directory; `categories` many-to-many → Services) **and the removal of `contacts` + `categoryFilters` + `breadcrumb` from Services** (the breadcrumb trail now falls back to the service `title`). Reseed with `pnpm seed:payload` after the push (it now seeds the `contacts` collection and maps each contact's category slugs to service ids).
 - `joinedAt` (Users) — set on first sign-in / invite completion; drives the
   Team page's "Invited" status
 - `auditFields` (createdBy/updatedBy) on Services, Topics, QuickAccess

@@ -1,32 +1,35 @@
 "use client";
 
-import { ContactsSection, type Contact } from "@/components/shared/contacts-section";
+import {
+  ContactsSection,
+  type CategoryOption,
+  type Contact,
+} from "@/components/shared/contacts-section";
 import { useAdmin } from "@/lib/admin-store";
 
-type ServiceData = {
-  slug: string;
-  contacts?: Contact[];
-  categoryFilters?: string[];
-  contactsSubtitle?: string;
-};
+type ServiceData = { slug: string; title: string };
 
 export function AllContacts() {
-  // Feature the family & childcare contacts (matches the DS mockup); fall back to first service.
-  const { data } = useAdmin() as { data: { services: ServiceData[] } };
-  const service =
-    data.services.find((s) => s.slug === "family-child-support") ??
-    data.services[0];
+  // The home table shows the WHOLE directory: every contact from every service,
+  // with the filter defaulting to "All Contacts". The dropdown lists all service
+  // categories (the same list every category page uses).
+  const { data } = useAdmin() as {
+    data: { services: ServiceData[]; contacts: Contact[] };
+  };
+
+  const categories: CategoryOption[] = data.services.map((s) => ({
+    value: s.slug,
+    label: s.title,
+  }));
 
   return (
     <section id="contacts" className="scroll-mt-24">
       <ContactsSection
         title="All Contacts"
-        subtitle={
-          service?.contactsSubtitle ??
-          "Key contact information for family and childcare services in Lisbon"
-        }
-        contacts={service?.contacts ?? []}
-        categoryFilters={service?.categoryFilters ?? []}
+        subtitle="Key contact information across every service in Lisbon"
+        contacts={data.contacts}
+        categories={categories}
+        defaultCategory="all"
       />
     </section>
   );

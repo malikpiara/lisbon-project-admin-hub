@@ -4,13 +4,11 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ChevronRight,
-  Contact,
   ExternalLink,
   FileText,
   History,
   Plus,
   RotateCcw,
-  X,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -21,12 +19,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Input } from "@/components/ui/input";
 import { Field } from "@/components/admin/field";
 import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import {
-  EditorRow,
   EmptyState,
   MoveControls,
   Section,
@@ -47,40 +43,25 @@ import {
 } from "../actions";
 import { createTopic, reorderTopics } from "../../articles/actions";
 
-// Stable client-only key per contact row so reordering can animate (FLIP) and
-// mark the moved row by identity, independent of array index. Stripped before
-// saving (see toPayload) so it never reaches Payload.
-let _contactKeySeq = 0;
-const nextContactKey = () => `c${_contactKeySeq++}`;
-
-// Map Payload's stored shape <-> the editor draft. The string lists are arrays
-// of { text } in Payload (a named subfield is required); the editor treats intro
-// as a blank-line-separated textarea, like the /admin prototype.
+// Map Payload's stored shape <-> the editor draft. The string list `intro` is
+// an array of { text } in Payload (a named subfield is required); the editor
+// treats it as a blank-line-separated textarea. Contacts moved out of the
+// service into their own collection (edited at /admin/contacts), so the service
+// editor no longer touches contacts or the old per-service categoryFilters.
 function fromPayload(s) {
   return {
     title: s.title ?? "",
-    breadcrumb: s.breadcrumb ?? "",
     shortDescription: s.shortDescription ?? "",
     intro: (s.intro ?? []).map((p) => p.text).join("\n\n"),
     iconKey: s.iconKey ?? "",
     contactsTitle: s.contactsTitle ?? "",
     contactsSubtitle: s.contactsSubtitle ?? "",
-    categoryFilters: (s.categoryFilters ?? []).map((c) => c.value ?? ""),
-    contacts: (s.contacts ?? []).map((c) => ({
-      _k: nextContactKey(),
-      organization: c.organization ?? "",
-      service: c.service ?? "",
-      phone: c.phone ?? "",
-      email: c.email ?? "",
-      category: c.category ?? "",
-    })),
   };
 }
 
 function toPayload(d) {
   return {
     title: d.title,
-    breadcrumb: d.breadcrumb,
     shortDescription: d.shortDescription,
     intro: d.intro
       .split(/\n\s*\n/)
@@ -90,11 +71,6 @@ function toPayload(d) {
     iconKey: d.iconKey,
     contactsTitle: d.contactsTitle,
     contactsSubtitle: d.contactsSubtitle,
-    categoryFilters: d.categoryFilters
-      .map((v) => v.trim())
-      .filter(Boolean)
-      .map((value) => ({ value })),
-    contacts: d.contacts.map(({ _k, ...c }) => c), // drop the client-only key
   };
 }
 
@@ -105,8 +81,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
   const [saved, setSaved] = useState(() => draft);
   const [phase, setPhase] = useState("idle"); // idle | saving | error
   const [isPending, startTransition] = useTransition();
-  const contactFlip = useFlip();
-  const [flashContactKey, setFlashContactKey] = useState(null);
 
   // Topics reorder is deferred (local order, persisted on Save) rather than the
   // old instant server-action + router.refresh — so rows slide (FLIP), the moved
@@ -136,25 +110,12 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
     0
   );
 
-  // Contacts reorder by identity (`_k`): a contact is "moved" when its key sits
-  // at a different index than in the saved baseline. The wash/count compare by
-  // key too, so reordering an unedited contact doesn't light up its fields.
-  const savedContactKeys = saved.contacts.map((c) => c._k);
-  const savedContactByK = Object.fromEntries(
-    saved.contacts.map((c) => [c._k, c])
-  );
-  const reorderedContactCount = draft.contacts.reduce((n, c, i) => {
-    const si = savedContactKeys.indexOf(c._k);
-    return n + (si !== -1 && si !== i ? 1 : 0);
-  }, 0);
-
   // Honest diff: derived by comparing the working draft to the last-saved
-  // snapshot (the old one-way latch never relaxed). Field edits, topic reorders
-  // and contact reorders all feed dirty and the change count.
+  // snapshot (the old one-way latch never relaxed). Field edits and topic
+  // reorders feed dirty and the change count.
   const fieldsDirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const dirty = fieldsDirty || topicOrderDirty;
-  const changeCount =
-    countChanges(draft, saved) + reorderedTopicCount + reorderedContactCount;
+  const changeCount = countChanges(draft, saved) + reorderedTopicCount;
   const fieldDirty = (a, b) => (a ?? "") !== (b ?? "");
 
   const moveTopic = (i, dir) => {
@@ -172,58 +133,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
 
   const set = (patch) => {
     setDraft((d) => ({ ...d, ...patch }));
-  };
-  const setContact = (i, patch) => {
-    setDraft((d) => ({
-      ...d,
-      contacts: d.contacts.map((c, idx) => (idx === i ? { ...c, ...patch } : c)),
-    }));
-  };
-  const addContact = () => {
-    setDraft((d) => ({
-      ...d,
-      contacts: [
-        ...d.contacts,
-        { _k: nextContactKey(), organization: "New organization", service: "", phone: "", email: "", category: "" },
-      ],
-    }));
-  };
-  const removeContact = (i) => {
-    setDraft((d) => ({ ...d, contacts: d.contacts.filter((_, idx) => idx !== i) }));
-  };
-  const moveContact = (i, dir) => {
-    const j = i + dir;
-    if (j < 0 || j >= draft.contacts.length) return;
-    const movedKey = draft.contacts[i]._k;
-    setDraft((d) => {
-      const arr = [...d.contacts];
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-      return { ...d, contacts: arr };
-    });
-    setFlashContactKey(movedKey);
-    setTimeout(() => setFlashContactKey((c) => (c === movedKey ? null : c)), 700);
-  };
-  const duplicateContact = (i) => {
-    setDraft((d) => {
-      const arr = [...d.contacts];
-      arr.splice(i + 1, 0, { ...arr[i], _k: nextContactKey() });
-      return { ...d, contacts: arr };
-    });
-  };
-  const setCategoryFilter = (i, v) => {
-    setDraft((d) => ({
-      ...d,
-      categoryFilters: d.categoryFilters.map((c, idx) => (idx === i ? v : c)),
-    }));
-  };
-  const addCategoryFilter = () => {
-    setDraft((d) => ({ ...d, categoryFilters: [...d.categoryFilters, ""] }));
-  };
-  const removeCategoryFilter = (i) => {
-    setDraft((d) => ({
-      ...d,
-      categoryFilters: d.categoryFilters.filter((_, idx) => idx !== i),
-    }));
   };
 
   const save = () => {
@@ -346,19 +255,13 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
+              className="sm:col-span-2"
               label="Title"
               required
               value={draft.title}
               onChange={(v) => set({ title: v })}
               dirty={fieldDirty(draft.title, saved.title)}
-              hint="Shown on the home grid card and the category page."
-            />
-            <Field
-              label="Breadcrumb label"
-              value={draft.breadcrumb}
-              onChange={(v) => set({ breadcrumb: v })}
-              dirty={fieldDirty(draft.breadcrumb, saved.breadcrumb)}
-              hint="Short label for the breadcrumb trail."
+              hint="Shown on the home grid card, the category page, and the breadcrumb trail."
             />
             <Field
               className="sm:col-span-2"
@@ -407,51 +310,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               dirty={fieldDirty(draft.contactsSubtitle, saved.contactsSubtitle)}
             />
           </div>
-        </Section>
-
-        <Section
-          title="Contact categories"
-          count={draft.categoryFilters.length}
-          description="Filter chips above the contacts table. Each contact's Category should match one of these."
-          action={
-            <Button size="sm" onClick={addCategoryFilter}>
-              <Plus className="size-3.5" />
-              Add category
-            </Button>
-          }
-        >
-          {draft.categoryFilters.length === 0 ? (
-            <EmptyState
-              icon={Contact}
-              label="No categories yet"
-              hint="Add categories so visitors can filter the contacts table."
-            />
-          ) : (
-            <div className="space-y-2">
-              {draft.categoryFilters.map((value, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input
-                    value={value}
-                    onChange={(e) => setCategoryFilter(i, e.target.value)}
-                    placeholder="e.g. Housing"
-                    className={
-                      fieldDirty(value, saved.categoryFilters[i])
-                        ? "border-brand-300 bg-muted"
-                        : ""
-                    }
-                  />
-                  <button
-                    type="button"
-                    aria-label="Remove category"
-                    onClick={() => removeCategoryFilter(i)}
-                    className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </Section>
 
         <Section
@@ -518,88 +376,6 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                         isLast={i === topicOrder.length - 1}
                       />
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Section>
-
-        <Section
-          title="Contacts"
-          count={draft.contacts.length}
-          action={
-            <Button size="sm" onClick={addContact}>
-              <Plus className="size-3.5" />
-              Add contact
-            </Button>
-          }
-        >
-          {draft.contacts.length === 0 ? (
-            <EmptyState
-              icon={Contact}
-              label="No contacts yet"
-              hint="Contacts appear in the table on this category's page."
-            />
-          ) : (
-            <div className="space-y-2">
-              {draft.contacts.map((contact, i) => {
-                const sc = savedContactByK[contact._k];
-                const si = savedContactKeys.indexOf(contact._k);
-                const moved = si !== -1 && si !== i;
-                return (
-                  <div key={contact._k} ref={contactFlip(contact._k)}>
-                    <EditorRow
-                      title={contact.organization || "New organization"}
-                      subtitle={[contact.category, contact.service]
-                        .filter(Boolean)
-                        .join(" · ")}
-                      defaultOpen={contact.organization === "New organization"}
-                      onDelete={() => removeContact(i)}
-                      onMoveUp={() => moveContact(i, -1)}
-                      onMoveDown={() => moveContact(i, 1)}
-                      onDuplicate={() => duplicateContact(i)}
-                      isFirst={i === 0}
-                      isLast={i === draft.contacts.length - 1}
-                      marked={moved}
-                      flashing={flashContactKey === contact._k}
-                    >
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <Field
-                          label="Organization"
-                          required
-                          value={contact.organization}
-                          onChange={(v) => setContact(i, { organization: v })}
-                          dirty={fieldDirty(contact.organization, sc?.organization)}
-                        />
-                        <Field
-                          label="Category"
-                          value={contact.category}
-                          onChange={(v) => setContact(i, { category: v })}
-                          dirty={fieldDirty(contact.category, sc?.category)}
-                        />
-                        <Field
-                          className="sm:col-span-2"
-                          label="Service description"
-                          value={contact.service}
-                          onChange={(v) => setContact(i, { service: v })}
-                          dirty={fieldDirty(contact.service, sc?.service)}
-                        />
-                        <Field
-                          label="Phone"
-                          value={contact.phone}
-                          onChange={(v) => setContact(i, { phone: v })}
-                          dirty={fieldDirty(contact.phone, sc?.phone)}
-                        />
-                        <Field
-                          label="Email"
-                          type="email"
-                          value={contact.email}
-                          onChange={(v) => setContact(i, { email: v })}
-                          dirty={fieldDirty(contact.email, sc?.email)}
-                        />
-                      </div>
-                    </EditorRow>
                   </div>
                 );
               })}

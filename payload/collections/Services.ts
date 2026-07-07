@@ -7,10 +7,11 @@ import {
 } from "../../lib/admin-default-data";
 import { auditFields } from "../fields/audit";
 
-// Mirrors a service category from lib/admin-default-data.js. Contacts are
-// embedded (no page of their own); topics live in their own collection and
-// point back here via a relationship. Payload arrays need a named subfield, so
-// the string lists (intro, categoryFilters) become arrays of { text }/{ value }.
+// Mirrors a service category from lib/admin-default-data.js. Topics live in
+// their own collection and point back here via a relationship; contacts live in
+// their own `contacts` collection and point back via a many-to-many
+// `categories` relationship (a service = a contact category). Payload arrays
+// need a named subfield, so the string list `intro` becomes an array of { text }.
 export const Services: CollectionConfig = {
   slug: "services",
   // PROTOTYPE (#2): full version history. Payload snapshots the whole doc on
@@ -41,7 +42,6 @@ export const Services: CollectionConfig = {
       type: "textarea",
       admin: { description: "Copy for the home grid card" },
     },
-    { name: "breadcrumb", type: "text" },
     {
       name: "intro",
       type: "array",
@@ -65,23 +65,6 @@ export const Services: CollectionConfig = {
     },
     { name: "contactsTitle", type: "text" },
     { name: "contactsSubtitle", type: "textarea" },
-    {
-      name: "categoryFilters",
-      type: "array",
-      labels: { singular: "Filter", plural: "Filters" },
-      fields: [{ name: "value", type: "text", required: true }],
-    },
-    {
-      name: "contacts",
-      type: "array",
-      fields: [
-        { name: "organization", type: "text", required: true },
-        { name: "service", type: "textarea", label: "Service description" },
-        { name: "phone", type: "text" },
-        { name: "email", type: "email" },
-        { name: "category", type: "text" },
-      ],
-    },
     {
       name: "order",
       type: "number",

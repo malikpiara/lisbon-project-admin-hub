@@ -83,10 +83,19 @@ const { default: config } = await import("@payload-config");
 const payload = await getPayload({ config });
 
 // Clear content collections (match-all where) so reseeding is idempotent.
+// Delete children (topics, contacts) before services — both reference it.
 const all = { id: { exists: true } };
-for (const collection of ["topics", "services", "quick-access"] as const) {
+for (const collection of [
+  "topics",
+  "contacts",
+  "services",
+  "quick-access",
+] as const) {
   await payload.delete({ collection, where: all });
 }
+
+// slug -> created service id, to resolve each contact's `categories` below.
+const serviceIdBySlug: Record<string, string | number> = {};
 
 for (const [si, s] of defaultAdminData.services.entries()) {
   const service = await payload.create({
@@ -95,17 +104,15 @@ for (const [si, s] of defaultAdminData.services.entries()) {
       title: s.title,
       slug: s.slug,
       shortDescription: s.shortDescription,
-      breadcrumb: s.breadcrumb,
       intro: (s.intro ?? []).map((text) => ({ text })),
       tone: s.tone,
       iconKey: s.iconKey,
       contactsTitle: s.contactsTitle,
       contactsSubtitle: s.contactsSubtitle,
-      categoryFilters: (s.categoryFilters ?? []).map((value) => ({ value })),
-      contacts: (s.contacts ?? []).map((c) => ({ ...c })),
       order: si,
     },
   });
+  serviceIdBySlug[s.slug] = service.id;
 
   for (const [ti, t] of (s.topics ?? []).entries()) {
     await payload.create({
@@ -121,6 +128,23 @@ for (const [si, s] of defaultAdminData.services.entries()) {
       },
     });
   }
+}
+
+// Global contacts directory. `categories` (slugs in the seed) map to the
+// service ids created above; drop any slug that didn't resolve to a service.
+for (const c of defaultAdminData.contacts ?? []) {
+  await payload.create({
+    collection: "contacts",
+    data: {
+      organization: c.organization,
+      service: c.service,
+      phone: c.phone,
+      email: c.email,
+      categories: (c.categories ?? [])
+        .map((slug) => serviceIdBySlug[slug])
+        .filter((id) => id !== undefined),
+    },
+  });
 }
 
 for (const [qi, q] of defaultAdminData.quickAccess.entries()) {
@@ -148,7 +172,7 @@ if (users.totalDocs === 0) {
 }
 
 const counts = await Promise.all(
-  ["services", "topics", "quick-access"].map(async (c) => {
+  ["services", "topics", "contacts", "quick-access"].map(async (c) => {
     const r = await payload.count({ collection: c });
     return `${c}: ${r.totalDocs}`;
   }),

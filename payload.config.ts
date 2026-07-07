@@ -7,6 +7,7 @@ import { buildConfig } from "payload";
 
 import { Services } from "./payload/collections/Services";
 import { Topics } from "./payload/collections/Topics";
+import { Contacts } from "./payload/collections/Contacts";
 import { QuickAccess } from "./payload/collections/QuickAccess";
 import { Users } from "./payload/collections/Users";
 import { AuditLog } from "./payload/collections/AuditLog";
@@ -44,7 +45,7 @@ export default buildConfig({
       afterNavLinks: ["/payload/components/NavLinks#NavLinks"],
     },
   },
-  collections: [Services, Topics, QuickAccess, Users, AuditLog, Subscribers],
+  collections: [Services, Topics, Contacts, QuickAccess, Users, AuditLog, Subscribers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   db: postgresAdapter({

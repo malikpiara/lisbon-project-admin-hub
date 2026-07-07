@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   ClipboardCheck,
+  Contact,
   ExternalLink,
   FileText,
   History,
@@ -32,6 +33,7 @@ const navGroups = [
       { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
       { href: "/admin/services", label: "Services & Information", icon: ListChecks },
       { href: "/admin/articles", label: "Articles", icon: FileText },
+      { href: "/admin/contacts", label: "Contacts", icon: Contact },
     ],
   },
   {

@@ -19,12 +19,11 @@ function HeroCircle() {
 /**
  * @param {{
  *   title: string;
- *   breadcrumb: string;
  *   intro?: string[];
  *   iconKey?: string;
  * }} props
  */
-export function ServiceHero({ title, breadcrumb, intro = [], iconKey }) {
+export function ServiceHero({ title, intro = [], iconKey }) {
   const Icon = serviceIconMap[iconKey] ?? serviceIconMap.Building2;
   const [lead, ...rest] = intro;
 
@@ -42,7 +41,7 @@ export function ServiceHero({ title, breadcrumb, intro = [], iconKey }) {
             Home
           </Link>
           <span className="mx-2 text-muted-foreground">/</span>
-          <span className="text-foreground">{breadcrumb}</span>
+          <span className="text-foreground">{title}</span>
         </nav>
 
         <div className="ds-section-padding relative isolate overflow-hidden rounded-none xl:rounded-[3.5rem]">

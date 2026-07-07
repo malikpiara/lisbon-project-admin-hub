@@ -50,16 +50,19 @@ export function ServiceCategoryView({ slug }) {
     <>
       <ServiceHero
         title={service.title}
-        breadcrumb={service.breadcrumb}
         intro={service.intro}
         iconKey={getServiceIconKey(service.slug, service.iconKey)}
       />
       <TopicsGrid topics={service.topics} categorySlug={service.slug} />
+      {/* Same global contacts directory as the home page — only the pre-selected
+          filter differs. Landing here shows this category's contacts; the user
+          can switch to any other category, or "All Contacts". */}
       <ContactsSection
         title={service.contactsTitle ?? `${service.title} Contacts`}
         subtitle={service.contactsSubtitle}
-        contacts={service.contacts}
-        categoryFilters={service.categoryFilters}
+        contacts={data.contacts}
+        categories={data.services.map((s) => ({ value: s.slug, label: s.title }))}
+        defaultCategory={service.slug}
       />
       <MapVisit />
     </>

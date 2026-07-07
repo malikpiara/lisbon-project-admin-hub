@@ -1939,7 +1939,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     previewHeight: 720,
     installation: "Import AllContacts or ContactsSection depending on the page.",
     importCode: `import { AllContacts } from "@/components/home/all-contacts"\nimport { ContactsSection } from "@/components/shared/contacts-section"`,
-    usage: "Use ContactsSection when a service page needs a scoped contact table.",
+    usage: "One global directory; every page passes the same contacts + categories and only sets a different defaultCategory.",
     composition: [
       "Search input and select controls sit above the table.",
       "Mobile overflow is contained by the table scroller.",
@@ -1947,8 +1947,9 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     ],
     examples: [],
     api: [
-      { name: "contacts", type: "Contact[]", defaultValue: "[]", description: "Rows rendered by ContactsSection." },
-      { name: "categoryFilters", type: "string[]", defaultValue: "[]", description: "Options for the category filter." },
+      { name: "contacts", type: "Contact[]", defaultValue: "[]", description: "The full directory. Each Contact carries categories: string[] (service slugs)." },
+      { name: "categories", type: "CategoryOption[]", defaultValue: "[]", description: "Filter options { value, label } — the service categories, same on every page." },
+      { name: "defaultCategory", type: "string", defaultValue: '"all"', description: "Pre-selected filter. \"all\" on the home page; the service slug on a category page." },
     ],
   },
   {
@@ -1983,7 +1984,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     description: "Service-category composition combining hero, topic cards, contacts, and location sections.",
     preview: (
       <>
-        <ServiceHero title={familyService.title} breadcrumb={familyService.breadcrumb} intro={familyService.intro} iconKey={familyService.iconKey} />
+        <ServiceHero title={familyService.title} intro={familyService.intro} iconKey={familyService.iconKey} />
         <TopicsGrid topics={familyService.topics} categorySlug={familyService.slug} />
       </>
     ),

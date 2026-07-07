@@ -30,12 +30,17 @@ import {
 } from "@/components/ui/table";
 
 export type Contact = {
+  id: string;
   organization: string;
   service: string;
   phone: string;
   email: string;
-  category: string;
+  // Service slugs this contact belongs to — the single taxonomy. A contact can
+  // sit in several categories and surfaces on each of their pages.
+  categories: string[];
 };
+
+export type CategoryOption = { value: string; label: string };
 
 function mapsHref(org: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -47,20 +52,39 @@ export function ContactsSection({
   title,
   subtitle,
   contacts,
-  categoryFilters,
+  categories,
+  defaultCategory = "all",
 }: {
   title: string;
   subtitle?: string;
   contacts: Contact[];
-  categoryFilters: string[];
+  // Every service category, in display order — the filter options. Same list on
+  // every page; only `defaultCategory` (the pre-selected value) differs.
+  categories: CategoryOption[];
+  defaultCategory?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState(defaultCategory);
+
+  // Reset the filter to the page's category when navigating between category
+  // pages (the same ContactsSection instance is reused across /services/[slug]
+  // routes, so the useState initializer alone wouldn't pick up the new default).
+  const [prevDefault, setPrevDefault] = useState(defaultCategory);
+  if (defaultCategory !== prevDefault) {
+    setPrevDefault(defaultCategory);
+    setCategory(defaultCategory);
+  }
+
+  // slug -> title, for the Category column tags.
+  const labelBySlug = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.value, c.label])),
+    [categories]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return contacts.filter((c) => {
-      if (category !== "all" && c.category !== category) return false;
+      if (category !== "all" && !c.categories.includes(category)) return false;
       if (!q) return true;
       return (
         c.organization.toLowerCase().includes(q) ||
@@ -94,10 +118,10 @@ export function ContactsSection({
   // without it the trigger shows the raw value ("all").
   const categoryItems = useMemo(
     () => ({
-      all: "All Categories",
-      ...Object.fromEntries(categoryFilters.map((c) => [c, c])),
+      all: "All Contacts",
+      ...Object.fromEntries(categories.map((c) => [c.value, c.label])),
     }),
-    [categoryFilters]
+    [categories]
   );
 
   return (
@@ -141,10 +165,10 @@ export function ContactsSection({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categoryFilters.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
+              <SelectItem value="all">All Contacts</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -152,19 +176,22 @@ export function ContactsSection({
         </div>
 
         <div className="ds-section-x-padding mt-4">
-          <Table className="min-w-[920px]">
+          {/* table-fixed + explicit column widths: column widths are derived from
+              these headers, not the visible cell content — so filtering/searching
+              (which changes the row set) never makes the columns jump. */}
+          <Table className="min-w-[920px] table-fixed">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
-                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
-                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
-                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
-                <TableHead className="text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
+                <TableHead className="w-[20%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
+                <TableHead className="w-[22%] text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
+                <TableHead className="w-[24%] text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
+                <TableHead className="w-[20%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
+                <TableHead className="w-[14%] text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((c) => (
-                <TableRow key={c.organization} className="border-border hover:bg-transparent">
+                <TableRow key={c.id} className="border-border hover:bg-transparent">
                   <TableCell className="max-w-48 py-5 align-top text-ds-m font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
@@ -180,14 +207,23 @@ export function ContactsSection({
                         <IconMail className="size-4" />
                         {c.email}
                       </a>
-                      <div className="flex items-center gap-2 text-ds-xxs font-bold text-primary">
+                      {/* tel: href strips spaces/punctuation (keep digits + leading
+                          +) so it dials correctly; the label stays formatted. */}
+                      <a
+                        href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}
+                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
+                      >
                         <IconPhone className="size-4" />
                         {c.phone}
-                      </div>
+                      </a>
                     </div>
                   </TableCell>
                   <TableCell className="py-5 align-top">
-                    <Tag>{c.category}</Tag>
+                    <div className="flex flex-wrap gap-1.5">
+                      {c.categories.map((slug) => (
+                        <Tag key={slug}>{labelBySlug[slug] ?? slug}</Tag>
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell className="py-5 align-top">
                     <a

@@ -8,14 +8,11 @@ import { ServiceEditor } from "./service-editor";
 // Fields shown in the version diff, in display order.
 const DIFF_FIELDS = [
   { key: "title", label: "Title", type: "text" },
-  { key: "breadcrumb", label: "Breadcrumb", type: "text" },
   { key: "shortDescription", label: "Short description", type: "text" },
   { key: "iconKey", label: "Icon", type: "text" },
   { key: "contactsTitle", label: "Contacts title", type: "text" },
   { key: "contactsSubtitle", label: "Contacts subtitle", type: "text" },
   { key: "intro", label: "Intro paragraphs", type: "array" },
-  { key: "categoryFilters", label: "Category filters", type: "array" },
-  { key: "contacts", label: "Contacts", type: "array" },
 ];
 
 export const metadata = {

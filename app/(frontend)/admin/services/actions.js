@@ -6,10 +6,10 @@ import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 
-// Saves the whole service doc (basics + intro + contacts). `data` is already
-// mapped to Payload's shape by the editor; fields we don't send (slug, tone,
-// order, categoryFilters) are left untouched by Payload's partial update. Stamp
-// the editor as the last modifier.
+// Saves the service doc (basics + intro + contacts-page header). `data` is
+// already mapped to Payload's shape by the editor; fields we don't send (slug,
+// tone, order) are left untouched by Payload's partial update. Contacts live in
+// their own collection now, edited at /admin/contacts. Stamp the last modifier.
 export async function saveService(id, data) {
   const { payload, user } = await authedPayload();
   await payload.update({

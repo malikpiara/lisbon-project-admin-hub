@@ -57,7 +57,6 @@ type Topic = {
 type Service = {
   slug: string;
   title: string;
-  breadcrumb: string;
   iconKey?: string;
   topics: Topic[];
 };
@@ -127,7 +126,7 @@ export function ArticleView({
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink href={`/services/${service.slug}`}>
-                  {service.breadcrumb}
+                  {service.title}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

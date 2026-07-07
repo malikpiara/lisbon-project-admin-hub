@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     services: Service;
     topics: Topic;
+    contacts: Contact;
     'quick-access': QuickAccess;
     users: User;
     'audit-log': AuditLog;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsSelect: {
     services: ServicesSelect<false> | ServicesSelect<true>;
     topics: TopicsSelect<false> | TopicsSelect<true>;
+    contacts: ContactsSelect<false> | ContactsSelect<true>;
     'quick-access': QuickAccessSelect<false> | QuickAccessSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
@@ -140,7 +142,6 @@ export interface Service {
    * Copy for the home grid card
    */
   shortDescription?: string | null;
-  breadcrumb?: string | null;
   intro?:
     | {
         text: string;
@@ -224,22 +225,6 @@ export interface Service {
     | null;
   contactsTitle?: string | null;
   contactsSubtitle?: string | null;
-  categoryFilters?:
-    | {
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  contacts?:
-    | {
-        organization: string;
-        service?: string | null;
-        phone?: string | null;
-        email?: string | null;
-        category?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   /**
    * Order in the home grid
    */
@@ -359,6 +344,28 @@ export interface Topic {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contacts".
+ */
+export interface Contact {
+  id: number;
+  organization: string;
+  /**
+   * What the organization does — the “Service Provided” column. This is free text, distinct from the Categories below.
+   */
+  service?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  /**
+   * The service categories this contact belongs to. It appears on each of these category pages, and once in the home “All Contacts” table.
+   */
+  categories: (number | Service)[];
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "quick-access".
  */
 export interface QuickAccess {
@@ -441,6 +448,10 @@ export interface PayloadLockedDocument {
         value: number | Topic;
       } | null)
     | ({
+        relationTo: 'contacts';
+        value: number | Contact;
+      } | null)
+    | ({
         relationTo: 'quick-access';
         value: number | QuickAccess;
       } | null)
@@ -506,7 +517,6 @@ export interface ServicesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   shortDescription?: T;
-  breadcrumb?: T;
   intro?:
     | T
     | {
@@ -517,22 +527,6 @@ export interface ServicesSelect<T extends boolean = true> {
   iconKey?: T;
   contactsTitle?: T;
   contactsSubtitle?: T;
-  categoryFilters?:
-    | T
-    | {
-        value?: T;
-        id?: T;
-      };
-  contacts?:
-    | T
-    | {
-        organization?: T;
-        service?: T;
-        phone?: T;
-        email?: T;
-        category?: T;
-        id?: T;
-      };
   order?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -592,6 +586,21 @@ export interface TopicsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contacts_select".
+ */
+export interface ContactsSelect<T extends boolean = true> {
+  organization?: T;
+  service?: T;
+  phone?: T;
+  email?: T;
+  categories?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
