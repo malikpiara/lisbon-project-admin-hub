@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { ZapierChatbot } from "@/components/site/zapier-chatbot";
@@ -11,7 +13,13 @@ export default function SiteLayout({ children }) {
           the website, rendered on every public page's initial HTML. */}
       <JsonLd data={[organizationSchema(), webSiteSchema()]} />
       <SiteHeader />
-      <main className="flex-1">{children}</main>
+      {/* Cross-fade the page content on route change — the same native
+          <ViewTransition> boundary the admin uses (admin/layout.js). The header,
+          footer and chatbot sit outside it, so only the content swaps. Timing +
+          reduced-motion live in globals.css (::view-transition-*). */}
+      <main className="flex-1">
+        <ViewTransition>{children}</ViewTransition>
+      </main>
       <SiteFooter />
       <ZapierChatbot />
     </>

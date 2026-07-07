@@ -19,6 +19,7 @@ export default async function AdminTopicsPage() {
     }),
     payload.find({
       collection: "services",
+      sort: "order",
       limit: 0,
       depth: 0,
       select: { title: true },
@@ -36,5 +37,7 @@ export default async function AdminTopicsPage() {
     };
   });
 
-  return <ArticlesList topics={rows} />;
+  // New articles are created under the first service (order 0); the editor's
+  // service dropdown lets the author reassign immediately.
+  return <ArticlesList topics={rows} defaultServiceId={services[0]?.id ?? null} />;
 }

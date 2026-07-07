@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { createTopic } from "./actions";
 
 // Searchable Articles list — the teardown's "manage-at-scale" lesson: 140
 // articles as cards is a scroll-wall, so filter by title / service / description.
-export function ArticlesList({ topics }) {
+export function ArticlesList({ topics, defaultServiceId = null }) {
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
@@ -23,13 +25,25 @@ export function ArticlesList({ topics }) {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
-      <header>
-        <h1 className="font-heading text-ds-xxl font-bold text-foreground">
-          Articles
-        </h1>
-        <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-          {topics.length} articles across all services.
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-ds-xxl font-bold text-foreground">
+            Articles
+          </h1>
+          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+            {topics.length} articles across all services.
+          </p>
+        </div>
+        {/* New articles land under the first service; the editor lets the author
+            reassign. Hidden only if there are no services to attach one to. */}
+        {defaultServiceId ? (
+          <form action={createTopic.bind(null, defaultServiceId)}>
+            <Button size="sm" type="submit">
+              <Plus className="size-3.5" />
+              Add article
+            </Button>
+          </form>
+        ) : null}
       </header>
 
       <div className="relative mt-6">

@@ -5,6 +5,7 @@ import {
   IconInstagram,
   IconLinkedin,
   IconMail,
+  IconWhatsapp,
 } from "@/components/icons/ds-icons";
 import { NewsletterForm } from "./newsletter-form";
 
@@ -12,6 +13,11 @@ const socials = [
   { label: "Facebook", icon: IconFacebook, href: "#" },
   { label: "Instagram", icon: IconInstagram, href: "#" },
   { label: "LinkedIn", icon: IconLinkedin, href: "#" },
+  {
+    label: "WhatsApp",
+    icon: IconWhatsapp,
+    href: "https://www.whatsapp.com/channel/0029VafBNaFGk1Fk5kWxqQ1o",
+  },
 ];
 
 export function SiteFooter() {
@@ -56,6 +62,8 @@ export function SiteFooter() {
                   key={s.label}
                   href={s.href}
                   aria-label={s.label}
+                  target={s.href.startsWith("http") ? "_blank" : undefined}
+                  rel={s.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   className="grid size-11 place-items-center rounded-lg border-2 border-bg-mint bg-card text-primary transition-colors hover:bg-card/70"
                 >
                   <Icon className="size-5" />
