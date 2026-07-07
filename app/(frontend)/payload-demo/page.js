@@ -115,7 +115,7 @@ function SetupNotice() {
       <p className="mt-3 text-ds-s text-muted-foreground">
         Set <code>PAYLOAD_SECRET</code> (and optionally <code>DATABASE_URI</code>
         ) in <code>.env.local</code>, run <code>pnpm seed:payload</code>, then
-        restart the dev server. See <code>docs/CMS-EVALUATION.md</code>.
+        restart the dev server. See <code>docs/archive/CMS-EVALUATION.md</code>.
       </p>
     </main>
   );

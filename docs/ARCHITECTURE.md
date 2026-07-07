@@ -8,7 +8,7 @@ bitten us before.
 
 Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
 `shadcn` (base-nova). The public site is still a localStorage prototype (below);
-the chosen CMS is **Payload on Supabase Postgres** (see CMS-EVALUATION.md).
+the chosen CMS is **Payload on Supabase Postgres** (see archive/CMS-EVALUATION.md).
 
 - `app/(frontend)/(site)` — the public site (home, `/services` + detail, article, calendar, privacy)
 - `app/(frontend)/admin` — the **Payload-backed team workspace** (custom admin UI; reads Payload, not the localStorage store — see [ADMIN-HANDOVER.md](./ADMIN-HANDOVER.md))
@@ -21,7 +21,7 @@ The app lives under a `(frontend)` route group with its **own root layout**, so
 the `(payload)` group can supply another root layout (Next 16 allows multiple
 root layouts only when there is no top-level `app/layout.js`). All public URLs
 are unchanged. The Sanity evaluation spike (`(studio)`, `sanity-demo`) was
-removed after the decision — see [CMS-EVALUATION.md](./CMS-EVALUATION.md).
+removed after the decision — see [CMS-EVALUATION.md](./archive/CMS-EVALUATION.md).
 
 > Heed [AGENTS.md](../AGENTS.md): this is not the Next.js in your training data.
 > Read the relevant guide in `node_modules/next/dist/docs/` before writing

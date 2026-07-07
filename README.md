@@ -68,10 +68,13 @@ expected traffic this is well under any Google Calendar API quota.
 `/admin` is the **Payload-backed team workspace** — a custom UI (built from the
 LP design system) over Payload's headless engine: a dashboard, editors for Quick
 Access / services / articles, plus Insights, chatbot Conversations, an activity
-History, and Team management. It reads through Payload's Local API and writes via
+History, Team management (invite-link onboarding — no shared passwords), and a
+Review queue where admins approve editors' submissions with word-level
+before/after diffs. It reads through Payload's Local API and writes via
 auth-gated server actions, and is meant to replace Payload's default admin
 (`/cms-admin`) for non-technical volunteers. Full detail in
-**[docs/ADMIN-HANDOVER.md](docs/ADMIN-HANDOVER.md)**.
+**[docs/ADMIN-HANDOVER.md](docs/ADMIN-HANDOVER.md)**; the path to launch is
+**[docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md)**.
 
 > **The public site still renders from a localStorage store, not Payload.** A
 > single `AdminProvider` seeds `localStorage["lp-admin-data-v1"]`, and the public
@@ -92,7 +95,7 @@ Set `PAYLOAD_SECRET` and a Supabase `DATABASE_URI` in `.env.local` (see
 > Decided 2026-06-23 after a hands-on bake-off (Payload vs Sanity vs a custom
 > Supabase admin); the Sanity spike has since been removed. The full comparison,
 > the decision, and the content-model mapping are in
-> **[docs/CMS-EVALUATION.md](docs/CMS-EVALUATION.md)**. The public site still
+> **[docs/archive/CMS-EVALUATION.md](docs/archive/CMS-EVALUATION.md)**. The public site still
 > reads `localStorage` — wiring it to Payload is the next milestone.
 
 ## Newsletter — MailerLite

@@ -43,7 +43,7 @@ for (const file of [".env.local", ".env"]) {
 }
 
 if (!process.env.PAYLOAD_SECRET) {
-  console.error("Missing PAYLOAD_SECRET. See docs/CMS-EVALUATION.md.");
+  console.error("Missing PAYLOAD_SECRET. See docs/archive/CMS-EVALUATION.md.");
   process.exit(1);
 }
 

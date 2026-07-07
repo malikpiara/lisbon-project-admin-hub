@@ -1,6 +1,6 @@
 # Moving the AdminHub content to the new app — what fits, what doesn't, and what we need to decide
 
-**Last updated:** 2026-07-05 · prepared by Malik for the Lisbon Project design team
+**Last updated:** 2026-07-07 · prepared by Malik for the Lisbon Project design team
 **Old site:** https://lpinformation.mailerpage.io (built in MailerLite)
 **New app:** https://lp.lisboaux.com (work in progress)
 
@@ -46,6 +46,13 @@ What already works in the new app:
 - **Quick Access** shortcut cards on the [home page](https://lp.lisboaux.com)
 - An **editing area** for the team (login required) where every article is
   edited next to a live preview of the page — no more blind form fields
+- **Team accounts** you manage yourselves: adding someone creates an invite
+  link to send them (WhatsApp/email); they choose their own password and are
+  in. No passwords ever need to be shared.
+- **A safety net for edits:** every save is recorded, and there are two
+  roles — *admins* publish directly, *editors'* changes wait in a Review
+  queue where an admin sees exactly what words changed (before/after,
+  side by side) and approves or declines. Nothing is ever lost either way.
 
 ### Decisions already made
 
@@ -141,6 +148,13 @@ reviewed → reviewed*) that the team sets in the editing area, shown as a
 notice on the public page for the first two states. Cheap to build, and it
 keeps the honesty the old site had. Needs your confirmation that legal
 review is still how the team works (Question 1).
+
+> **Update (7 July):** the app now has an editorial approval workflow —
+> editors' changes wait for an admin to approve them, with a side-by-side
+> comparison of what changed. That's *editorial* review (who may publish);
+> the lawyer flag above is a separate, *public-facing* label and still needs
+> the small status field proposed here. The two compose nicely: "approved by
+> an admin" and "checked by lawyers" answer different questions.
 
 ### Gap 5 — Urgent notices on articles
 
@@ -252,6 +266,12 @@ but not thrown away either, so nothing is lost if languages return later.
 
 Steps 1–3 are the ones that get more expensive the longer they wait —
 everything typed before they exist has to be revisited.
+
+**Before the copy sprint starts:** create the team's accounts (invite links
+are ready — see the editing-area notes above) and decide who's *admin* vs
+*editor*. Editor saves wait for approval, so for the migration itself either
+make the people doing the copying admins, or plan for someone to batch-approve
+in the Review queue at the end of each day.
 
 ---
 
