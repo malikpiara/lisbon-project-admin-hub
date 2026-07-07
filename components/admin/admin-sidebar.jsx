@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  ClipboardCheck,
   ExternalLink,
   FileText,
   History,
@@ -12,8 +14,10 @@ import {
   MessagesSquare,
   Sparkles,
   Users2,
+  X,
 } from "lucide-react";
 
+import { IconMenu } from "@/components/icons/ds-icons";
 import { cn } from "@/lib/utils";
 
 // The unified team-workspace sidebar for the /admin group — content editor
@@ -41,15 +45,25 @@ const navGroups = [
   {
     title: "Admin",
     adminOnly: true,
-    items: [{ href: "/admin/users", label: "Team", icon: Users2 }],
+    items: [
+      // `badge: "pendingReviews"` renders the live count passed by the layout.
+      {
+        href: "/admin/review",
+        label: "Review",
+        icon: ClipboardCheck,
+        badge: "pendingReviews",
+      },
+      { href: "/admin/users", label: "Team", icon: Users2 },
+    ],
   },
 ];
 
-export function AdminSidebar({ userEmail, isAdmin = false }) {
-  const pathname = usePathname();
+// The sidebar's inner markup, shared verbatim between the md+ <aside> and the
+// mobile drawer so the two can never drift apart.
+function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
   const groups = navGroups.filter((g) => !g.adminOnly || isAdmin);
   return (
-    <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6">
+    <>
       <div className="mb-6 px-2">
         <p className="font-heading text-ds-s font-bold text-brand-dark">
           Admin Hub
@@ -84,6 +98,11 @@ export function AdminSidebar({ userEmail, isAdmin = false }) {
                 >
                   <Icon className="size-4" strokeWidth={2} />
                   {item.label}
+                  {item.badge && badges[item.badge] > 0 ? (
+                    <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-ds-xxs font-bold text-primary-foreground">
+                      {badges[item.badge]}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}
@@ -102,7 +121,7 @@ export function AdminSidebar({ userEmail, isAdmin = false }) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
+          className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           View live site
           <ExternalLink className="size-3.5" />
@@ -111,12 +130,96 @@ export function AdminSidebar({ userEmail, isAdmin = false }) {
           href="/components"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
+          className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           Design system
           <ExternalLink className="size-3.5" />
         </Link>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // The drawer is navigation: following a link should dismiss it.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Escape closes; the page behind a modal drawer must not scroll.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  const content = (
+    <SidebarContent
+      userEmail={userEmail}
+      isAdmin={isAdmin}
+      pathname={pathname}
+      badges={{ pendingReviews }}
+    />
+  );
+
+  return (
+    <>
+      {/* Mobile: slim sticky header; the nav lives in the drawer below. */}
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-border bg-card px-4 md:hidden">
+        <p className="font-heading text-ds-s font-bold text-brand-dark">
+          Admin Hub
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={open}
+          className="grid size-11 place-items-center rounded-lg text-brand-link transition-colors hover:bg-secondary/60"
+        >
+          <IconMenu className="size-5" />
+        </button>
+      </header>
+
+      {open ? (
+        <div className="md:hidden">
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-foreground/25"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Admin navigation"
+            className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6"
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close menu"
+              className="absolute right-3 top-4 grid size-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+            >
+              <X className="size-5" strokeWidth={2} />
+            </button>
+            {content}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Desktop: the familiar sticky sidebar. */}
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6 md:flex">
+        {content}
+      </aside>
+    </>
   );
 }
