@@ -55,7 +55,8 @@ export default async function LoginPage() {
             <LoginForm />
 
             <p className="mt-6 text-center text-ds-xxs font-medium text-muted-foreground lg:text-left">
-              Staff access only.
+              Staff access only. Forgot your password? Ask a team admin to
+              send you a reset link.
             </p>
           </div>
         </div>

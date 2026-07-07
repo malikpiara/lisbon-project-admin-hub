@@ -26,6 +26,20 @@ export const Users: CollectionConfig = {
   fields: [
     { name: "name", type: "text" },
     {
+      // When the person first proved they hold the account: completing their
+      // invite on /welcome or signing in. Null = invited but never joined —
+      // the Team page uses this to show invite status and offer a fresh
+      // invite link instead of a password reset. Written only via the Local
+      // API (welcome/login actions); no client may set it.
+      name: "joinedAt",
+      type: "date",
+      access: { create: () => false, update: () => false },
+      admin: {
+        readOnly: true,
+        description: "Set automatically the first time the person signs in",
+      },
+    },
+    {
       name: "role",
       type: "select",
       required: true,

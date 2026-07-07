@@ -33,6 +33,19 @@ export async function login(_prevState, formData) {
     return { error: "Those credentials don't match. Try again." };
   }
 
+  // Backfill joinedAt for accounts that predate invite tracking (see the Team
+  // page's "Invited" status) — a successful login is proof enough. Best-effort:
+  // never let it block the sign-in.
+  if (result.user?.id && !result.user.joinedAt) {
+    await payload
+      .update({
+        collection: "users",
+        id: result.user.id,
+        data: { joinedAt: new Date().toISOString() },
+      })
+      .catch(() => {});
+  }
+
   // Mirror Payload's own cookie (httpOnly JWT named payload-token) so the
   // session is portable to /admin's server components and actions.
   const cookieStore = await cookies();
