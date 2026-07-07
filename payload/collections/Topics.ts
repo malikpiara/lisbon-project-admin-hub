@@ -11,6 +11,10 @@ export const Topics: CollectionConfig = {
   slug: "topics",
   // Public website content: anyone can read; writes still require auth.
   access: { read: () => true },
+  // Drafts power the review flow: editors save drafts ("submit for review"),
+  // admins publish directly and approve/decline pending drafts at
+  // /admin/review. Published content is what non-draft reads return.
+  versions: { drafts: true, maxPerDoc: 25 },
   labels: { singular: "Article", plural: "Articles" },
   admin: {
     useAsTitle: "title",

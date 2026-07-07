@@ -17,13 +17,17 @@ export function SaveBar({
   error = false,
   onSave,
   onDiscard,
+  // Editors on review-gated content submit rather than save — the label must
+  // say what actually happens ("Submit for review", not "Save").
+  saveLabel = "Save",
+  savingLabel = "Saving…",
 }) {
   if (!dirty) return null;
 
   const label = error
     ? "Save failed — retry"
     : saving
-      ? "Saving…"
+      ? savingLabel
       : count > 0
         ? `${count} unsaved ${count === 1 ? "change" : "changes"}`
         : "Unsaved changes";
@@ -51,7 +55,7 @@ export function SaveBar({
             Discard
           </Button>
           <Button size="sm" onClick={onSave} disabled={saving}>
-            {saving ? "Saving…" : "Save"}
+            {saving ? savingLabel : saveLabel}
           </Button>
         </div>
       </div>

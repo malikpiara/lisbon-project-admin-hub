@@ -23,7 +23,15 @@ export const AuditLog: CollectionConfig = {
       name: "action",
       type: "select",
       required: true,
-      options: ["created", "updated", "deleted"],
+      options: [
+        "created",
+        "updated",
+        "deleted",
+        // Review flow on Articles: editors submit; admins approve/decline.
+        "submitted",
+        "approved",
+        "declined",
+      ],
     },
     {
       name: "collectionSlug",

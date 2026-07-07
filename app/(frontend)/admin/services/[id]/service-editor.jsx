@@ -32,6 +32,8 @@ import {
   Section,
 } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { DiffText, SplitDiff } from "@/components/admin/diff-text";
+import { diffWords } from "@/lib/diff-text";
 import { SaveBar } from "@/components/admin/save-bar";
 import { countChanges } from "@/lib/count-changes";
 import { useFlip } from "@/lib/use-flip";
@@ -660,11 +662,10 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
   );
 }
 
-function clip(value) {
-  return value.length > 48 ? `${value.slice(0, 47)}…` : value;
-}
-
-// What a save changed — the diff that makes the version history actually useful.
+// What a save changed — the diff that makes the version history actually
+// useful. Short text renders as an inline word diff; long text gets the
+// Before/After split so a one-word edit in a paragraph is findable at a
+// glance instead of two truncated blobs.
 function VersionChanges({ changes }) {
   if (changes === null) {
     return (
@@ -681,28 +682,35 @@ function VersionChanges({ changes }) {
     );
   }
   return (
-    <ul className="mt-2 space-y-1 border-t-2 border-border pt-2">
-      {changes.map((c, ci) => (
-        <li
-          key={ci}
-          className="text-ds-xxs font-medium leading-relaxed text-muted-foreground"
-        >
-          <span className="font-bold text-foreground">{c.label}:</span>{" "}
-          {c.from != null ? (
-            <>
-              <span className="rounded bg-destructive/10 px-1 text-destructive line-through">
-                {clip(c.from) || "(empty)"}
-              </span>{" "}
-              &rarr;{" "}
-              <span className="rounded bg-secondary px-1 text-primary">
-                {clip(c.to) || "(empty)"}
-              </span>
-            </>
-          ) : (
-            <span className="text-foreground">{c.to}</span>
-          )}
-        </li>
-      ))}
+    <ul className="mt-2 space-y-1.5 border-t-2 border-border pt-2">
+      {changes.map((c, ci) => {
+        if (c.from == null) {
+          return (
+            <li
+              key={ci}
+              className="text-ds-xxs font-medium leading-relaxed text-muted-foreground"
+            >
+              <span className="font-bold text-foreground">{c.label}:</span>{" "}
+              <span className="text-foreground">{c.to}</span>
+            </li>
+          );
+        }
+        const ops = diffWords(c.from, c.to);
+        const long = c.from.length + c.to.length > 160;
+        return (
+          <li
+            key={ci}
+            className="text-ds-xxs font-medium leading-relaxed text-muted-foreground"
+          >
+            <span className="font-bold text-foreground">{c.label}:</span>{" "}
+            {long ? (
+              <SplitDiff ops={ops} className="mt-1.5 bg-card" />
+            ) : (
+              <DiffText ops={ops} className="text-foreground" />
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

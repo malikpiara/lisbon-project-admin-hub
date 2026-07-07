@@ -10,12 +10,19 @@ export const metadata = {
 
 export default async function AdminTopicEditPage({ params }) {
   const { id } = await params;
-  const { payload } = await authedPayload();
+  const { payload, user } = await authedPayload();
 
   let topic;
   try {
     // depth: 1 populates the service relationship + createdBy/updatedBy users.
-    topic = await payload.findByID({ collection: "topics", id, depth: 1 });
+    // draft: true loads the newest draft when one is pending review — the
+    // editor must show the submitted work, not silently revert to published.
+    topic = await payload.findByID({
+      collection: "topics",
+      id,
+      depth: 1,
+      draft: true,
+    });
   } catch {
     notFound();
   }
@@ -52,6 +59,8 @@ export default async function AdminTopicEditPage({ params }) {
       service={service}
       services={services}
       audit={auditLabels(topic)}
+      isAdmin={user.role === "admin"}
+      pendingReview={topic._status === "draft"}
     />
   );
 }

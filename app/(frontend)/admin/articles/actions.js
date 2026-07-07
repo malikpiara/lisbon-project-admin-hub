@@ -12,8 +12,13 @@ import { authedPayload } from "@/lib/admin-auth";
 // moves the topic: we append it to the destination service and revalidate both
 // service pages (its public URL changes with the service). Stamp the editor as
 // the last modifier (the Local API doesn't infer the user).
+//
+// Role-aware since the review flow: admins publish directly; editors save a
+// DRAFT version ("submit for review") that leaves the published article
+// untouched until an admin approves it at /admin/review.
 export async function saveTopic(id, data) {
   const { payload, user } = await authedPayload();
+  const isAdmin = user.role === "admin";
 
   const prev = await payload
     .findByID({ collection: "topics", id, depth: 0 })
@@ -39,14 +44,21 @@ export async function saveTopic(id, data) {
     patch.order = dest.totalDocs;
   }
 
-  await payload.update({ collection: "topics", id, data: patch });
+  patch._status = isAdmin ? "published" : "draft";
+  await payload.update({
+    collection: "topics",
+    id,
+    data: patch,
+    draft: !isAdmin,
+  });
   await logAudit(payload, {
-    action: "updated",
+    action: isAdmin ? "updated" : "submitted",
     collectionSlug: "topics",
     docId: id,
     docTitle: data.title,
     userId: user.id,
   });
+  revalidatePath("/admin/review");
   revalidatePath(`/admin/articles/${id}`);
   revalidatePath("/admin/articles");
   if (moved) {
@@ -62,6 +74,9 @@ export async function createTopic(serviceId) {
     collection: "topics",
     where: { service: { equals: serviceId } },
   });
+  // The stub publishes for every role — an empty shell is harmless, and it
+  // guarantees a published baseline exists for the review flow to diff and
+  // fall back to. Content edits are what go through review.
   const created = await payload.create({
     collection: "topics",
     data: {
@@ -71,6 +86,7 @@ export async function createTopic(serviceId) {
       order: existing.totalDocs,
       createdBy: user.id,
       updatedBy: user.id,
+      _status: "published",
     },
   });
   await logAudit(payload, {

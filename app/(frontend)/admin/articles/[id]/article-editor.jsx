@@ -93,7 +93,14 @@ function toPayload(d) {
   };
 }
 
-export function ArticleEditor({ topic, service, services = [], audit }) {
+export function ArticleEditor({
+  topic,
+  service,
+  services = [],
+  audit,
+  isAdmin = true,
+  pendingReview = false,
+}) {
   const [draft, setDraft] = useState(() => ({
     ...fromPayload(topic),
     serviceId: service?.id ?? "",
@@ -307,6 +314,8 @@ export function ArticleEditor({ topic, service, services = [], audit }) {
         error={phase === "error"}
         onSave={save}
         onDiscard={discard}
+        saveLabel={isAdmin ? "Save" : "Submit for review"}
+        savingLabel={isAdmin ? "Saving…" : "Submitting…"}
       />
       <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-8 py-4">
@@ -340,6 +349,18 @@ export function ArticleEditor({ topic, service, services = [], audit }) {
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-ds-xl font-bold text-foreground">
                   {draft.title || "Untitled article"}
+                  {pendingReview ? (
+                    <span
+                      className="ml-2 inline-block rounded-full border-2 border-border px-2 py-0.5 align-middle text-ds-xxs font-bold text-muted-foreground"
+                      title={
+                        isAdmin
+                          ? "An editor submitted changes — approve or decline them under Review"
+                          : "Your changes are waiting for an admin to approve them"
+                      }
+                    >
+                      Pending review
+                    </span>
+                  ) : null}
                 </h1>
                 <p className="truncate font-mono text-ds-xxs text-muted-foreground">
                   /services/{serviceSlug}/{topic.slug}

@@ -257,6 +257,10 @@ export interface User {
   id: number;
   name?: string | null;
   /**
+   * Set automatically the first time the person signs in
+   */
+  joinedAt?: string | null;
+  /**
    * Admins manage the team (accounts, passwords, roles); editors manage content only
    */
   role: 'admin' | 'editor';
@@ -351,6 +355,7 @@ export interface Topic {
   updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -374,7 +379,7 @@ export interface QuickAccess {
  */
 export interface AuditLog {
   id: number;
-  action: 'created' | 'updated' | 'deleted';
+  action: 'created' | 'updated' | 'deleted' | 'submitted' | 'approved' | 'declined';
   /**
    * services | topics | quick-access
    */
@@ -586,6 +591,7 @@ export interface TopicsSelect<T extends boolean = true> {
   updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -608,6 +614,7 @@ export interface QuickAccessSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  joinedAt?: T;
   role?: T;
   updatedAt?: T;
   createdAt?: T;

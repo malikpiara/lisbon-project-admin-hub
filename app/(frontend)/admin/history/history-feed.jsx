@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FilePlus2, Pencil, Search, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  FilePlus2,
+  Pencil,
+  Search,
+  Send,
+  Trash2,
+  XCircle,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -11,6 +19,22 @@ const ACTION = {
   created: { icon: FilePlus2, verb: "created", cls: "text-primary" },
   updated: { icon: Pencil, verb: "edited", cls: "text-brand-link" },
   deleted: { icon: Trash2, verb: "deleted", cls: "text-destructive" },
+  // The review flow (editors submit drafts; admins approve or decline).
+  submitted: {
+    icon: Send,
+    verb: "submitted changes to",
+    cls: "text-brand-link",
+  },
+  approved: {
+    icon: CheckCircle2,
+    verb: "approved changes to",
+    cls: "text-primary",
+  },
+  declined: {
+    icon: XCircle,
+    verb: "declined changes to",
+    cls: "text-destructive",
+  },
 };
 
 const TYPE_LABEL = {
