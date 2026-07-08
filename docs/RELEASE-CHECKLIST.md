@@ -72,9 +72,11 @@ Topics, `joinedAt` on Users, …).
 - [x] **Delete the test users** (`test@`, `test2@`, `test3@roundtwenty.com`)
       — done 2026-07-08 (test2's password had been used in automated testing).
 - [ ] **Rotate the seed admin password** (`changeme123` is in docs and env).
-- [ ] Create real team accounts via the Team page's **invite links**;
-      decide who's **admin** (publishes, approves, manages team) vs
-      **editor** (submits for review).
+- [x] Create real team accounts via the Team page's **invite links**;
+      decide who's **admin** vs **editor**. Done 2026-07-08 — **2 admin
+      accounts** created via invite links; they're already adding content and
+      testing in production. (No editors yet; add via invite link if/when the
+      team wants a submit-for-review tier.)
 - [ ] Decide the review policy for the migration sprint: migrators as
       admins, or daily batch-approval in `/admin/review`
       ([CONTENT-MIGRATION-AUDIT.md §5](./CONTENT-MIGRATION-AUDIT.md)).
