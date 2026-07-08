@@ -1,18 +1,21 @@
 import { redirect } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
+import { isMailerLiteConfigured } from "@/lib/mailerlite";
 import { SubscribersList } from "./subscribers-list";
 
 export const metadata = {
   title: "Subscribers · Admin",
 };
 
-// Newsletter signups captured locally while MailerLite is parked
-// (components/site/newsletter-actions.js falls back to the `subscribers`
-// collection until MAILERLITE_API_KEY is set). This read-only view exists so
-// the team can see those signups and export them — the CSV is the one-time
-// import source for MailerLite. Once MailerLite is live and this table has been
-// drained, the collection can be retired.
+// The newsletter list lives in MailerLite once connected — site signups are
+// posted there (components/site/newsletter-actions.js). This route deliberately
+// does NOT fetch the MailerLite list: it's thousands of real subscribers' emails,
+// and pulling that PII into the app (and the browser) on every load is both a
+// privacy and a performance problem. MailerLite has its own UI + access controls
+// for managing them, so we link out instead. All this route holds is the small
+// set of signups captured *locally* before MailerLite was connected, so they can
+// be exported, imported once, and the collection retired.
 export default async function AdminSubscribersPage() {
   const { payload, user } = await authedPayload();
   // Subscriber emails are personal data — admin-only, same tier as the Team page.
@@ -21,14 +24,11 @@ export default async function AdminSubscribersPage() {
   const { docs, totalDocs } = await payload.find({
     collection: "subscribers",
     sort: "-createdAt",
-    // limit: 0 returns every row (no pagination). The list is finite and small,
-    // and truncating it before the one-time MailerLite import would silently
-    // drop signups — so fetch all of them.
     limit: 0,
     depth: 0,
   });
 
-  const subscribers = docs.map((d) => {
+  const localSignups = docs.map((d) => {
     const dt = d.createdAt ? new Date(d.createdAt) : null;
     return {
       id: d.id,
@@ -48,5 +48,11 @@ export default async function AdminSubscribersPage() {
     };
   });
 
-  return <SubscribersList subscribers={subscribers} total={totalDocs} />;
+  return (
+    <SubscribersList
+      localSignups={localSignups}
+      localTotal={totalDocs}
+      mailerliteConnected={isMailerLiteConfigured()}
+    />
+  );
 }
