@@ -57,9 +57,14 @@ which are **not** low-risk to change and are left as a tracked recommendation.
    upgrades that could destabilise the DB layer — verify against a real DB before
    applying. Recommended: monitor Payload releases; consider a narrow
    `pnpm.overrides` for `undici` (>=7.28.0) and re-test login + admin CRUD.
-2. **Content-Security-Policy.** Not added — a correct CSP must allowlist PostHog,
-   the Google Maps embed, the Zapier chatbot iframe and Google Fonts. Worth doing
-   deliberately with testing (report-only first).
+2. **Content-Security-Policy.** ✅ Shipped **report-only** 2026-07-08
+   (`next.config.mjs`) — reports violations to the console without blocking,
+   allowlisting PostHog, the Google Maps embed and the Zapier chatbot (fonts are
+   self-hosted by next/font, so no external font origin). `'unsafe-inline'` stays
+   for now (Next's inline bootstrap + Tailwind); `'unsafe-eval'` is omitted so
+   report-only surfaces anything that needs it. **Next:** review the console
+   reports on prod, tighten, then flip the header key to `Content-Security-Policy`
+   to enforce (and consider a `report-to` endpoint to collect violations).
 3. **HSTS.** Left to the hosting platform (Vercel sets it) to avoid an HTTP
    lockout in non-prod.
 4. **Chatbot transcript retention.** Special-category data. Redaction is a floor,
