@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import { Check, Search } from "lucide-react";
 
 import { DS_ICONS, DS_ICON_NAMES } from "@/lib/ds-icons-data";
@@ -47,12 +47,16 @@ function iconSize(name: string): number {
 export function IconGallery() {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  // Filtering reads the deferred value so each change is a Transition — which is
+  // what makes the grid cross-fade via <ViewTransition> below. The input stays
+  // bound to `query`, so typing is unaffected.
+  const deferredQuery = useDeferredValue(query);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     if (!q) return DS_ICON_NAMES;
     return DS_ICON_NAMES.filter((name) => name.toLowerCase().includes(q));
-  }, [query]);
+  }, [deferredQuery]);
 
   const families = useMemo(
     () =>
@@ -105,13 +109,15 @@ export function IconGallery() {
         </div>
         <p className="text-ds-xs font-medium text-muted-foreground" aria-live="polite">
           {filtered.length} {filtered.length === 1 ? "icon" : "icons"}
-          {query ? ` matching “${query}”` : ""}
+          {deferredQuery ? ` matching “${deferredQuery}”` : ""}
         </p>
       </div>
 
+      <ViewTransition>
+        <div className="space-y-8">
       {families.length === 0 ? (
         <div className="rounded-lg border-2 border-dashed border-border px-6 py-12 text-center text-ds-xs font-medium text-muted-foreground">
-          No icons match “{query}”. Try a different term.
+          No icons match “{deferredQuery}”. Try a different term.
         </div>
       ) : (
         families.map((family) => (
@@ -159,6 +165,8 @@ export function IconGallery() {
           </section>
         ))
       )}
+        </div>
+      </ViewTransition>
     </div>
     </TooltipProvider>
   );

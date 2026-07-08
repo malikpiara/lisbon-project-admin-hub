@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ViewTransition } from "react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -35,13 +36,17 @@ export default function StyleguideLayout({ children }: { children: ReactNode }) 
 
       <div className="mx-auto grid max-w-[1800px] grid-cols-1 lg:grid-cols-[17rem_minmax(0,1fr)]">
         <aside className="hidden border-r-2 border-border lg:block">
-          <div className="sticky top-20 h-[calc(100dvh-5rem)] overflow-y-auto px-6 py-10">
+          <div className="scrollbar-hide sticky top-20 h-[calc(100dvh-5rem)] overflow-y-auto px-6 py-10">
             <StyleguideNav groups={STYLEGUIDE_NAV_GROUPS} />
           </div>
         </aside>
 
+        {/* Cross-fade only the content pane on route change — the header and
+            sidebar nav sit outside the boundary and stay put. Same native
+            <ViewTransition> pattern as admin/layout.js; timing + reduced-motion
+            live in globals.css (::view-transition-*). */}
         <main className="min-w-0 px-6 py-10 lg:px-12">
-          {children}
+          <ViewTransition>{children}</ViewTransition>
         </main>
       </div>
     </div>

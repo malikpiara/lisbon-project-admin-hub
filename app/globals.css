@@ -446,6 +446,17 @@
   animation: entry-appear 260ms var(--ease-out-cubic) both;
 }
 
+/* Hide the scrollbar while keeping the element scrollable — Firefox
+   (scrollbar-width) + WebKit/Blink (the pseudo-element). Used on the admin and
+   component-library sidebars, whose internal scroll is chrome, not content, so a
+   visible bar just adds noise. */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* View Transitions — the admin content pane cross-fades old↔new on route change,
    via the <ViewTransition> boundary in admin/layout.js (React's native component;
    App Router runs on the canary React that Next bundles). Calm timing, close to
@@ -457,6 +468,12 @@
 ::view-transition-old(*),
 ::view-transition-new(*) {
   animation-timing-function: var(--ease-out-cubic);
+  /* Keep each snapshot at its natural height so the cross-fade fades opacity
+     only, instead of stretching the old/new pages to the group's interpolated
+     box. Without this, routing between pages of very different heights (e.g. the
+     long public home page → a shorter service page) visibly squashes the content
+     mid-transition. Canonical fix for view-transition cross-fade distortion. */
+  height: auto;
 }
 
 /* ============================================================

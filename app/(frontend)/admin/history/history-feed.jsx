@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -53,9 +53,13 @@ function docHref(slug, id) {
 
 export function HistoryFeed({ entries }) {
   const [q, setQ] = useState("");
+  // Filtering reads the deferred value so each change is a Transition — which is
+  // what makes the feed cross-fade via <ViewTransition> below. The input stays
+  // bound to `q`, so typing is unaffected.
+  const deferredQ = useDeferredValue(q);
 
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
+    const needle = deferredQ.trim().toLowerCase();
     if (!needle) return entries;
     return entries.filter(
       (e) =>
@@ -64,7 +68,7 @@ export function HistoryFeed({ entries }) {
         (TYPE_LABEL[e.collectionSlug] || "").includes(needle) ||
         e.action.includes(needle)
     );
-  }, [q, entries]);
+  }, [deferredQ, entries]);
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
@@ -87,7 +91,8 @@ export function HistoryFeed({ entries }) {
         />
       </div>
 
-      <div className="mt-4">
+      <ViewTransition>
+        <div className="mt-4">
         {(() => {
           // Walk the (already newest-first) list and drop in a day header each
           // time the day changes — turns a flat log into scannable date buckets.
@@ -157,10 +162,11 @@ export function HistoryFeed({ entries }) {
           <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
             {entries.length === 0
               ? "No activity yet. Edits will appear here."
-              : `Nothing matches “${q}”.`}
+              : `Nothing matches “${deferredQ}”.`}
           </p>
         ) : null}
-      </div>
+        </div>
+      </ViewTransition>
     </div>
   );
 }

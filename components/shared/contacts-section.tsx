@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  ViewTransition,
+} from "react";
 
 import { usePostHog } from "posthog-js/react";
 import { buttonVariants } from "@/components/ui/button";
@@ -81,8 +87,14 @@ export function ContactsSection({
     [categories]
   );
 
+  // Filtering reads the deferred query so a text-search change is a Transition —
+  // which is what makes the table cross-fade via <ViewTransition> below. The
+  // input stays bound to `query`, so typing is unaffected. (Category changes are
+  // urgent, so switching category doesn't cross-fade — only search does.)
+  const deferredQuery = useDeferredValue(query);
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     return contacts.filter((c) => {
       if (category !== "all" && !c.categories.includes(category)) return false;
       if (!q) return true;
@@ -92,7 +104,7 @@ export function ContactsSection({
         c.email.toLowerCase().includes(q)
       );
     });
-  }, [contacts, query, category]);
+  }, [contacts, deferredQuery, category]);
 
   // Analytics: `contacts_searched` (object-action, past tense) — what people search
   // for in the contacts table. Debounced 800ms so we log completed searches, not
@@ -179,6 +191,7 @@ export function ContactsSection({
           {/* table-fixed + explicit column widths: column widths are derived from
               these headers, not the visible cell content — so filtering/searching
               (which changes the row set) never makes the columns jump. */}
+          <ViewTransition>
           <Table className="min-w-[920px] table-fixed">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
@@ -250,6 +263,7 @@ export function ContactsSection({
               ) : null}
             </TableBody>
           </Table>
+          </ViewTransition>
         </div>
       </div>
     </section>
