@@ -59,13 +59,18 @@ Topics, `joinedAt` on Users, …).
 - [x] `next build` passes (strict TS) — verified 2026-07-08. The heavy
       `/services/[slug]` + `[topic]` routes are on-demand ISR so build-time
       prerender stays under the Supabase session-pooler's 15-client cap.
-- [ ] Decide `/cms-admin` in prod: keep as maintenance escape hatch or
-      block the route. (The custom `/admin` no longer links to it.)
+- [x] Decide `/cms-admin` in prod — **blocked on production** (2026-07-08).
+      The page `notFound()`s when `VERCEL_ENV === "production"`; it stays live
+      locally and on preview deploys, and can be re-enabled in prod temporarily
+      with `ALLOW_CMS_ADMIN=1`. The only team-facing thing it uniquely did —
+      view the newsletter `subscribers` list — now has an `/admin/subscribers`
+      view (admin-only, read-only, CSV export). Blocking the UI does not touch
+      the REST/GraphQL API (`/api`) or the Local API the app writes through.
 
 ## 4. Accounts, roles, and data hygiene
 
-- [ ] **Delete the test users** (`test@`, `test2@`, `test3@roundtwenty.com`)
-      — test2's password was used in automated testing and isn't secret.
+- [x] **Delete the test users** (`test@`, `test2@`, `test3@roundtwenty.com`)
+      — done 2026-07-08 (test2's password had been used in automated testing).
 - [ ] **Rotate the seed admin password** (`changeme123` is in docs and env).
 - [ ] Create real team accounts via the Team page's **invite links**;
       decide who's **admin** (publishes, approves, manages team) vs
@@ -73,8 +78,8 @@ Topics, `joinedAt` on Users, …).
 - [ ] Decide the review policy for the migration sprint: migrators as
       admins, or daily batch-approval in `/admin/review`
       ([CONTENT-MIGRATION-AUDIT.md §5](./CONTENT-MIGRATION-AUDIT.md)).
-- [ ] Delete leftover test content: the 4 "New card" Quick Access rows
-      (ids 10, 12, 13, 14 — see ARCHITECTURE's pre-release list).
+- [x] Delete leftover test content: the 4 "New card" Quick Access rows
+      (ids 10, 12, 13, 14) — done 2026-07-08.
 
 ## 5. Content migration (the team's part)
 
@@ -94,8 +99,13 @@ Tracked in full in [CONTENT-MIGRATION-AUDIT.md](./CONTENT-MIGRATION-AUDIT.md):
 - [ ] Create the **"Lisbon Project" PostHog project** (manual — the MCP key
       is scoped to Adamastor) and set `NEXT_PUBLIC_POSTHOG_*` in prod env
       ([ANALYTICS.md](./ANALYTICS.md)).
-- [ ] Newsletter signup: MailerLite API creds, or ship with the working
-      Supabase `subscribers` fallback (already in place; parked decision).
+- [ ] Newsletter signup → **activate MailerLite** (blocked on the API key).
+      The integration ships dark (`lib/mailerlite.js`); set `MAILERLITE_API_KEY`
+      (+ optional `MAILERLITE_GROUP_ID`) in Vercel and redeploy to flip signups
+      from the Supabase `subscribers` fallback to MailerLite. **The flip does not
+      backfill** — after it's live, export the fallback rows from
+      `/admin/subscribers` (CSV) and import them into MailerLite once, then the
+      `subscribers` collection can be retired.
 - [ ] Set a short PostHog retention window for
       `chatbot_conversation_logged` (special-category data —
       [SECURITY-AUDIT.md](./SECURITY-AUDIT.md) item 4).
