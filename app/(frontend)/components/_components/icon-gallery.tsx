@@ -6,6 +6,12 @@ import { Check, Search } from "lucide-react";
 import { DS_ICONS, DS_ICON_NAMES } from "@/lib/ds-icons-data";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // The DS draws icons at three sizes with different baked stroke weights —
@@ -84,6 +90,7 @@ export function IconGallery() {
   }
 
   return (
+    <TooltipProvider>
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full max-w-xs">
@@ -121,33 +128,31 @@ export function IconGallery() {
               {family.icons.map((name) => {
                 const isCopied = copied === name;
                 return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => copyName(name)}
-                    title={`Copy <Icon name="${name}" />`}
-                    aria-label={`Copy code for the ${name} icon`}
-                    className={cn(
-                      "flex flex-col items-center gap-2 rounded-lg border-2 bg-card p-3 text-center outline-none transition-colors",
-                      isCopied
-                        ? "border-primary text-primary"
-                        : "border-border text-primary hover:border-foreground/30 focus-visible:border-ring"
-                    )}
-                  >
-                    <span className="grid size-7 place-items-center">
-                      {isCopied ? (
-                        <Check className="size-5" strokeWidth={2.5} />
-                      ) : (
-                        <Icon name={name} className="size-6" />
+                  <Tooltip key={name}>
+                    <TooltipTrigger
+                      type="button"
+                      onClick={() => copyName(name)}
+                      aria-label={`Copy code for the ${name} icon`}
+                      className={cn(
+                        "flex flex-col items-center gap-2 rounded-lg border-2 bg-card p-3 text-center outline-none transition-colors",
+                        isCopied
+                          ? "border-primary text-primary"
+                          : "border-border text-primary hover:border-foreground/30 focus-visible:border-ring"
                       )}
-                    </span>
-                    <span
-                      className="w-full truncate text-[0.7rem] font-medium text-muted-foreground"
-                      title={name}
                     >
-                      {isCopied ? "Copied!" : name}
-                    </span>
-                  </button>
+                      <span className="grid size-7 place-items-center">
+                        {isCopied ? (
+                          <Check className="size-5" strokeWidth={2.5} />
+                        ) : (
+                          <Icon name={name} className="size-6" />
+                        )}
+                      </span>
+                      <span className="w-full truncate text-[0.7rem] font-medium text-muted-foreground">
+                        {isCopied ? "Copied!" : name}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{`<Icon name="${name}" />`}</TooltipContent>
+                  </Tooltip>
                 );
               })}
             </div>
@@ -155,5 +160,6 @@ export function IconGallery() {
         ))
       )}
     </div>
+    </TooltipProvider>
   );
 }

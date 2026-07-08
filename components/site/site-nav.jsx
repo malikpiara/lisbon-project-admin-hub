@@ -65,6 +65,15 @@ export function SiteNav() {
               {item.label}
             </Link>
           ))}
+          {/* Team sign-in — separated from the public destinations above. */}
+          <div className="my-1 border-t-2 border-border" />
+          <Link
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="block rounded-md px-3 py-2 text-ds-xs font-medium text-foreground outline-none hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            Log in
+          </Link>
         </div>
       ) : null}
     </div>
