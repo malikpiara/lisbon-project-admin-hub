@@ -47,10 +47,15 @@ Topics, `joinedAt` on Users, …).
 ## 3. Deploy target
 
 - [x] Vercel project + domain **lp.lisboaux.com** — deployed and live.
-- [ ] Env: `PAYLOAD_SECRET`, `DATABASE_URI` → Supabase **transaction pooler
-      (port 6543)** — the session pooler caps at 15 connections and has
-      already taken dev down; `DATABASE_POOL_MAX` small;
-      `NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com`.
+- [x] Env: `DATABASE_URI` updated + redeployed 2026-07-08 — **verified reads +
+      writes from Vercel** (INSERT/DELETE on prod, no prepared-statement error,
+      no IPv4 add-on needed). Use the **transaction pooler (port `:6543`)** — it
+      multiplexes serverless clients, so no client-count cap; the session pooler
+      (`:5432`) caps at ~15 and direct is IPv6-only. Payload/Drizzle/pg need no
+      `?pgbouncer` flag. Migrations/seed run from a session/direct URL. Keep
+      `DATABASE_POOL_MAX` small. (See `.env.example` for the full rationale.)
+      **Confirm the deployed URL is `:6543`.** `PAYLOAD_SECRET` +
+      `NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com` set.
 - [x] `next build` passes (strict TS) — verified 2026-07-08. The heavy
       `/services/[slug]` + `[topic]` routes are on-demand ISR so build-time
       prerender stays under the Supabase session-pooler's 15-client cap.
