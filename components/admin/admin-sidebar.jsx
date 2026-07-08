@@ -12,6 +12,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  Mail,
   MessagesSquare,
   Sparkles,
   Users2,
@@ -56,6 +57,7 @@ const navGroups = [
         badge: "pendingReviews",
       },
       { href: "/admin/users", label: "Team", icon: Users2 },
+      { href: "/admin/subscribers", label: "Subscribers", icon: Mail },
     ],
   },
 ];
