@@ -1,6 +1,6 @@
 # Release checklist — from spike to "the team uses this"
 
-**Last updated:** 2026-07-07 · owner: Malik
+**Last updated:** 2026-07-08 · owner: Malik
 
 **Definition of done:** the Lisbon Project team signs in at
 `lp.lisboaux.com`, edits real content, publishes it (directly or via
@@ -28,8 +28,9 @@ What the team edits in `/admin` now reaches visitors.
       `lib/admin-store.js` deleted.
 - [x] Admin actions call `revalidatePublicContent()`
       (`lib/revalidate-public.js`) so edits refresh the affected public routes.
-- [ ] Still verify end-to-end in prod once deployed (SSG + on-demand
-      revalidate): edit in `/admin` → confirm the live page updates.
+- [x] Verified end-to-end on live prod (`lp.lisboaux.com`, 2026-07-08):
+      created a category in `/admin` → it appeared on the public home; deleted
+      it → gone. SSG + on-demand revalidate confirmed working.
 
 ## 2. Database: migrations before any real deploy
 
@@ -45,13 +46,14 @@ Topics, `joinedAt` on Users, …).
 
 ## 3. Deploy target
 
-- [ ] Vercel project + domain **lp.lisboaux.com** (DNS at LisboaUX).
+- [x] Vercel project + domain **lp.lisboaux.com** — deployed and live.
 - [ ] Env: `PAYLOAD_SECRET`, `DATABASE_URI` → Supabase **transaction pooler
       (port 6543)** — the session pooler caps at 15 connections and has
       already taken dev down; `DATABASE_POOL_MAX` small;
       `NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com`.
-- [ ] `next build` passes (strict TS — typecheck locally first; recharts
-      typings in `components/ui/chart.tsx` have bitten before).
+- [x] `next build` passes (strict TS) — verified 2026-07-08. The heavy
+      `/services/[slug]` + `[topic]` routes are on-demand ISR so build-time
+      prerender stays under the Supabase session-pooler's 15-client cap.
 - [ ] Decide `/cms-admin` in prod: keep as maintenance escape hatch or
       block the route. (The custom `/admin` no longer links to it.)
 
