@@ -137,7 +137,7 @@ export function ContactsSection({
   );
 
   return (
-    <section className="bg-bg-page">
+    <section id="contacts" className="scroll-mt-20 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-20 sm:px-6 lg:px-14">
         <header className="ds-section-x-padding flex items-center gap-4">
           <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
@@ -195,11 +195,14 @@ export function ContactsSection({
           <Table className="min-w-[920px] table-fixed">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="w-[20%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
-                <TableHead className="w-[22%] text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
-                <TableHead className="w-[24%] text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
-                <TableHead className="w-[20%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
-                <TableHead className="w-[14%] text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
+                <TableHead className="w-[16%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
+                <TableHead className="w-[21%] text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
+                <TableHead className="w-[33%] text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
+                <TableHead className="w-[30%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
+                {/* Link is a fixed-width column: the "Get Directions" button has a
+                    fixed intrinsic width, so a percentage column would starve it on
+                    narrower tables. The other four columns share the rest. */}
+                <TableHead className="w-[188px] text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -233,9 +236,23 @@ export function ContactsSection({
                   </TableCell>
                   <TableCell className="py-5 align-top">
                     <div className="flex flex-wrap gap-1.5">
-                      {c.categories.map((slug) => (
-                        <Tag key={slug}>{labelBySlug[slug] ?? slug}</Tag>
-                      ))}
+                      {c.categories.map((slug) => {
+                        const label = labelBySlug[slug] ?? slug;
+                        return (
+                          <button
+                            key={slug}
+                            type="button"
+                            onClick={() => setCategory(slug)}
+                            aria-label={`Filter contacts by ${label}`}
+                            title={`Show only ${label}`}
+                            className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
+                          >
+                            <Tag className="max-w-full cursor-pointer whitespace-normal py-1 text-center leading-snug transition-colors hover:border-primary hover:text-primary">
+                              {label}
+                            </Tag>
+                          </button>
+                        );
+                      })}
                     </div>
                   </TableCell>
                   <TableCell className="py-5 align-top">

@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
+import {
+  IconArrowDown,
+  IconArrowRight,
+  IconInfo,
+  IconNotes,
+} from "@/components/icons/ds-icons";
 import { buttonVariants } from "@/components/ui/button";
 
 export function TopicsGrid({ topics, categorySlug }) {
@@ -17,9 +22,27 @@ export function TopicsGrid({ topics, categorySlug }) {
           </header>
 
           {topics.length === 0 ? (
-            <p className="text-ds-s text-muted-foreground">
-              Articles for this category will appear here.
-            </p>
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="grid size-14 place-items-center rounded-2xl bg-secondary text-primary">
+                <IconNotes className="size-6" />
+              </div>
+              <div className="max-w-md">
+                <h3 className="font-heading text-ds-xl font-bold text-brand-dark">
+                  Guides are coming soon
+                </h3>
+                <p className="mt-2 text-ds-s font-medium text-muted-foreground">
+                  We&apos;re still preparing articles for this service. In the
+                  meantime, the contacts below can help you directly.
+                </p>
+              </div>
+              <Link
+                href="#contacts"
+                className={buttonVariants({ variant: "secondary" })}
+              >
+                See contacts
+                <IconArrowDown className="size-4" />
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
               {topics.map((topic) => (

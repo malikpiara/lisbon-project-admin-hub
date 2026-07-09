@@ -20,15 +20,15 @@ export function AllContacts({
     label: s.title,
   }));
 
+  // ContactsSection renders its own <section id="contacts"> anchor + scroll-margin,
+  // so no wrapper is needed here (a wrapper would duplicate the id).
   return (
-    <section id="contacts" className="scroll-mt-24">
-      <ContactsSection
-        title="All Contacts"
-        subtitle="Key contact information across every service in Lisbon"
-        contacts={contacts}
-        categories={categories}
-        defaultCategory="all"
-      />
-    </section>
+    <ContactsSection
+      title="All Contacts"
+      subtitle="Key contact information across every service in Lisbon"
+      contacts={contacts}
+      categories={categories}
+      defaultCategory="all"
+    />
   );
 }
