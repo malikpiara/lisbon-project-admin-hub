@@ -2,7 +2,7 @@ import { ViewTransition } from "react";
 
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { ZapierChatbot } from "@/components/site/zapier-chatbot";
+import { SiteChatShell } from "@/components/site/zapier-chatbot";
 import { JsonLd } from "@/components/seo/json-ld";
 import { organizationSchema, webSiteSchema } from "@/lib/site";
 
@@ -12,6 +12,10 @@ export default function SiteLayout({ children }) {
       {/* Site-wide structured data: the org (anchor entity for search + AI) and
           the website, rendered on every public page's initial HTML. */}
       <JsonLd data={[organizationSchema(), webSiteSchema()]} />
+      {/* SiteChatShell wraps the whole body so the chat panel can *push* the
+          content left on desktop when open (it owns the open/close state). It
+          also renders the launcher + panel itself. */}
+      <SiteChatShell>
       <SiteHeader />
       {/* Cross-fade the page content on route change — the same native
           <ViewTransition> boundary the admin uses (admin/layout.js). The header,
@@ -31,7 +35,7 @@ export default function SiteLayout({ children }) {
         </ViewTransition>
       </main>
       <SiteFooter />
-      <ZapierChatbot />
+      </SiteChatShell>
     </>
   );
 }

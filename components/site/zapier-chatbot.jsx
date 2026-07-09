@@ -5,6 +5,12 @@ import Script from "next/script";
 import { usePostHog } from "posthog-js/react";
 
 import { IconChatBot } from "@/components/icons/ds-icons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const CHATBOT_ID = "cmeqzl2cf001e10atrngwijr8";
@@ -22,7 +28,11 @@ function subscribe() {
 // chrome are all ours — matching the DS spec. Zapier still drives the chat
 // itself. The embed is mounted only on first open, so its bundle never loads
 // for visitors who don't open the chat.
-export function ZapierChatbot() {
+//
+// This is also the page shell: it wraps the site body so that on desktop the
+// open panel can *push* the content left (the body gets `md:mr-[--chat-w]`).
+// The panel width and the push margin must stay equal — both are 380px.
+export function SiteChatShell({ children }) {
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
   const [loaded, setLoaded] = useState(false); // Zapier embed mounted (kept once true)
   const [open, setOpen] = useState(false);
@@ -72,28 +82,56 @@ export function ZapierChatbot() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
 
-  if (!mounted) return null;
-
   return (
     <>
-      {/* Launcher — 50px circle, hidden while the panel is open */}
-      <button
-        ref={launcherRef}
-        type="button"
-        onClick={toggle}
-        aria-label="Abrir o chat de ajuda"
-        aria-expanded={open}
-        style={{ backgroundColor: LAUNCHER_ORANGE }}
+      {/* Page body — shrinks on desktop when the panel is open, so the sidebar
+          pushes content left rather than overlaying it. `380px` matches the
+          panel width below; keep them equal. No push below `md` (mobile card). */}
+      <div
         className={cn(
-          "fixed right-6 bottom-6 z-[60] grid size-[50px] cursor-pointer place-items-center rounded-full text-white",
-          "shadow-[0_4px_4px_0_#BDBDBD] transition-[transform,opacity,filter] duration-200 ease-out",
-          "hover:brightness-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#F57600]/40",
-          "motion-reduce:transition-none",
-          open && "pointer-events-none scale-90 opacity-0",
+          "flex min-h-dvh flex-col transition-[margin] duration-200 ease-out motion-reduce:transition-none",
+          mounted && open && "md:mr-[380px]",
         )}
       >
-        <IconChatBot className="size-[22px]" />
-      </button>
+        {children}
+      </div>
+
+      {/* The launcher + panel only exist once mounted (client-only, needs refs
+          and the Zapier embed). Until then we still render the body above so
+          the server/client markup for the page content matches. */}
+      {!mounted ? null : (
+        <>
+      {/* Launcher — 50px circle, hidden while the panel is open. We pass our own
+          <button> via Base UI's `render` prop (NOT props on TooltipTrigger): that
+          keeps React binding onClick/ref to *our* element, while the Trigger merges
+          its hover/focus behavior on top. Tooltip stays closed while the panel is
+          open (launcher is pointer-events-none). */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                ref={launcherRef}
+                type="button"
+                onClick={toggle}
+                aria-label="Abrir o chat de ajuda"
+                aria-expanded={open}
+                style={{ backgroundColor: LAUNCHER_ORANGE }}
+                className={cn(
+                  "fixed right-6 bottom-6 z-[60] grid size-[50px] cursor-pointer place-items-center rounded-full text-white",
+                  "shadow-[0_4px_4px_0_#BDBDBD] transition-[transform,opacity,filter] duration-200 ease-out",
+                  "hover:brightness-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#F57600]/40",
+                  "motion-reduce:transition-none",
+                  open && "pointer-events-none scale-90 opacity-0",
+                )}
+              >
+                <IconChatBot className="size-[22px]" />
+              </button>
+            }
+          />
+          <TooltipContent side="left">Need help?</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Panel — mounted on first open, kept mounted so the chat is preserved */}
       {loaded && (
@@ -105,11 +143,16 @@ export function ZapierChatbot() {
           // into it and removes it from the a11y tree in one go.
           inert={!open}
           className={cn(
-            "fixed right-6 bottom-6 z-50 flex flex-col overflow-hidden rounded-lg border border-border bg-card",
-            "h-[600px] max-h-[calc(100dvh-6rem)] w-[380px] max-w-[calc(100vw-2rem)]",
-            "origin-bottom-right shadow-[0_8px_30px_rgba(0,0,0,0.12)]",
+            "fixed z-50 flex flex-col overflow-hidden bg-card",
+            // Mobile: full-screen sheet — fills the viewport, edge to edge.
+            "inset-0 h-dvh w-full rounded-none border-0",
+            // Desktop: full-height sidebar docked flush to the right edge.
+            "md:left-auto md:w-[380px] md:border-l md:border-border",
+            // Mobile sheet slides up from the bottom; desktop sidebar slides in from the right.
             "transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none",
-            open ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
+            open
+              ? "translate-y-0 opacity-100 md:translate-x-0"
+              : "pointer-events-none translate-y-full opacity-0 md:translate-y-0 md:translate-x-full",
           )}
         >
           <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
@@ -144,6 +187,8 @@ export function ZapierChatbot() {
             ></zapier-interfaces-chatbot-embed>
           </div>
         </div>
+      )}
+        </>
       )}
     </>
   );
