@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -12,10 +12,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
-  DirtyDot,
   SelectField,
   HeadingComboField,
 } from "@/components/admin/field";
@@ -23,6 +21,11 @@ import {
   ARTICLE_SECTION_TEMPLATES,
   SECTION_HEADING_PRESETS,
 } from "@/lib/article-section-templates";
+import {
+  SectionBlocks,
+  blocksFromPayload,
+  blocksToPayload,
+} from "@/components/admin/block-editor";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -53,21 +56,9 @@ function fromPayload(topic) {
       _k: nextRowKey(),
       heading: s.heading ?? "",
       lead: s.lead ?? "",
-      body: s.body ?? "",
-      bullets: (s.bullets ?? []).map((b) => b.text).join("\n"),
-      ordered: s.ordered ?? false,
-      cta: s.cta ?? "",
-      ctaHref: s.ctaHref ?? "",
-      // Optional two-column reference table. Items are edited as a newline
-      // textarea (one bullet per line), same as `bullets`.
-      table: {
-        title: s.table?.title ?? "",
-        rows: (s.table?.rows ?? []).map((r) => ({
-          _k: nextRowKey(),
-          label: r.label ?? "",
-          items: (r.items ?? []).map((i) => i.text).join("\n"),
-        })),
-      },
+      // Ordered content blocks. blocksFromPayload synthesises them from the
+      // deprecated body/bullets/table/cta fields when a section predates blocks.
+      blocks: blocksFromPayload(s),
     })),
     keyLinks: (a.keyLinks ?? []).map((l) => ({
       _k: nextRowKey(),
@@ -89,33 +80,13 @@ function toPayload(d) {
     description: d.description,
     article: {
       heroLead: d.heroLead,
+      // Only heading/lead/blocks are written; the deprecated body/bullets/table/
+      // cta fields are intentionally omitted, so saving migrates the section to
+      // blocks and clears the old columns.
       sections: d.sections.map((s) => ({
         heading: s.heading,
         lead: s.lead,
-        body: s.body,
-        bullets: s.bullets
-          .split("\n")
-          .map((t) => t.trim())
-          .filter(Boolean)
-          .map((text) => ({ text })),
-        ordered: s.ordered,
-        cta: s.cta,
-        ctaHref: s.ctaHref,
-        table: {
-          title: s.table?.title ?? "",
-          rows: (s.table?.rows ?? [])
-            .map((r) => ({
-              label: r.label,
-              items: (r.items ?? "")
-                .split("\n")
-                .map((t) => t.trim())
-                .filter(Boolean)
-                .map((text) => ({ text })),
-            }))
-            // Drop rows with no label and no items so an empty editor row isn't
-            // persisted as a blank table row.
-            .filter((r) => (r.label ?? "").trim() || r.items.length),
-        },
+        blocks: blocksToPayload(s.blocks),
       })),
       keyLinks: d.keyLinks.map((l) => ({ label: l.label, href: l.href })),
       faqLead: d.faqLead,
@@ -195,34 +166,26 @@ export function ArticleEditor({
       sections: d.sections.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
     }));
   };
-  const emptyTable = () => ({ title: "", rows: [] });
-  // A template's `table` (if any) uses the same editor shape (items as newline
-  // strings); we only need to stamp client-only `_k`s on its rows.
-  const tableFromTemplate = (t) =>
-    t.table
-      ? {
-          title: t.table.title ?? "",
-          rows: (t.table.rows ?? []).map((r) => ({
-            _k: nextRowKey(),
-            label: r.label ?? "",
-            items: r.items ?? "",
-          })),
-        }
-      : emptyTable();
+  // A template's `blocks` use the editor shape (items as newline strings); stamp
+  // client-only `_k`s on each block (and each table row) before adding.
+  const blocksFromTemplate = (t) =>
+    (t.blocks ?? []).map((b) =>
+      b.type === "table"
+        ? { ...b, _k: nextRowKey(), rows: (b.rows ?? []).map((r) => ({ ...r, _k: nextRowKey() })) }
+        : { ...b, _k: nextRowKey() }
+    );
   const addSection = () => {
     setDraft((d) => ({
       ...d,
       sections: [
         ...d.sections,
-        { _k: nextRowKey(), heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "", table: emptyTable() },
+        { _k: nextRowKey(), heading: "New section", lead: "", blocks: [] },
       ],
     }));
   };
   // Scaffold the five standard sections most articles follow. Idempotent:
-  // only appends templates whose heading isn't already present, so a second
-  // click (or a half-filled article) never duplicates rows. The Step-by-Step
-  // template carries `ordered: true`, so it lands as a numbered list, and
-  // "Documents Required" carries a starter reference table.
+  // only appends templates whose heading isn't already present. Step-by-Step
+  // starts with an empty numbered list; "Documents Required" with a starter table.
   const insertStandardSections = () => {
     setDraft((d) => {
       const existing = new Set(d.sections.map((s) => s.heading.trim()));
@@ -232,12 +195,7 @@ export function ArticleEditor({
         _k: nextRowKey(),
         heading: t.heading,
         lead: "",
-        body: "",
-        bullets: "",
-        ordered: t.ordered,
-        cta: "",
-        ctaHref: "",
-        table: tableFromTemplate(t),
+        blocks: blocksFromTemplate(t),
       }));
       return { ...d, sections: [...d.sections, ...additions] };
     });
@@ -245,34 +203,6 @@ export function ArticleEditor({
   const removeSection = (i) => {
     setDraft((d) => ({ ...d, sections: d.sections.filter((_, idx) => idx !== i) }));
   };
-  // --- Reference table (per section) ---
-  const updateSectionTable = (i, updater) => {
-    setDraft((d) => ({
-      ...d,
-      sections: d.sections.map((s, idx) => {
-        if (idx !== i) return s;
-        const table = s.table ?? emptyTable();
-        return { ...s, table: updater(table) };
-      }),
-    }));
-  };
-  const setTableTitle = (i, title) =>
-    updateSectionTable(i, (t) => ({ ...t, title }));
-  const addTableRow = (i) =>
-    updateSectionTable(i, (t) => ({
-      ...t,
-      rows: [...t.rows, { _k: nextRowKey(), label: "", items: "" }],
-    }));
-  const setTableRow = (i, j, patch) =>
-    updateSectionTable(i, (t) => ({
-      ...t,
-      rows: t.rows.map((r, k) => (k === j ? { ...r, ...patch } : r)),
-    }));
-  const removeTableRow = (i, j) =>
-    updateSectionTable(i, (t) => ({
-      ...t,
-      rows: t.rows.filter((_, k) => k !== j),
-    }));
   const moveSection = (i, dir) => {
     const j = i + dir;
     if (j < 0 || j >= draft.sections.length) return;
@@ -671,168 +601,35 @@ export function ArticleEditor({
                       marked={moved}
                       flashing={flashSectionKey === s._k}
                     >
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <HeadingComboField
-                          label="Heading"
-                          required
-                          value={s.heading}
-                          onChange={(v) => setSection(i, { heading: v })}
-                          onPickPreset={(heading) => {
-                            const t = ARTICLE_SECTION_TEMPLATES.find(
-                              (t) => t.heading === heading
-                            );
-                            setSection(i, {
-                              heading,
-                              // Applying a preset also sets its list style, so
-                              // the Step-by-Step guide always lands numbered.
-                              ...(t ? { ordered: t.ordered } : {}),
-                            });
-                          }}
-                          presets={SECTION_HEADING_PRESETS}
-                          dirty={fieldDirty(s.heading, sc?.heading)}
-                        />
-                        <Field
-                          label="Lead"
-                          hint="Teal intro line above the body."
-                          value={s.lead}
-                          onChange={(v) => setSection(i, { lead: v })}
-                          dirty={fieldDirty(s.lead, sc?.lead)}
-                        />
-                        <Field
-                          className="sm:col-span-2"
-                          label="Body"
-                          hint="Paragraphs — separate them with a blank line."
-                          value={s.body}
-                          onChange={(v) => setSection(i, { body: v })}
-                          dirty={fieldDirty(s.body, sc?.body)}
-                          textarea
-                          rows={4}
-                        />
-                        <Field
-                          className="sm:col-span-2"
-                          label="Bullet list"
-                          hint="One item per line. Leave blank for no list."
-                          value={s.bullets}
-                          onChange={(v) => setSection(i, { bullets: v })}
-                          dirty={fieldDirty(s.bullets, sc?.bullets)}
-                          textarea
-                          rows={3}
-                        />
-                        <label className="flex items-center gap-2 text-ds-xs font-medium text-foreground sm:col-span-2">
-                          <Checkbox
-                            checked={s.ordered === true}
-                            onCheckedChange={(checked) =>
-                              setSection(i, { ordered: checked === true })
+                      <div className="space-y-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <HeadingComboField
+                            label="Heading"
+                            required
+                            value={s.heading}
+                            onChange={(v) => setSection(i, { heading: v })}
+                            onPickPreset={(heading) =>
+                              setSection(i, { heading })
                             }
+                            presets={SECTION_HEADING_PRESETS}
+                            dirty={fieldDirty(s.heading, sc?.heading)}
                           />
-                          Numbered list — show items as 1, 2, 3 instead of bullets
-                          {fieldDirty(s.ordered, sc?.ordered) ? <DirtyDot /> : null}
-                        </label>
-                        <Field
-                          className="sm:col-span-2"
-                          label="Button label"
-                          hint="Optional. Adds a button to this section; leave blank for none."
-                          value={s.cta}
-                          onChange={(v) => setSection(i, { cta: v })}
-                          dirty={fieldDirty(s.cta, sc?.cta)}
-                        />
-                        <Field
-                          className="sm:col-span-2"
-                          label="Button link"
-                          hint="Where the button points. Use /path for an internal page or https://… for an external site. Leave blank to link to the service page."
-                          value={s.ctaHref}
-                          onChange={(v) => setSection(i, { ctaHref: v })}
-                          dirty={fieldDirty(s.ctaHref, sc?.ctaHref)}
-                          placeholder="/path or https://…"
-                        />
-
-                        <div className="sm:col-span-2 rounded-lg border-2 border-border bg-muted/40 p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="min-w-0">
-                              <h4 className="text-ds-xs font-bold text-foreground">
-                                Reference table
-                              </h4>
-                              <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
-                                A two-column table — a label paired with a
-                                bulleted list. Optional; leave empty for none.
-                              </p>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => addTableRow(i)}
-                            >
-                              <Plus className="size-3.5" />
-                              Add row
-                            </Button>
-                          </div>
-
-                          {s.table?.rows?.length ? (
-                            <div className="mt-4 space-y-3">
-                              <Field
-                                label="Table title"
-                                hint="Header row spanning both columns, e.g. “Documents Required”. Optional."
-                                value={s.table.title}
-                                onChange={(v) => setTableTitle(i, v)}
-                                dirty={fieldDirty(
-                                  s.table.title,
-                                  sc?.table?.title
-                                )}
-                              />
-                              {s.table.rows.map((row, j) => {
-                                const src = (sc?.table?.rows ?? []).find(
-                                  (r) => r._k === row._k
-                                );
-                                return (
-                                  <div
-                                    key={row._k}
-                                    className="rounded-lg border-2 border-border bg-card p-3"
-                                  >
-                                    <div className="mb-2 flex items-center justify-between">
-                                      <span className="text-ds-xxs font-bold text-muted-foreground">
-                                        Row {j + 1}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        onClick={() => removeTableRow(i, j)}
-                                        aria-label={`Remove row ${j + 1}`}
-                                        title="Remove row"
-                                        className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                                      >
-                                        <Trash2
-                                          className="size-4"
-                                          strokeWidth={2}
-                                        />
-                                      </button>
-                                    </div>
-                                    <div className="grid gap-3">
-                                      <Field
-                                        label="Label"
-                                        required
-                                        hint="The left column, e.g. “Proof of identity”."
-                                        value={row.label}
-                                        onChange={(v) =>
-                                          setTableRow(i, j, { label: v })
-                                        }
-                                        dirty={fieldDirty(row.label, src?.label)}
-                                      />
-                                      <Field
-                                        label="Items"
-                                        hint="The right column — one bullet per line. Links: [text](https://…)."
-                                        textarea
-                                        rows={4}
-                                        value={row.items}
-                                        onChange={(v) =>
-                                          setTableRow(i, j, { items: v })
-                                        }
-                                        dirty={fieldDirty(row.items, src?.items)}
-                                      />
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : null}
+                          <Field
+                            label="Lead"
+                            hint="Teal intro line above the content."
+                            value={s.lead}
+                            onChange={(v) => setSection(i, { lead: v })}
+                            dirty={fieldDirty(s.lead, sc?.lead)}
+                          />
+                        </div>
+                        <div>
+                          <p className="mb-2 text-ds-xs font-bold text-foreground">
+                            Content
+                          </p>
+                          <SectionBlocks
+                            blocks={s.blocks}
+                            onChange={(bl) => setSection(i, { blocks: bl })}
+                          />
                         </div>
                       </div>
                     </EditorRow>

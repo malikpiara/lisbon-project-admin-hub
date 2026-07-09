@@ -305,8 +305,67 @@ export interface Topic {
       | {
           heading: string;
           lead?: string | null;
+          blocks?:
+            | (
+                | {
+                    /**
+                     * Paragraphs separated by a blank line. Links: [text](https://…) or a pasted web address.
+                     */
+                    text: string;
+                    id?: string | null;
+                    blockName?: string | null;
+                    blockType: 'text';
+                  }
+                | {
+                    /**
+                     * Numbered (1, 2, 3) instead of bulleted
+                     */
+                    ordered?: boolean | null;
+                    items?:
+                      | {
+                          text: string;
+                          id?: string | null;
+                        }[]
+                      | null;
+                    id?: string | null;
+                    blockName?: string | null;
+                    blockType: 'list';
+                  }
+                | {
+                    /**
+                     * Header row spanning both columns (e.g. “Documents Required”). Optional.
+                     */
+                    title?: string | null;
+                    rows?:
+                      | {
+                          label: string;
+                          items?:
+                            | {
+                                text: string;
+                                id?: string | null;
+                              }[]
+                            | null;
+                          id?: string | null;
+                        }[]
+                      | null;
+                    id?: string | null;
+                    blockName?: string | null;
+                    blockType: 'table';
+                  }
+                | {
+                    label: string;
+                    /**
+                     * /path internal or https://… external; blank links to the service page
+                     */
+                    href?: string | null;
+                    id?: string | null;
+                    blockName?: string | null;
+                    blockType: 'button';
+                  }
+              )[]
+            | null;
           /**
-           * Paragraphs separated by a blank line
+           * Deprecated — use blocks. Paragraphs separated by a blank line
            */
           body?: string | null;
           bullets?:
@@ -581,6 +640,57 @@ export interface TopicsSelect<T extends boolean = true> {
           | {
               heading?: T;
               lead?: T;
+              blocks?:
+                | T
+                | {
+                    text?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    list?:
+                      | T
+                      | {
+                          ordered?: T;
+                          items?:
+                            | T
+                            | {
+                                text?: T;
+                                id?: T;
+                              };
+                          id?: T;
+                          blockName?: T;
+                        };
+                    table?:
+                      | T
+                      | {
+                          title?: T;
+                          rows?:
+                            | T
+                            | {
+                                label?: T;
+                                items?:
+                                  | T
+                                  | {
+                                      text?: T;
+                                      id?: T;
+                                    };
+                                id?: T;
+                              };
+                          id?: T;
+                          blockName?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
               body?: T;
               bullets?:
                 | T

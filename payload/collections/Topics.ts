@@ -78,9 +78,99 @@ export const Topics: CollectionConfig = {
             { name: "heading", type: "text", required: true },
             { name: "lead", type: "textarea" },
             {
+              // Composable content: an ordered list of blocks (text / list /
+              // table / button) in any order. Replaces the fixed body→bullets→
+              // table→cta template below. Sections created/saved before this
+              // field are read via lib/content.js synthesis from the deprecated
+              // fields, so no data migration is required.
+              name: "blocks",
+              type: "blocks",
+              blocks: [
+                {
+                  slug: "text",
+                  labels: { singular: "Text", plural: "Text blocks" },
+                  fields: [
+                    {
+                      name: "text",
+                      type: "textarea",
+                      required: true,
+                      admin: {
+                        description:
+                          "Paragraphs separated by a blank line. Links: [text](https://…) or a pasted web address.",
+                      },
+                    },
+                  ],
+                },
+                {
+                  slug: "list",
+                  labels: { singular: "List", plural: "Lists" },
+                  fields: [
+                    {
+                      name: "ordered",
+                      type: "checkbox",
+                      defaultValue: false,
+                      admin: { description: "Numbered (1, 2, 3) instead of bulleted" },
+                    },
+                    {
+                      name: "items",
+                      type: "array",
+                      labels: { singular: "Item", plural: "Items" },
+                      fields: [{ name: "text", type: "text", required: true }],
+                    },
+                  ],
+                },
+                {
+                  slug: "table",
+                  labels: { singular: "Table", plural: "Tables" },
+                  fields: [
+                    {
+                      name: "title",
+                      type: "text",
+                      admin: {
+                        description:
+                          "Header row spanning both columns (e.g. “Documents Required”). Optional.",
+                      },
+                    },
+                    {
+                      name: "rows",
+                      type: "array",
+                      labels: { singular: "Table row", plural: "Table rows" },
+                      fields: [
+                        { name: "label", type: "text", required: true },
+                        {
+                          name: "items",
+                          type: "array",
+                          labels: { singular: "Item", plural: "Items" },
+                          fields: [{ name: "text", type: "text", required: true }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  slug: "button",
+                  labels: { singular: "Button", plural: "Buttons" },
+                  fields: [
+                    { name: "label", type: "text", required: true },
+                    {
+                      name: "href",
+                      type: "text",
+                      admin: {
+                        description:
+                          "/path internal or https://… external; blank links to the service page",
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            // ── Deprecated (pre-blocks) fields — kept so existing content is
+            // synthesised into blocks on read; removed once all articles are
+            // re-saved. Do not surface in the new editor. ──
+            {
               name: "body",
               type: "textarea",
-              admin: { description: "Paragraphs separated by a blank line" },
+              admin: { description: "Deprecated — use blocks. Paragraphs separated by a blank line" },
             },
             {
               name: "bullets",

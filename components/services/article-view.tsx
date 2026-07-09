@@ -28,22 +28,26 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  defaultArticle,
-  splitLines,
-  splitParagraphs,
-} from "@/lib/article-defaults";
+import { splitParagraphs } from "@/lib/article-defaults";
 import { cn } from "@/lib/utils";
 
+const EMPTY_ARTICLE: Article = {
+  heroLead: "",
+  sections: [],
+  keyLinks: [],
+  faqLead: "",
+  faqs: [],
+};
+
+type ContentBlock =
+  | { type: "text"; body: string }
+  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "table"; title: string; rows: ReferenceTableData["rows"] }
+  | { type: "button"; label: string; href: string };
 type ArticleSection = {
   heading: string;
   lead: string;
-  body: string;
-  bullets: string;
-  ordered?: boolean;
-  cta: string;
-  ctaHref?: string;
-  table?: ReferenceTableData;
+  blocks: ContentBlock[];
 };
 type Faq = { question: string; answer: string };
 type Article = {
@@ -90,7 +94,7 @@ export function ArticleView({
 
   if (!service || !topic) return null;
 
-  const article: Article = topic.article ?? defaultArticle(topic);
+  const article: Article = topic.article ?? EMPTY_ARTICLE;
   // Per the article spec (Proposal 949:4028), content-section chips carry the
   // service's category glyph — the same one as its home tile — while the FAQ
   // section keeps the generic info icon.
@@ -142,13 +146,7 @@ export function ArticleView({
           <KeyLinks links={article.keyLinks ?? []} />
 
           {article.sections.map((s, index) => {
-            const paragraphs = splitParagraphs(s.body);
-            const bullets = splitLines(s.bullets);
             const panel = index % 2 === 0;
-            const ListTag = s.ordered ? "ol" : "ul";
-            const listClass = s.ordered ? "list-decimal" : "list-disc";
-            const ctaHref = s.ctaHref?.trim() || `/services/${service.slug}`;
-            const ctaExternal = /^https?:/i.test(ctaHref);
             return (
               <article
                 key={`${s.heading}-${index}`}
@@ -172,46 +170,80 @@ export function ArticleView({
                       {renderInline(s.lead, `lead-${index}`)}
                     </p>
                   ) : null}
-                  {paragraphs.length || bullets.length ? (
-                    <div className="mt-4 max-w-3xl space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep">
-                      {paragraphs.map((p, i) => (
-                        <p key={i}>{renderInline(p, `p-${index}-${i}`)}</p>
-                      ))}
-                      {bullets.length ? (
-                        <ListTag className={cn(listClass, "space-y-1 pl-6")}>
-                          {bullets.map((b, i) => (
-                            <li key={i}>{renderInline(b, `b-${index}-${i}`)}</li>
-                          ))}
-                        </ListTag>
-                      ) : null}
+                  {s.blocks.length ? (
+                    <div className="mt-4 max-w-3xl space-y-4">
+                      {s.blocks.map((b, i) => {
+                        const k = `${index}-${i}`;
+                        if (b.type === "text") {
+                          const ps = splitParagraphs(b.body);
+                          return ps.length ? (
+                            <div
+                              key={i}
+                              className="space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep"
+                            >
+                              {ps.map((p, j) => (
+                                <p key={j}>{renderInline(p, `t-${k}-${j}`)}</p>
+                              ))}
+                            </div>
+                          ) : null;
+                        }
+                        if (b.type === "list") {
+                          const ListTag = b.ordered ? "ol" : "ul";
+                          const listClass = b.ordered
+                            ? "list-decimal"
+                            : "list-disc";
+                          return b.items.length ? (
+                            <ListTag
+                              key={i}
+                              className={cn(
+                                listClass,
+                                "space-y-1 pl-6 text-ds-xs font-medium leading-relaxed text-brand-deep"
+                              )}
+                            >
+                              {b.items.map((it, j) => (
+                                <li key={j}>{renderInline(it, `l-${k}-${j}`)}</li>
+                              ))}
+                            </ListTag>
+                          ) : null;
+                        }
+                        if (b.type === "table") {
+                          return b.rows.length ? (
+                            <ReferenceTable
+                              key={i}
+                              title={b.title}
+                              rows={b.rows}
+                            />
+                          ) : null;
+                        }
+                        if (b.type === "button" && b.label.trim()) {
+                          const href =
+                            b.href?.trim() || `/services/${service.slug}`;
+                          const external = /^https?:/i.test(href);
+                          return (
+                            <div key={i}>
+                              {external ? (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={buttonVariants({ className: "w-fit" })}
+                                >
+                                  {b.label}
+                                </a>
+                              ) : (
+                                <Link
+                                  href={href}
+                                  className={buttonVariants({ className: "w-fit" })}
+                                >
+                                  {b.label}
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
                     </div>
-                  ) : null}
-                  {s.table?.rows?.length ? (
-                    <div className="mt-6">
-                      <ReferenceTable
-                        title={s.table.title}
-                        rows={s.table.rows}
-                      />
-                    </div>
-                  ) : null}
-                  {s.cta ? (
-                    ctaExternal ? (
-                      <a
-                        href={ctaHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={buttonVariants({ className: "mt-6 w-fit" })}
-                      >
-                        {s.cta}
-                      </a>
-                    ) : (
-                      <Link
-                        href={ctaHref}
-                        className={buttonVariants({ className: "mt-6 w-fit" })}
-                      >
-                        {s.cta}
-                      </Link>
-                    )
                   ) : null}
                 </div>
               </article>

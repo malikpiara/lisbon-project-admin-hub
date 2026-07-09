@@ -49,88 +49,136 @@ export function ArticlePreview({ draft, topicTitle }) {
           </div>
         ) : null}
 
-        {draft.sections.map((s, i) => {
-          const paragraphs = splitParagraphs(s.body);
-          const bullets = splitLines(s.bullets);
-          const ListTag = s.ordered ? "ol" : "ul";
-          const listClass = s.ordered ? "list-decimal" : "list-disc";
-          // Show every added row (even before it's filled) so the table appears
-          // the moment "Add row" is clicked — immediate feedback that a table is
-          // taking shape. Empty label/items render as muted placeholders.
-          const tableRows = s.table?.rows ?? [];
-          return (
-            <article key={i}>
-              <h3 className="font-heading text-ds-s font-bold text-brand-dark">
-                {s.heading || "Untitled section"}
-              </h3>
-              {s.lead ? (
-                <p className="mt-1.5 text-ds-xs font-bold text-primary">
-                  {renderInline(s.lead, `pv-lead-${i}`)}
-                </p>
-              ) : null}
-              {paragraphs.length || bullets.length ? (
-                <div className="mt-2 space-y-2 text-ds-xxs font-medium leading-relaxed text-brand-deep">
-                  {paragraphs.map((p, j) => (
-                    <p key={j}>{renderInline(p, `pv-p-${i}-${j}`)}</p>
-                  ))}
-                  {bullets.length ? (
-                    <ListTag className={cn(listClass, "space-y-0.5 pl-5")}>
-                      {bullets.map((b, j) => (
-                        <li key={j}>{renderInline(b, `pv-b-${i}-${j}`)}</li>
-                      ))}
-                    </ListTag>
-                  ) : null}
-                </div>
-              ) : null}
-              {tableRows.length ? (
-                <div className="mt-3 overflow-hidden rounded-md border-2 border-border">
-                  {s.table.title ? (
-                    <p className="bg-secondary/50 px-3 py-1.5 text-center text-ds-xxs font-bold uppercase tracking-wide text-primary">
-                      {s.table.title}
-                    </p>
-                  ) : null}
-                  {tableRows.map((r, j) => {
-                    const items = splitLines(r.items);
+        {draft.sections.map((s, i) => (
+          <article key={s._k ?? i}>
+            <h3 className="font-heading text-ds-s font-bold text-brand-dark">
+              {s.heading || "Untitled section"}
+            </h3>
+            {s.lead ? (
+              <p className="mt-1.5 text-ds-xs font-bold text-primary">
+                {renderInline(s.lead, `pv-lead-${i}`)}
+              </p>
+            ) : null}
+            {/* Render every block, even before it's filled, so a block appears
+                the moment it's added — immediate feedback. Empty content shows a
+                muted placeholder. */}
+            {s.blocks?.length ? (
+              <div className="mt-2 space-y-3">
+                {s.blocks.map((b, j) => {
+                  const bk = `${i}-${j}`;
+                  if (b.type === "text") {
+                    const ps = splitParagraphs(b.body);
                     return (
                       <div
-                        key={r._k ?? j}
-                        className="flex gap-3 border-t-2 border-border px-3 py-2 first:border-t-0"
+                        key={b._k ?? j}
+                        className="space-y-2 text-ds-xxs font-medium leading-relaxed text-brand-deep"
                       >
-                        <p className="w-1/3 shrink-0 text-ds-xxs font-bold text-foreground">
-                          {r.label?.trim() ? (
-                            r.label
-                          ) : (
-                            <span className="font-medium text-muted-foreground/60 italic">
-                              Label
-                            </span>
-                          )}
-                        </p>
-                        {items.length ? (
-                          <ul className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep">
-                            {items.map((it, k) => (
-                              <li key={k}>
-                                {renderInline(it, `pv-t-${i}-${j}-${k}`)}
-                              </li>
-                            ))}
-                          </ul>
+                        {ps.length ? (
+                          ps.map((p, k) => (
+                            <p key={k}>{renderInline(p, `pv-x-${bk}-${k}`)}</p>
+                          ))
                         ) : (
-                          <span className="text-ds-xxs font-medium text-muted-foreground/60 italic">
-                            Items…
-                          </span>
+                          <p className="text-muted-foreground/60 italic">
+                            Empty paragraph…
+                          </p>
                         )}
                       </div>
                     );
-                  })}
-                </div>
-              ) : null}
-              {s.cta ? (
-                <span className="mt-3 inline-flex rounded-lg bg-primary px-3 py-1.5 text-ds-xxs font-bold text-primary-foreground">
-                  {s.cta}
-                </span>
-              ) : null}
-            </article>
-          );
-        })}
+                  }
+                  if (b.type === "list") {
+                    const items = splitLines(b.items);
+                    const ListTag = b.ordered ? "ol" : "ul";
+                    const listClass = b.ordered ? "list-decimal" : "list-disc";
+                    return items.length ? (
+                      <ListTag
+                        key={b._k ?? j}
+                        className={cn(
+                          listClass,
+                          "space-y-0.5 pl-5 text-ds-xxs font-medium leading-relaxed text-brand-deep"
+                        )}
+                      >
+                        {items.map((it, k) => (
+                          <li key={k}>{renderInline(it, `pv-l-${bk}-${k}`)}</li>
+                        ))}
+                      </ListTag>
+                    ) : (
+                      <p
+                        key={b._k ?? j}
+                        className="text-ds-xxs font-medium text-muted-foreground/60 italic"
+                      >
+                        Empty list…
+                      </p>
+                    );
+                  }
+                  if (b.type === "table") {
+                    const rows = b.rows ?? [];
+                    return (
+                      <div
+                        key={b._k ?? j}
+                        className="overflow-hidden rounded-md border-2 border-border"
+                      >
+                        {b.title ? (
+                          <p className="bg-secondary/50 px-3 py-1.5 text-center text-ds-xxs font-bold uppercase tracking-wide text-primary">
+                            {b.title}
+                          </p>
+                        ) : null}
+                        {rows.length ? (
+                          rows.map((r, k) => {
+                            const items = splitLines(r.items);
+                            return (
+                              <div
+                                key={r._k ?? k}
+                                className="flex gap-3 border-t-2 border-border px-3 py-2 first:border-t-0"
+                              >
+                                <p className="w-1/3 shrink-0 text-ds-xxs font-bold text-foreground">
+                                  {r.label?.trim() ? (
+                                    r.label
+                                  ) : (
+                                    <span className="font-medium text-muted-foreground/60 italic">
+                                      Label
+                                    </span>
+                                  )}
+                                </p>
+                                {items.length ? (
+                                  <ul className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep">
+                                    {items.map((it, m) => (
+                                      <li key={m}>
+                                        {renderInline(it, `pv-tb-${bk}-${k}-${m}`)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <span className="text-ds-xxs font-medium text-muted-foreground/60 italic">
+                                    Items…
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p className="px-3 py-2 text-ds-xxs font-medium text-muted-foreground/60 italic">
+                            Add a row…
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (b.type === "button") {
+                    return (
+                      <span
+                        key={b._k ?? j}
+                        className="inline-flex rounded-lg bg-primary px-3 py-1.5 text-ds-xxs font-bold text-primary-foreground"
+                      >
+                        {b.label || "Button"}
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            ) : null}
+          </article>
+        ))}
 
         {draft.faqs.length ? (
           <div className="border-t-2 border-border pt-5">
