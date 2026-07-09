@@ -54,3 +54,6 @@ next-env.d.ts
 payload.db*
 # Payload media uploads (if an upload collection is added)
 /public/media
+
+# Local DB backups written by scripts/purge-topics.ts (may contain content; keep out of git)
+/scripts/backups

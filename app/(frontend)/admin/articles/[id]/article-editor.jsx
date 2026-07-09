@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, FileText, HelpCircle, Link2, Plus } from "lucide-react";
+import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -13,7 +13,16 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, DirtyDot, SelectField } from "@/components/admin/field";
+import {
+  Field,
+  DirtyDot,
+  SelectField,
+  HeadingComboField,
+} from "@/components/admin/field";
+import {
+  ARTICLE_SECTION_TEMPLATES,
+  SECTION_HEADING_PRESETS,
+} from "@/lib/article-section-templates";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -169,6 +178,28 @@ export function ArticleEditor({
         { _k: nextRowKey(), heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "" },
       ],
     }));
+  };
+  // Scaffold the five standard sections most articles follow. Idempotent:
+  // only appends templates whose heading isn't already present, so a second
+  // click (or a half-filled article) never duplicates rows. The Step-by-Step
+  // template carries `ordered: true`, so it lands as a numbered list.
+  const insertStandardSections = () => {
+    setDraft((d) => {
+      const existing = new Set(d.sections.map((s) => s.heading.trim()));
+      const additions = ARTICLE_SECTION_TEMPLATES.filter(
+        (t) => !existing.has(t.heading)
+      ).map((t) => ({
+        _k: nextRowKey(),
+        heading: t.heading,
+        lead: "",
+        body: "",
+        bullets: "",
+        ordered: t.ordered,
+        cta: "",
+        ctaHref: "",
+      }));
+      return { ...d, sections: [...d.sections, ...additions] };
+    });
   };
   const removeSection = (i) => {
     setDraft((d) => ({ ...d, sections: d.sections.filter((_, idx) => idx !== i) }));
@@ -526,17 +557,29 @@ export function ArticleEditor({
           title="Article sections"
           count={draft.sections.length}
           action={
-            <Button size="sm" onClick={addSection}>
-              <Plus className="size-3.5" />
-              Add section
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={insertStandardSections}>
+                <Sparkles className="size-3.5" />
+                Insert standard sections
+              </Button>
+              <Button size="sm" onClick={addSection}>
+                <Plus className="size-3.5" />
+                Add section
+              </Button>
+            </div>
           }
         >
           {draft.sections.length === 0 ? (
             <EmptyState
               icon={FileText}
               label="No sections yet"
-              hint="Sections become the titled content blocks on the article page."
+              hint="Most articles follow the same five sections. Start from the standard set, then edit each one."
+              action={
+                <Button variant="secondary" size="sm" onClick={insertStandardSections}>
+                  <Sparkles className="size-3.5" />
+                  Insert standard sections
+                </Button>
+              }
             />
           ) : (
             <div className="space-y-2">
@@ -560,11 +603,23 @@ export function ArticleEditor({
                       flashing={flashSectionKey === s._k}
                     >
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <Field
+                        <HeadingComboField
                           label="Heading"
                           required
                           value={s.heading}
                           onChange={(v) => setSection(i, { heading: v })}
+                          onPickPreset={(heading) => {
+                            const t = ARTICLE_SECTION_TEMPLATES.find(
+                              (t) => t.heading === heading
+                            );
+                            setSection(i, {
+                              heading,
+                              // Applying a preset also sets its list style, so
+                              // the Step-by-Step guide always lands numbered.
+                              ...(t ? { ordered: t.ordered } : {}),
+                            });
+                          }}
+                          presets={SECTION_HEADING_PRESETS}
                           dirty={fieldDirty(s.heading, sc?.heading)}
                         />
                         <Field

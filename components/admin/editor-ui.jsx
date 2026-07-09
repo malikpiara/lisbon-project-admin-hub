@@ -145,7 +145,7 @@ export function EditorRow({
   );
 }
 
-export function EmptyState({ icon: Icon, label, hint }) {
+export function EmptyState({ icon: Icon, label, hint, action }) {
   return (
     <div className="rounded-lg border-2 border-dashed border-border px-6 py-10 text-center">
       {Icon ? (
@@ -160,6 +160,7 @@ export function EmptyState({ icon: Icon, label, hint }) {
           {hint}
         </p>
       ) : null}
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   );
 }

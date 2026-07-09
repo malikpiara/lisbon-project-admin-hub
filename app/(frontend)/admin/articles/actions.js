@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
+import { DEFAULT_FAQ_SUBHEADING } from "@/lib/article-defaults";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs) and the `service` relationship. `data` is already mapped to Payload's
@@ -85,6 +86,8 @@ export async function createTopic(serviceId) {
       slug: `new-topic-${existing.totalDocs + 1}`,
       service: serviceId,
       order: existing.totalDocs,
+      // Prewrite the FAQ subheading so editors start from a sensible line.
+      article: { faqLead: DEFAULT_FAQ_SUBHEADING },
       createdBy: user.id,
       updatedBy: user.id,
       _status: "published",
