@@ -42,12 +42,12 @@ export default async function InsightsPage() {
   const gapsData = configured ? (gaps ?? []) : [];
 
   return (
-    <main className="mx-auto max-w-5xl px-8 py-10">
+    <main className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header className="mb-10">
         <h1 className="font-heading text-ds-xxl font-bold text-brand-dark">
           Insights
         </h1>
-        <p className="mt-2 text-ds-s text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-ds-s leading-relaxed text-muted-foreground">
           What people are looking for — and what we couldn&rsquo;t answer yet.
         </p>
       </header>

@@ -248,7 +248,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
+      <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
         <Section
           title="Basics"
           description="How this category appears on the home grid and its own page."

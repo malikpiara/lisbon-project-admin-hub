@@ -25,12 +25,12 @@ export default async function AdminConversationsPage() {
     : "Set POSTHOG_PERSONAL_API_KEY to read captured conversations here.";
 
   return (
-    <main className="mx-auto max-w-5xl px-8 py-10">
+    <main className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header className="mb-8">
         <h1 className="font-heading text-ds-xxl font-bold text-brand-dark">
           Assistant conversations
         </h1>
-        <p className="mt-2 text-ds-s text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-ds-s leading-relaxed text-muted-foreground">
           What people ask the help chatbot · Personal details hidden · Team only
         </p>
         {data.length > 0 ? (

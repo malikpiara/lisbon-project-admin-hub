@@ -14,12 +14,12 @@ export function ReviewQueue({ entries }) {
   const router = useRouter();
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
           Review
         </h1>
-        <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
           Changes editors submitted. Approving publishes them; declining keeps
           the article as it is — nothing is lost either way.
         </p>
@@ -36,7 +36,7 @@ export function ReviewQueue({ entries }) {
           </p>
         </div>
       ) : (
-        <div className="mt-6 space-y-4">
+        <div className="mt-8 space-y-4">
           {entries.map((e) => (
             <ReviewCard key={e.id} entry={e} onDone={() => router.refresh()} />
           ))}

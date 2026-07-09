@@ -26,13 +26,13 @@ export default async function AdminContactsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
-      <div className="flex items-center justify-between gap-4">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Contacts
           </h1>
-          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
             The directory behind the “All Contacts” table and every category
             page. Each contact is tagged with the services it belongs to.
           </p>
@@ -45,9 +45,9 @@ export default async function AdminContactsPage() {
         </form>
       </div>
 
-      <div className="mt-6 space-y-2">
+      <div className="mt-8 space-y-2.5">
         {docs.length === 0 ? (
-          <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
+          <p className="rounded-lg border-2 border-dashed border-border p-10 text-center text-ds-xs font-medium text-muted-foreground">
             No contacts yet. Add the first one.
           </p>
         ) : (
@@ -57,7 +57,7 @@ export default async function AdminContactsPage() {
               <Link
                 key={c.id}
                 href={`/admin/contacts/${c.id}`}
-                className="group flex items-center gap-4 rounded-lg border-2 border-border bg-card px-4 py-3 outline-none transition-colors hover:border-foreground/20 focus-visible:bg-secondary/40"
+                className="group flex items-center gap-4 rounded-lg border-2 border-border bg-card px-5 py-4 outline-none transition-colors hover:border-foreground/20 focus-visible:bg-secondary/40"
               >
                 <div className="min-w-0 flex-1">
                   <span className="block truncate text-ds-xs font-bold text-foreground">

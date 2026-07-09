@@ -1,15 +1,13 @@
 import Link from "next/link";
+// DS lacks these (Insights=chart, Contacts, History, Services=list, Quick Access) —
+// kept on lucide, flagged for Rafael.
+import { BarChart3, Contact, History, ListChecks, Sparkles } from "lucide-react";
 import {
-  ArrowRight,
-  BarChart3,
-  Contact,
-  FileText,
-  History,
-  ListChecks,
-  MessagesSquare,
-  Sparkles,
-  Users2,
-} from "lucide-react";
+  IconArrowRight,
+  IconChatBot,
+  IconNotes,
+  IconUsers,
+} from "@/components/icons/ds-icons";
 
 import { Card } from "@/components/ui/card";
 import { authedPayload } from "@/lib/admin-auth";
@@ -48,7 +46,7 @@ function DashCard({ href, icon: Icon, label, hint, meta, delay = 0 }) {
               <p className="mt-3 text-ds-xxs font-bold text-primary">{meta}</p>
             ) : null}
           </div>
-          <ArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+          <IconArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
         </div>
       </Card>
     </Link>
@@ -97,7 +95,7 @@ export default async function AdminDashboard() {
         },
         {
           href: "/admin/articles",
-          icon: FileText,
+          icon: IconNotes,
           label: "Articles",
           hint: "Articles across all categories.",
           meta: plural(topics.totalDocs, "article", "articles"),
@@ -124,7 +122,7 @@ export default async function AdminDashboard() {
         },
         {
           href: "/admin/conversations",
-          icon: MessagesSquare,
+          icon: IconChatBot,
           label: "Conversations",
           hint: "What people ask the help chatbot.",
           meta: "Personal details hidden",
@@ -150,7 +148,7 @@ export default async function AdminDashboard() {
       cards: [
         {
           href: "/admin/users",
-          icon: Users2,
+          icon: IconUsers,
           label: "Team",
           hint: "People who can sign in and edit.",
           meta: team ? plural(team.totalDocs, "person", "people") : "Manage team",
@@ -160,12 +158,12 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
           Admin Hub
         </h1>
-        <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
           Welcome back{user.name ? `, ${user.name.split(" ")[0]}` : ""} — manage
           everything the public site shows, and see how it's used.
         </p>

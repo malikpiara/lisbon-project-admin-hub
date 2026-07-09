@@ -81,7 +81,7 @@ export function ServicesList({ services, userEmail }) {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <UnsavedChangesGuard when={orderDirty} />
       <SaveBar
         dirty={orderDirty}
@@ -96,7 +96,7 @@ export function ServicesList({ services, userEmail }) {
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Services &amp; Information
           </h1>
-          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
             {order.length} categories, in the order they appear on the home page.
           </p>
         </div>
@@ -108,7 +108,7 @@ export function ServicesList({ services, userEmail }) {
         </form>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {order.map((id, i) => {
           const service = byId[id];
           if (!service) return null;

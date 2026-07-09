@@ -66,19 +66,19 @@ export function SubscribersList({
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
           Subscribers
         </h1>
-        <p className="mt-1 max-w-prose text-ds-xs font-medium text-muted-foreground">
+        <p className="mt-2 max-w-prose text-ds-xs font-medium leading-relaxed text-muted-foreground">
           A recent snapshot of your newsletter audience. The full list lives in
           MailerLite.
         </p>
       </header>
 
       {/* The full list stays in MailerLite. Link out; don't mirror it here. */}
-      <section className="mt-6 rounded-lg border-2 border-border bg-card p-5">
+      <section className="mt-8 rounded-lg border-2 border-border bg-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="font-heading text-ds-s font-bold text-foreground">

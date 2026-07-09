@@ -2,17 +2,14 @@
 
 import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
-// The activity-type glyphs are a cohesive set the DS doesn't cover yet
-// (created/edited/deleted/submitted/approved/declined) — flagged for Rafael.
+// Activity glyphs the DS doesn't cover yet (created/edited/submitted/declined) —
+// kept on lucide, flagged for Rafael. Approved→Check and deleted→Minus use DS.
+import { FilePlus2, Pencil, Send, XCircle } from "lucide-react";
 import {
-  CheckCircle2,
-  FilePlus2,
-  Pencil,
-  Send,
-  Trash2,
-  XCircle,
-} from "lucide-react";
-import { IconSearch } from "@/components/icons/ds-icons";
+  IconCheck,
+  IconMinus,
+  IconSearch,
+} from "@/components/icons/ds-icons";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -20,7 +17,7 @@ import { cn } from "@/lib/utils";
 const ACTION = {
   created: { icon: FilePlus2, verb: "created", cls: "text-primary" },
   updated: { icon: Pencil, verb: "edited", cls: "text-brand-link" },
-  deleted: { icon: Trash2, verb: "deleted", cls: "text-destructive" },
+  deleted: { icon: IconMinus, verb: "deleted", cls: "text-destructive" },
   // The review flow (editors submit drafts; admins approve or decline).
   submitted: {
     icon: Send,
@@ -28,7 +25,7 @@ const ACTION = {
     cls: "text-brand-link",
   },
   approved: {
-    icon: CheckCircle2,
+    icon: IconCheck,
     verb: "approved changes to",
     cls: "text-primary",
   },
@@ -73,17 +70,17 @@ export function HistoryFeed({ entries }) {
   }, [deferredQ, entries]);
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
           History
         </h1>
-        <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
           Every change made in the Admin Hub — who, what, and when.
         </p>
       </header>
 
-      <div className="relative mt-6">
+      <div className="relative mt-8">
         <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={q}

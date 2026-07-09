@@ -159,7 +159,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
   }, [serverKey, pendingNewId]);
 
   return (
-    <div className="mx-auto max-w-5xl px-8 pt-10 pb-28">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <UnsavedChangesGuard when={anyDirty} />
       <SaveBar
         dirty={anyDirty}
@@ -174,7 +174,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Quick Access cards
           </h1>
-          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
             Link cards shown in the home-page hero.
           </p>
         </div>
@@ -192,7 +192,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
         </Button>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-8 space-y-4">
         {order.map((id, i) => {
           const item = byId[id];
           if (!item) return null;

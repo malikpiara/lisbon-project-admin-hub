@@ -163,13 +163,13 @@ export function UsersManager({ users }) {
     });
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Team
           </h1>
-          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
             People who can sign in and edit content.
           </p>
         </div>
@@ -182,7 +182,7 @@ export function UsersManager({ users }) {
       </header>
 
       {adding && !invite ? (
-        <Card className="mt-6">
+        <Card className="mt-8">
           <div className="px-4 xl:px-6">
             <h2 className="font-heading text-ds-s font-bold text-foreground">
               Add a team member
@@ -233,7 +233,7 @@ export function UsersManager({ users }) {
       ) : null}
 
       {invite ? (
-        <Card className="mt-6">
+        <Card className="mt-8">
           <div className="px-4 xl:px-6">
             <LinkPanel
               heading={`${invite.name} is on the team`}
@@ -262,7 +262,7 @@ export function UsersManager({ users }) {
       <p className="mt-8 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
         {users.length} {users.length === 1 ? "person" : "people"}
       </p>
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {users.map((u) => (
           <UserRow key={u.id} user={u} onChanged={() => router.refresh()} />
         ))}

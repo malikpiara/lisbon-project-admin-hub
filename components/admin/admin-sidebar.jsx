@@ -3,23 +3,27 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+// DS lacks these nav/utility glyphs (Dashboard, Quick Access, Services,
+// Contacts, Insights, History, Review, close) — kept on lucide, flagged for Rafael.
 import {
   BarChart3,
   ClipboardCheck,
   Contact,
-  ExternalLink,
-  FileText,
   History,
   LayoutDashboard,
   ListChecks,
-  Mail,
-  MessagesSquare,
   Sparkles,
-  Users2,
   X,
 } from "lucide-react";
 
-import { IconMenu } from "@/components/icons/ds-icons";
+import {
+  IconChatBot,
+  IconInternalLink,
+  IconMail,
+  IconMenu,
+  IconNotes,
+  IconUsers,
+} from "@/components/icons/ds-icons";
 import { cn } from "@/lib/utils";
 
 // The unified team-workspace sidebar for the /admin group — content editor
@@ -33,7 +37,7 @@ const navGroups = [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
       { href: "/admin/services", label: "Services & Information", icon: ListChecks },
-      { href: "/admin/articles", label: "Articles", icon: FileText },
+      { href: "/admin/articles", label: "Articles", icon: IconNotes },
       { href: "/admin/contacts", label: "Contacts", icon: Contact },
     ],
   },
@@ -41,7 +45,7 @@ const navGroups = [
     title: "Analytics",
     items: [
       { href: "/admin/insights", label: "Insights", icon: BarChart3 },
-      { href: "/admin/conversations", label: "Conversations", icon: MessagesSquare },
+      { href: "/admin/conversations", label: "Conversations", icon: IconChatBot },
       { href: "/admin/history", label: "History", icon: History },
     ],
   },
@@ -56,8 +60,8 @@ const navGroups = [
         icon: ClipboardCheck,
         badge: "pendingReviews",
       },
-      { href: "/admin/users", label: "Team", icon: Users2 },
-      { href: "/admin/subscribers", label: "Subscribers", icon: Mail },
+      { href: "/admin/users", label: "Team", icon: IconUsers },
+      { href: "/admin/subscribers", label: "Subscribers", icon: IconMail },
     ],
   },
 ];
@@ -128,7 +132,7 @@ function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
           className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           View live site
-          <ExternalLink className="size-3.5" />
+          <IconInternalLink className="size-3.5" />
         </Link>
         <Link
           href="/components"
@@ -137,7 +141,7 @@ function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
           className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           Design system
-          <ExternalLink className="size-3.5" />
+          <IconInternalLink className="size-3.5" />
         </Link>
       </div>
     </>

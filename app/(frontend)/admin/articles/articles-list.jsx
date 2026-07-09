@@ -47,13 +47,13 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
   const hasArticles = topics.length > 0;
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-ds-xxl font-bold text-foreground">
             Articles
           </h1>
-          <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
             {hasArticles
               ? `${topics.length} ${
                   topics.length === 1 ? "article" : "articles"
@@ -66,7 +66,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
 
       {hasArticles ? (
         <>
-          <div className="relative mt-6">
+          <div className="relative mt-8">
             <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
@@ -81,12 +81,12 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
           </p>
 
           <ViewTransition>
-            <div className="mt-3 space-y-2">
+            <div className="mt-4 space-y-2.5">
               {filtered.map((t) => (
                 <Link
                   key={t.id}
                   href={`/admin/articles/${t.id}`}
-                  className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-border bg-card px-5 py-4 transition-colors hover:border-foreground/20"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-ds-xs font-bold text-foreground">
@@ -109,7 +109,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
                 </Link>
               ))}
               {filtered.length === 0 ? (
-                <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
+                <p className="rounded-lg border-2 border-dashed border-border p-10 text-center text-ds-xs font-medium text-muted-foreground">
                   No articles match &ldquo;{deferredQ}&rdquo;.
                 </p>
               ) : null}

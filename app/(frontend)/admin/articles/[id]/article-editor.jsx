@@ -436,7 +436,7 @@ export function ArticleEditor({
         </div>
       ) : null}
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-8 pt-10 pb-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+      <div className="mx-auto grid max-w-6xl gap-8 px-8 pt-12 pb-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <div className="min-w-0">
         <Section
           title="Basics"
