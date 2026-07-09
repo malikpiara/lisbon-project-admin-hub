@@ -209,7 +209,7 @@ export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 })
             role="dialog"
             aria-modal="true"
             aria-label="Admin navigation"
-            className="scrollbar-hide fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6"
+            className="scroll-fade-y scrollbar-hide fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6"
           >
             <button
               type="button"
@@ -225,7 +225,7 @@ export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 })
       ) : null}
 
       {/* Desktop: the familiar sticky sidebar. */}
-      <aside className="scrollbar-hide sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6 md:flex">
+      <aside className="scroll-fade-y scrollbar-hide sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6 md:flex">
         {content}
       </aside>
     </>

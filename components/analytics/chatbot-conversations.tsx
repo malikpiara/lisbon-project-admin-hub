@@ -246,7 +246,7 @@ export function ChatbotConversations({
                     )}
                   </div>
                 ) : (
-                  <p className="max-h-96 overflow-auto whitespace-pre-wrap break-words text-ds-xs leading-relaxed text-muted-foreground">
+                  <p className="scroll-fade max-h-96 overflow-auto whitespace-pre-wrap break-words text-ds-xs leading-relaxed text-muted-foreground">
                     {c.transcript || "(empty transcript)"}
                   </p>
                 )}

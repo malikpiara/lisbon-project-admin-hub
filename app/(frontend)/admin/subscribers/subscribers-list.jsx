@@ -136,8 +136,9 @@ export function SubscribersList({
               No subscribers found.
             </p>
           ) : (
-            <div className="mt-3 overflow-x-auto rounded-lg border-2 border-border">
-              <table className="w-full border-collapse text-left">
+            <div className="mt-3 overflow-hidden rounded-lg border-2 border-border">
+              <div className="scroll-fade-x overflow-x-auto">
+                <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b-2 border-border bg-secondary/40">
                     <th className={thClass}>Email</th>
@@ -159,7 +160,8 @@ export function SubscribersList({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           )}
         </section>
@@ -213,8 +215,9 @@ export function SubscribersList({
               {`Nothing matches “${q}”.`}
             </p>
           ) : (
-            <div className="mt-2 overflow-x-auto rounded-lg border-2 border-border">
-              <table className="w-full border-collapse text-left">
+            <div className="mt-2 overflow-hidden rounded-lg border-2 border-border">
+              <div className="scroll-fade-x overflow-x-auto">
+                <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b-2 border-border bg-secondary/40">
                     {["Email", "First name", "Source", "Signed up"].map((h) => (
@@ -237,7 +240,8 @@ export function SubscribersList({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           )}
         </section>
