@@ -41,6 +41,7 @@ import {
   restoreServiceVersion,
   saveService,
 } from "../actions";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { createTopic, reorderTopics } from "../../articles/actions";
 
 // Map Payload's stored shape <-> the editor draft. The string list `intro` is
@@ -318,10 +319,9 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
           description="The articles on this category's page. Open one to edit its content."
           action={
             <form action={createTopic.bind(null, service.id)}>
-              <Button size="sm" type="submit">
-                <Plus className="size-3.5" />
+              <SubmitButton size="sm" icon={Plus} pendingLabel="Adding…">
                 Add article
-              </Button>
+              </SubmitButton>
             </form>
           }
         >

@@ -2,9 +2,11 @@
 
 import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronRight, FileText, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Tag } from "@/components/ui/tag";
+import { EmptyState } from "@/components/admin/editor-ui";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { createTopic } from "./actions";
 
 // Searchable Articles list — the teardown's "manage-at-scale" lesson: 140
@@ -27,6 +29,18 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
     );
   }, [deferredQ, topics]);
 
+  // New articles land under the first service; the editor lets the author
+  // reassign. Only rendered when there's a service to attach one to.
+  const addArticleForm = defaultServiceId ? (
+    <form action={createTopic.bind(null, defaultServiceId)}>
+      <SubmitButton size="sm" icon={Plus} pendingLabel="Adding…">
+        Add article
+      </SubmitButton>
+    </form>
+  ) : null;
+
+  const hasArticles = topics.length > 0;
+
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
       <header className="flex items-start justify-between gap-4">
@@ -35,62 +49,78 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
             Articles
           </h1>
           <p className="mt-1 text-ds-xs font-medium text-muted-foreground">
-            {topics.length} articles across all services.
+            {hasArticles
+              ? `${topics.length} ${
+                  topics.length === 1 ? "article" : "articles"
+                } across all services.`
+              : "Create the first one to get started."}
           </p>
         </div>
-        {/* New articles land under the first service; the editor lets the author
-            reassign. Hidden only if there are no services to attach one to. */}
-        {defaultServiceId ? (
-          <form action={createTopic.bind(null, defaultServiceId)}>
-            <Button size="sm" type="submit">
-              <Plus className="size-3.5" />
-              Add article
-            </Button>
-          </form>
-        ) : null}
+        {hasArticles ? addArticleForm : null}
       </header>
 
-      <div className="relative mt-6">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by title, service, or description…"
-          className="pl-9"
-        />
-      </div>
+      {hasArticles ? (
+        <>
+          <div className="relative mt-6">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by title, service, or description…"
+              className="pl-9"
+            />
+          </div>
 
-      <p className="mt-3 text-ds-xxs font-medium text-muted-foreground">
-        {filtered.length} of {topics.length} shown
-      </p>
-
-      <ViewTransition>
-        <div className="mt-3 space-y-2">
-        {filtered.map((t) => (
-          <Link
-            key={t.id}
-            href={`/admin/articles/${t.id}`}
-            className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
-          >
-            <span className="min-w-0">
-              <span className="block truncate text-ds-xs font-bold text-foreground">
-                {t.title || "Untitled article"}
-              </span>
-              <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
-                {t.serviceTitle}
-                {t.description ? ` · ${t.description}` : ""}
-              </span>
-            </span>
-            <ChevronRight className="ml-auto size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        ))}
-        {filtered.length === 0 ? (
-          <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
-            No articles match &ldquo;{deferredQ}&rdquo;.
+          <p className="mt-3 text-ds-xxs font-medium text-muted-foreground">
+            {filtered.length} of {topics.length} shown
           </p>
-        ) : null}
+
+          <ViewTransition>
+            <div className="mt-3 space-y-2">
+              {filtered.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/admin/articles/${t.id}`}
+                  className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-ds-xs font-bold text-foreground">
+                      {t.title || "Untitled article"}
+                    </span>
+                    {t.description ? (
+                      <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
+                        {t.description}
+                      </span>
+                    ) : null}
+                  </span>
+                  {/* Service as a scannable chip — read the whole list by
+                      category at a glance instead of parsing a muted line. */}
+                  {t.serviceTitle ? (
+                    <Tag className="hidden shrink-0 md:inline-flex">
+                      {t.serviceTitle}
+                    </Tag>
+                  ) : null}
+                  <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ))}
+              {filtered.length === 0 ? (
+                <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
+                  No articles match &ldquo;{deferredQ}&rdquo;.
+                </p>
+              ) : null}
+            </div>
+          </ViewTransition>
+        </>
+      ) : (
+        <div className="mt-8">
+          <EmptyState
+            icon={FileText}
+            label="No articles yet"
+            hint="Articles are the guides shown on each service page. Create your first one — you can choose which service it belongs to while editing."
+            action={addArticleForm}
+          />
         </div>
-      </ViewTransition>
+      )}
     </div>
   );
 }
