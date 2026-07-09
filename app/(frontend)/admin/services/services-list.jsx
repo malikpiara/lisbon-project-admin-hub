@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { IconArrowRight, IconPlus } from "@/components/icons/ds-icons";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ export function ServicesList({ services, userEmail }) {
         </div>
         <form action={createService}>
           <Button size="sm" type="submit">
-            <Plus />
+            <IconPlus />
             Add category
           </Button>
         </form>
@@ -146,7 +146,7 @@ export function ServicesList({ services, userEmail }) {
                     {service.contactCount === 1 ? "" : "s"}
                   </p>
                 </div>
-                <ChevronRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                <IconArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
               </Link>
               <div className="flex items-center justify-between px-4 xl:px-6">
                 <span className="text-ds-xxs font-bold text-muted-foreground">

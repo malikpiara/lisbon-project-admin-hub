@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, ExternalLink, Search } from "lucide-react";
+import { Download } from "lucide-react"; // no DS equivalent yet — flagged for Rafael
+import { IconInternalLink, IconSearch } from "@/components/icons/ds-icons";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,7 @@ export function SubscribersList({
               className={buttonVariants({ size: "sm" })}
             >
               Manage in MailerLite
-              <ExternalLink className="size-4" />
+              <IconInternalLink className="size-4" />
             </a>
           ) : null}
         </div>
@@ -194,7 +195,7 @@ export function SubscribersList({
           </div>
 
           <div className="relative mt-4">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}

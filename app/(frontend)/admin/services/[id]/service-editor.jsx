@@ -2,14 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { History, RotateCcw } from "lucide-react"; // no DS equivalents yet — flagged for Rafael
 import {
-  ChevronRight,
-  ExternalLink,
-  FileText,
-  History,
-  Plus,
-  RotateCcw,
-} from "lucide-react";
+  IconArrowRight,
+  IconInternalLink,
+  IconNotes,
+  IconPlus,
+} from "@/components/icons/ds-icons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -227,7 +226,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                 className={buttonVariants({ variant: "secondary", size: "sm" })}
               >
                 View on site
-                <ExternalLink className="size-3.5" />
+                <IconInternalLink className="size-3.5" />
               </Link>
               <DeleteButton
                 onConfirm={() =>
@@ -319,7 +318,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
           description="The articles on this category's page. Open one to edit its content."
           action={
             <form action={createTopic.bind(null, service.id)}>
-              <SubmitButton size="sm" icon={Plus} pendingLabel="Adding…">
+              <SubmitButton size="sm" icon={IconPlus} pendingLabel="Adding…">
                 Add article
               </SubmitButton>
             </form>
@@ -327,7 +326,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
         >
           {topicOrder.length === 0 ? (
             <EmptyState
-              icon={FileText}
+              icon={IconNotes}
               label="No articles yet"
               hint="Articles become the cards on this category's page."
             />
@@ -361,7 +360,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                           </span>
                         ) : null}
                       </span>
-                      <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                      <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
                     </Link>
                     {moved ? (
                       <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">

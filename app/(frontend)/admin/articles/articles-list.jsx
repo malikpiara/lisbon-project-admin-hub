@@ -2,7 +2,12 @@
 
 import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
-import { ChevronRight, FileText, Plus, Search } from "lucide-react";
+import {
+  IconArrowRight,
+  IconNotes,
+  IconPlus,
+  IconSearch,
+} from "@/components/icons/ds-icons";
 import { Input } from "@/components/ui/input";
 import { Tag } from "@/components/ui/tag";
 import { EmptyState } from "@/components/admin/editor-ui";
@@ -33,7 +38,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
   // reassign. Only rendered when there's a service to attach one to.
   const addArticleForm = defaultServiceId ? (
     <form action={createTopic.bind(null, defaultServiceId)}>
-      <SubmitButton size="sm" icon={Plus} pendingLabel="Adding…">
+      <SubmitButton size="sm" icon={IconPlus} pendingLabel="Adding…">
         Add article
       </SubmitButton>
     </form>
@@ -62,7 +67,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
       {hasArticles ? (
         <>
           <div className="relative mt-6">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -100,7 +105,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
                       {t.serviceTitle}
                     </Tag>
                   ) : null}
-                  <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                  <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
                 </Link>
               ))}
               {filtered.length === 0 ? (
@@ -114,7 +119,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
       ) : (
         <div className="mt-8">
           <EmptyState
-            icon={FileText}
+            icon={IconNotes}
             label="No articles yet"
             hint="Articles are the guides shown on each service page. Create your first one — you can choose which service it belongs to while editing."
             action={addArticleForm}

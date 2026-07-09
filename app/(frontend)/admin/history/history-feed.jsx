@@ -2,15 +2,17 @@
 
 import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
+// The activity-type glyphs are a cohesive set the DS doesn't cover yet
+// (created/edited/deleted/submitted/approved/declined) — flagged for Rafael.
 import {
   CheckCircle2,
   FilePlus2,
   Pencil,
-  Search,
   Send,
   Trash2,
   XCircle,
 } from "lucide-react";
+import { IconSearch } from "@/components/icons/ds-icons";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -82,7 +84,7 @@ export function HistoryFeed({ entries }) {
       </header>
 
       <div className="relative mt-6">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}

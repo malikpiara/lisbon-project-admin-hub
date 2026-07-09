@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { IconArrowDown } from "@/components/icons/ds-icons";
 import { Menu } from "@base-ui/react/menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,7 +121,7 @@ export function HeadingComboField({
             aria-label="Choose a standard heading"
             className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <ChevronDown className="size-4" strokeWidth={2} />
+            <IconArrowDown className="size-4" />
           </Menu.Trigger>
           <Menu.Portal>
             <Menu.Positioner

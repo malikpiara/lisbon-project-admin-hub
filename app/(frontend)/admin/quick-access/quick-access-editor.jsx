@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { IconPlus } from "@/components/icons/ds-icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -187,7 +187,7 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
           title="Adding cards is paused until they support an icon and button label"
           onClick={addCard}
         >
-          <Plus />
+          <IconPlus />
           Add card
         </Button>
       </div>

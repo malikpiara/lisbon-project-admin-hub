@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Inbox } from "lucide-react";
+import { IconCheck, IconNotes } from "@/components/icons/ds-icons";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,10 +27,7 @@ export function ReviewQueue({ entries }) {
 
       {entries.length === 0 ? (
         <div className="mt-8 rounded-lg border-2 border-dashed border-border p-10 text-center">
-          <Inbox
-            className="mx-auto size-6 text-muted-foreground"
-            strokeWidth={1.8}
-          />
+          <IconNotes className="mx-auto size-6 text-muted-foreground" />
           <p className="mt-2 text-ds-xs font-bold text-foreground">
             Nothing waiting for review
           </p>
@@ -91,7 +88,7 @@ function ReviewCard({ entry, onDone }) {
             onClick={() => act(approveDraft)}
             disabled={isPending}
           >
-            <CheckCircle2 className="size-3.5" />
+            <IconCheck className="size-3.5" />
             {isPending ? "Working…" : "Approve & publish"}
           </Button>
           <Button

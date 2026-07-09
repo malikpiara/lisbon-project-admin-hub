@@ -2,7 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react"; // no DS equivalent yet — flagged for Rafael
+import {
+  IconInfo,
+  IconInternalLink,
+  IconNotes,
+  IconPlus,
+} from "@/components/icons/ds-icons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -374,7 +380,7 @@ export function ArticleEditor({
           <div className="mt-3 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
-                <FileText className="size-5" strokeWidth={1.9} />
+                <IconNotes className="size-5" />
               </span>
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-ds-xl font-bold text-foreground">
@@ -407,7 +413,7 @@ export function ArticleEditor({
                   className={buttonVariants({ variant: "secondary", size: "sm" })}
                 >
                   View on site
-                  <ExternalLink className="size-3.5" />
+                  <IconInternalLink className="size-3.5" />
                 </Link>
               ) : null}
               <DeleteButton
@@ -494,14 +500,14 @@ export function ArticleEditor({
           count={draft.keyLinks.length}
           action={
             <Button size="sm" onClick={addKeyLink}>
-              <Plus className="size-3.5" />
+              <IconPlus className="size-3.5" />
               Add link
             </Button>
           }
         >
           {draft.keyLinks.length === 0 ? (
             <EmptyState
-              icon={Link2}
+              icon={IconInternalLink}
               label="No key links yet"
               hint="Key links appear as a short list of shortcuts at the top of the article."
             />
@@ -562,7 +568,7 @@ export function ArticleEditor({
                 Insert standard sections
               </Button>
               <Button size="sm" onClick={addSection}>
-                <Plus className="size-3.5" />
+                <IconPlus className="size-3.5" />
                 Add section
               </Button>
             </div>
@@ -570,7 +576,7 @@ export function ArticleEditor({
         >
           {draft.sections.length === 0 ? (
             <EmptyState
-              icon={FileText}
+              icon={IconNotes}
               label="No sections yet"
               hint="Most articles follow the same five sections. Start from the standard set, then edit each one."
               action={
@@ -645,7 +651,7 @@ export function ArticleEditor({
           count={draft.faqs.length}
           action={
             <Button size="sm" onClick={addFaq}>
-              <Plus className="size-3.5" />
+              <IconPlus className="size-3.5" />
               Add question
             </Button>
           }
@@ -659,7 +665,7 @@ export function ArticleEditor({
           />
           {draft.faqs.length === 0 ? (
             <EmptyState
-              icon={HelpCircle}
+              icon={IconInfo}
               label="No questions yet"
               hint="Questions appear as an expandable list at the foot of the article."
             />

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { IconArrowRight, IconPlus } from "@/components/icons/ds-icons";
 
 import { authedPayload } from "@/lib/admin-auth";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export default async function AdminContactsPage() {
         </div>
         <form action={createContact}>
           <Button size="sm" type="submit">
-            <Plus className="size-3.5" />
+            <IconPlus className="size-3.5" />
             Add contact
           </Button>
         </form>
@@ -76,7 +76,7 @@ export default async function AdminContactsPage() {
                     </Tag>
                   ))}
                 </div>
-                <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
               </Link>
             );
           })

@@ -1,13 +1,19 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronRight, Copy } from "lucide-react";
+import { Copy } from "lucide-react"; // no DS equivalent yet — flagged for Rafael
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { IconArrowDown, IconArrowRight } from "@/components/icons/ds-icons";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { cn } from "@/lib/utils";
+
+// The DS has no up-arrow — reuse arrow/down rotated 180.
+const IconMoveUp = ({ className, ...props }) => (
+  <IconArrowDown className={cn("rotate-180", className)} {...props} />
+);
 
 // Compact ghost icon button for row actions (reorder / duplicate). Visible
 // inline rather than hidden in a "⋮" popup like Payload — recognition over
@@ -32,13 +38,13 @@ export function MoveControls({ onMoveUp, onMoveDown, isFirst, isLast, disabled }
   return (
     <div className="flex shrink-0 items-center gap-0.5">
       <RowAction
-        icon={ArrowUp}
+        icon={IconMoveUp}
         label="Move up"
         onClick={onMoveUp}
         disabled={isFirst || disabled}
       />
       <RowAction
-        icon={ArrowDown}
+        icon={IconArrowDown}
         label="Move down"
         onClick={onMoveDown}
         disabled={isLast || disabled}
@@ -98,7 +104,7 @@ export function EditorRow({
     >
       <div className="flex items-center gap-2 px-4 py-3">
         <CollapsibleTrigger className="group/row flex min-w-0 flex-1 items-center gap-3 text-left outline-none">
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/row:rotate-90" />
+          <IconArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/row:rotate-90" />
           <span className="min-w-0">
             <span className="block truncate text-ds-xs font-bold text-foreground">
               {title}
@@ -118,7 +124,7 @@ export function EditorRow({
           ) : null}
           {onMoveUp ? (
             <RowAction
-              icon={ArrowUp}
+              icon={IconMoveUp}
               label="Move up"
               onClick={onMoveUp}
               disabled={isFirst}
@@ -126,7 +132,7 @@ export function EditorRow({
           ) : null}
           {onMoveDown ? (
             <RowAction
-              icon={ArrowDown}
+              icon={IconArrowDown}
               label="Move down"
               onClick={onMoveDown}
               disabled={isLast}

@@ -1,8 +1,17 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// CSS spinner (the DS has no spinner icon) — a spinning ring in currentColor.
+function Spinner({ className = "" }) {
+  return (
+    <span
+      className={`inline-block animate-spin rounded-full border-2 border-current border-t-transparent ${className}`}
+      aria-hidden
+    />
+  );
+}
 
 // A submit button that reflects the enclosing <form>'s pending state: the moment
 // it's clicked it disables itself and shows a spinner, so a double-click can't
@@ -18,7 +27,7 @@ export function SubmitButton({
   return (
     <Button type="submit" disabled={pending} aria-busy={pending} {...props}>
       {pending ? (
-        <Loader2 className="size-3.5 animate-spin" />
+        <Spinner className="size-3.5" />
       ) : Icon ? (
         <Icon className="size-3.5" />
       ) : null}
