@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles } from "lucide-react";
+import { ExternalLink, FileText, HelpCircle, Link2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -58,6 +58,16 @@ function fromPayload(topic) {
       ordered: s.ordered ?? false,
       cta: s.cta ?? "",
       ctaHref: s.ctaHref ?? "",
+      // Optional two-column reference table. Items are edited as a newline
+      // textarea (one bullet per line), same as `bullets`.
+      table: {
+        title: s.table?.title ?? "",
+        rows: (s.table?.rows ?? []).map((r) => ({
+          _k: nextRowKey(),
+          label: r.label ?? "",
+          items: (r.items ?? []).map((i) => i.text).join("\n"),
+        })),
+      },
     })),
     keyLinks: (a.keyLinks ?? []).map((l) => ({
       _k: nextRowKey(),
@@ -91,6 +101,21 @@ function toPayload(d) {
         ordered: s.ordered,
         cta: s.cta,
         ctaHref: s.ctaHref,
+        table: {
+          title: s.table?.title ?? "",
+          rows: (s.table?.rows ?? [])
+            .map((r) => ({
+              label: r.label,
+              items: (r.items ?? "")
+                .split("\n")
+                .map((t) => t.trim())
+                .filter(Boolean)
+                .map((text) => ({ text })),
+            }))
+            // Drop rows with no label and no items so an empty editor row isn't
+            // persisted as a blank table row.
+            .filter((r) => (r.label ?? "").trim() || r.items.length),
+        },
       })),
       keyLinks: d.keyLinks.map((l) => ({ label: l.label, href: l.href })),
       faqLead: d.faqLead,
@@ -170,19 +195,34 @@ export function ArticleEditor({
       sections: d.sections.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
     }));
   };
+  const emptyTable = () => ({ title: "", rows: [] });
+  // A template's `table` (if any) uses the same editor shape (items as newline
+  // strings); we only need to stamp client-only `_k`s on its rows.
+  const tableFromTemplate = (t) =>
+    t.table
+      ? {
+          title: t.table.title ?? "",
+          rows: (t.table.rows ?? []).map((r) => ({
+            _k: nextRowKey(),
+            label: r.label ?? "",
+            items: r.items ?? "",
+          })),
+        }
+      : emptyTable();
   const addSection = () => {
     setDraft((d) => ({
       ...d,
       sections: [
         ...d.sections,
-        { _k: nextRowKey(), heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "" },
+        { _k: nextRowKey(), heading: "New section", lead: "", body: "", bullets: "", ordered: false, cta: "", ctaHref: "", table: emptyTable() },
       ],
     }));
   };
   // Scaffold the five standard sections most articles follow. Idempotent:
   // only appends templates whose heading isn't already present, so a second
   // click (or a half-filled article) never duplicates rows. The Step-by-Step
-  // template carries `ordered: true`, so it lands as a numbered list.
+  // template carries `ordered: true`, so it lands as a numbered list, and
+  // "Documents Required" carries a starter reference table.
   const insertStandardSections = () => {
     setDraft((d) => {
       const existing = new Set(d.sections.map((s) => s.heading.trim()));
@@ -197,6 +237,7 @@ export function ArticleEditor({
         ordered: t.ordered,
         cta: "",
         ctaHref: "",
+        table: tableFromTemplate(t),
       }));
       return { ...d, sections: [...d.sections, ...additions] };
     });
@@ -204,6 +245,34 @@ export function ArticleEditor({
   const removeSection = (i) => {
     setDraft((d) => ({ ...d, sections: d.sections.filter((_, idx) => idx !== i) }));
   };
+  // --- Reference table (per section) ---
+  const updateSectionTable = (i, updater) => {
+    setDraft((d) => ({
+      ...d,
+      sections: d.sections.map((s, idx) => {
+        if (idx !== i) return s;
+        const table = s.table ?? emptyTable();
+        return { ...s, table: updater(table) };
+      }),
+    }));
+  };
+  const setTableTitle = (i, title) =>
+    updateSectionTable(i, (t) => ({ ...t, title }));
+  const addTableRow = (i) =>
+    updateSectionTable(i, (t) => ({
+      ...t,
+      rows: [...t.rows, { _k: nextRowKey(), label: "", items: "" }],
+    }));
+  const setTableRow = (i, j, patch) =>
+    updateSectionTable(i, (t) => ({
+      ...t,
+      rows: t.rows.map((r, k) => (k === j ? { ...r, ...patch } : r)),
+    }));
+  const removeTableRow = (i, j) =>
+    updateSectionTable(i, (t) => ({
+      ...t,
+      rows: t.rows.filter((_, k) => k !== j),
+    }));
   const moveSection = (i, dir) => {
     const j = i + dir;
     if (j < 0 || j >= draft.sections.length) return;
@@ -349,7 +418,7 @@ export function ArticleEditor({
         savingLabel={isAdmin ? "Saving…" : "Submitting…"}
       />
       <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto max-w-5xl px-8 py-4">
+        <div className="mx-auto max-w-6xl px-8 py-4">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -676,6 +745,95 @@ export function ArticleEditor({
                           dirty={fieldDirty(s.ctaHref, sc?.ctaHref)}
                           placeholder="/path or https://…"
                         />
+
+                        <div className="sm:col-span-2 rounded-lg border-2 border-border bg-muted/40 p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <h4 className="text-ds-xs font-bold text-foreground">
+                                Reference table
+                              </h4>
+                              <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
+                                A two-column table — a label paired with a
+                                bulleted list. Optional; leave empty for none.
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => addTableRow(i)}
+                            >
+                              <Plus className="size-3.5" />
+                              Add row
+                            </Button>
+                          </div>
+
+                          {s.table?.rows?.length ? (
+                            <div className="mt-4 space-y-3">
+                              <Field
+                                label="Table title"
+                                hint="Header row spanning both columns, e.g. “Documents Required”. Optional."
+                                value={s.table.title}
+                                onChange={(v) => setTableTitle(i, v)}
+                                dirty={fieldDirty(
+                                  s.table.title,
+                                  sc?.table?.title
+                                )}
+                              />
+                              {s.table.rows.map((row, j) => {
+                                const src = (sc?.table?.rows ?? []).find(
+                                  (r) => r._k === row._k
+                                );
+                                return (
+                                  <div
+                                    key={row._k}
+                                    className="rounded-lg border-2 border-border bg-card p-3"
+                                  >
+                                    <div className="mb-2 flex items-center justify-between">
+                                      <span className="text-ds-xxs font-bold text-muted-foreground">
+                                        Row {j + 1}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeTableRow(i, j)}
+                                        aria-label={`Remove row ${j + 1}`}
+                                        title="Remove row"
+                                        className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                      >
+                                        <Trash2
+                                          className="size-4"
+                                          strokeWidth={2}
+                                        />
+                                      </button>
+                                    </div>
+                                    <div className="grid gap-3">
+                                      <Field
+                                        label="Label"
+                                        required
+                                        hint="The left column, e.g. “Proof of identity”."
+                                        value={row.label}
+                                        onChange={(v) =>
+                                          setTableRow(i, j, { label: v })
+                                        }
+                                        dirty={fieldDirty(row.label, src?.label)}
+                                      />
+                                      <Field
+                                        label="Items"
+                                        hint="The right column — one bullet per line. Links: [text](https://…)."
+                                        textarea
+                                        rows={4}
+                                        value={row.items}
+                                        onChange={(v) =>
+                                          setTableRow(i, j, { items: v })
+                                        }
+                                        dirty={fieldDirty(row.items, src?.items)}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </EditorRow>
                   </div>

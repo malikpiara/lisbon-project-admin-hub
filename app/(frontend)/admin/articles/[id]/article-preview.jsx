@@ -2,6 +2,7 @@
 
 import { IconArrowRight } from "@/components/icons/ds-icons";
 import { splitLines, splitParagraphs } from "@/lib/article-defaults";
+import { renderInline } from "@/components/services/inline-links";
 import { cn } from "@/lib/utils";
 
 // Live preview of the article, rendered from the editor draft. A scaled-down but
@@ -53,6 +54,10 @@ export function ArticlePreview({ draft, topicTitle }) {
           const bullets = splitLines(s.bullets);
           const ListTag = s.ordered ? "ol" : "ul";
           const listClass = s.ordered ? "list-decimal" : "list-disc";
+          // Show every added row (even before it's filled) so the table appears
+          // the moment "Add row" is clicked — immediate feedback that a table is
+          // taking shape. Empty label/items render as muted placeholders.
+          const tableRows = s.table?.rows ?? [];
           return (
             <article key={i}>
               <h3 className="font-heading text-ds-s font-bold text-brand-dark">
@@ -60,21 +65,62 @@ export function ArticlePreview({ draft, topicTitle }) {
               </h3>
               {s.lead ? (
                 <p className="mt-1.5 text-ds-xs font-bold text-primary">
-                  {s.lead}
+                  {renderInline(s.lead, `pv-lead-${i}`)}
                 </p>
               ) : null}
               {paragraphs.length || bullets.length ? (
                 <div className="mt-2 space-y-2 text-ds-xxs font-medium leading-relaxed text-brand-deep">
                   {paragraphs.map((p, j) => (
-                    <p key={j}>{p}</p>
+                    <p key={j}>{renderInline(p, `pv-p-${i}-${j}`)}</p>
                   ))}
                   {bullets.length ? (
                     <ListTag className={cn(listClass, "space-y-0.5 pl-5")}>
                       {bullets.map((b, j) => (
-                        <li key={j}>{b}</li>
+                        <li key={j}>{renderInline(b, `pv-b-${i}-${j}`)}</li>
                       ))}
                     </ListTag>
                   ) : null}
+                </div>
+              ) : null}
+              {tableRows.length ? (
+                <div className="mt-3 overflow-hidden rounded-md border-2 border-border">
+                  {s.table.title ? (
+                    <p className="bg-secondary/50 px-3 py-1.5 text-center text-ds-xxs font-bold uppercase tracking-wide text-primary">
+                      {s.table.title}
+                    </p>
+                  ) : null}
+                  {tableRows.map((r, j) => {
+                    const items = splitLines(r.items);
+                    return (
+                      <div
+                        key={r._k ?? j}
+                        className="flex gap-3 border-t-2 border-border px-3 py-2 first:border-t-0"
+                      >
+                        <p className="w-1/3 shrink-0 text-ds-xxs font-bold text-foreground">
+                          {r.label?.trim() ? (
+                            r.label
+                          ) : (
+                            <span className="font-medium text-muted-foreground/60 italic">
+                              Label
+                            </span>
+                          )}
+                        </p>
+                        {items.length ? (
+                          <ul className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep">
+                            {items.map((it, k) => (
+                              <li key={k}>
+                                {renderInline(it, `pv-t-${i}-${j}-${k}`)}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span className="text-ds-xxs font-medium text-muted-foreground/60 italic">
+                            Items…
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : null}
               {s.cta ? (
@@ -104,7 +150,7 @@ export function ArticlePreview({ draft, topicTitle }) {
                   </p>
                   {f.answer ? (
                     <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
-                      {f.answer}
+                      {renderInline(f.answer, `pv-faq-${i}`)}
                     </p>
                   ) : null}
                 </div>

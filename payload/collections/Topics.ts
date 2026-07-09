@@ -106,6 +106,41 @@ export const Topics: CollectionConfig = {
                   "/path internal or https://… external; blank links to the category page",
               },
             },
+            {
+              // Optional two-column reference table inside a section (e.g. the
+              // "Documents Required" layout): a label column paired with a
+              // bulleted content column. Empty rows → no table is rendered.
+              name: "table",
+              type: "group",
+              fields: [
+                {
+                  name: "title",
+                  type: "text",
+                  admin: {
+                    description:
+                      "Header row spanning both columns (e.g. “Documents Required”). Optional.",
+                  },
+                },
+                {
+                  name: "rows",
+                  type: "array",
+                  labels: { singular: "Table row", plural: "Table rows" },
+                  fields: [
+                    { name: "label", type: "text", required: true },
+                    {
+                      name: "items",
+                      type: "array",
+                      labels: { singular: "Item", plural: "Items" },
+                      admin: {
+                        description:
+                          "Bulleted content. Links: [text](https://…).",
+                      },
+                      fields: [{ name: "text", type: "text", required: true }],
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         },
         { name: "faqLead", type: "textarea" },

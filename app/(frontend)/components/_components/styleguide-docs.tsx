@@ -59,6 +59,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TextBlock } from "@/components/ui/text-block";
+import { ReferenceTable } from "@/components/services/reference-table";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -441,63 +442,37 @@ function TableExample() {
   );
 }
 
-// Two-column reference layout: a label/category column paired with a bulleted
-// content column. Adapted from the "Documents Required" (Article 98) layout —
-// the kind of dense reference content that doesn't fit a flat data grid.
+// Two-column reference layout: a label column paired with a bulleted content
+// column. Adapted from the "Documents Required" (Article 98) layout — the kind
+// of dense reference content that doesn't fit a flat data grid. Editors manage
+// these per article section; items support inline [text](url) links.
 function ReferenceTableExample() {
   return (
-    <Table className="min-w-[680px]">
-      <TableHeader>
-        <TableRow>
-          <TableHead
-            colSpan={2}
-            className="h-auto whitespace-normal bg-secondary/50 py-3 text-center text-ds-s font-bold uppercase tracking-wide text-primary"
-          >
-            Documents Required
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell className="w-1/4 border-r-2 border-border px-3 py-4 align-top font-bold whitespace-normal text-foreground">
-            Article 98 n.1 — family outside national territory
-          </TableCell>
-          <TableCell className="px-3 py-4 align-top whitespace-normal text-brand-deep">
-            <ul className="list-disc space-y-1.5 pl-5">
-              <li>Residence permit of the individual residing in Portugal.</li>
-              <li>Authenticated copy of the passport of the family member to be reunited.</li>
-              <li>Properly authenticated evidence of the claimed family ties.</li>
-              <li>Proof of means of subsistence.</li>
-              <li>Criminal record from the country of nationality, duly authenticated.</li>
-            </ul>
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell className="w-1/4 border-r-2 border-border px-3 py-4 align-top font-bold whitespace-normal text-foreground">
-            Article 98 n.2 — family in national territory
-          </TableCell>
-          <TableCell className="px-3 py-4 align-top whitespace-normal text-brand-deep">
-            <ul className="list-disc space-y-1.5 pl-5">
-              <li>Residence permit of the individual residing in national territory.</li>
-              <li>Valid passport or another valid travel document.</li>
-              <li>Proof of legal entry into Portugal.</li>
-              <li>
-                Declaration of the residential address. The form can be found{" "}
-                <a href="#" className="font-bold text-primary underline">
-                  here
-                </a>
-                .
-                <ul className="mt-1.5 list-[circle] space-y-1.5 pl-5">
-                  <li>If you are the owner, provide a land registry certificate.</li>
-                  <li>If you are a tenant, a declaration from the landlord or hosting entity.</li>
-                </ul>
-              </li>
-              <li>Proof of means of subsistence.</li>
-            </ul>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <ReferenceTable
+      title="Documents Required"
+      rows={[
+        {
+          label: "Article 98 n.1 — family outside national territory",
+          items: [
+            "Residence permit of the individual residing in Portugal.",
+            "Authenticated copy of the passport of the family member to be reunited.",
+            "Properly authenticated evidence of the claimed family ties.",
+            "Proof of means of subsistence.",
+            "Criminal record from the country of nationality, duly authenticated.",
+          ],
+        },
+        {
+          label: "Article 98 n.2 — family in national territory",
+          items: [
+            "Residence permit of the individual residing in national territory.",
+            "Valid passport or another valid travel document.",
+            "Proof of legal entry into Portugal.",
+            "Declaration of the residential address. The form can be found [here](https://eportugal.gov.pt).",
+            "Proof of means of subsistence.",
+          ],
+        },
+      ]}
+    />
   );
 }
 
@@ -1755,7 +1730,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       {
         title: "Two-column reference table",
         description:
-          "A bold label column paired with a bulleted content column — for documents-required and comparison layouts. Supports nested bullets and inline links.",
+          "A bold label column paired with a bulleted content column — for documents-required and comparison layouts. Editors add one per article section; items support inline [text](url) links.",
         preview: <ReferenceTableExample />,
         align: "start",
       },

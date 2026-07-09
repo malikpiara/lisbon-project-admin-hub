@@ -324,6 +324,27 @@ export interface Topic {
            * /path internal or https://… external; blank links to the category page
            */
           ctaHref?: string | null;
+          table?: {
+            /**
+             * Header row spanning both columns (e.g. “Documents Required”). Optional.
+             */
+            title?: string | null;
+            rows?:
+              | {
+                  label: string;
+                  /**
+                   * Bulleted content. Links: [text](https://…).
+                   */
+                  items?:
+                    | {
+                        text: string;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+          };
           id?: string | null;
         }[]
       | null;
@@ -570,6 +591,23 @@ export interface TopicsSelect<T extends boolean = true> {
               ordered?: T;
               cta?: T;
               ctaHref?: T;
+              table?:
+                | T
+                | {
+                    title?: T;
+                    rows?:
+                      | T
+                      | {
+                          label?: T;
+                          items?:
+                            | T
+                            | {
+                                text?: T;
+                                id?: T;
+                              };
+                          id?: T;
+                        };
+                  };
               id?: T;
             };
         faqLead?: T;

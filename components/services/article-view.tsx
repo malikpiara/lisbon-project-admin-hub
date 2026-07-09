@@ -7,6 +7,11 @@ import { IconInfo } from "@/components/icons/ds-icons";
 
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { KeyLinks, type KeyLink } from "@/components/services/key-links";
+import {
+  ReferenceTable,
+  type ReferenceTableData,
+} from "@/components/services/reference-table";
+import { renderInline } from "@/components/services/inline-links";
 import { MapVisit } from "@/components/home/map-visit";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -38,6 +43,7 @@ type ArticleSection = {
   ordered?: boolean;
   cta: string;
   ctaHref?: string;
+  table?: ReferenceTableData;
 };
 type Faq = { question: string; answer: string };
 type Article = {
@@ -163,21 +169,29 @@ export function ArticleView({
 
                   {s.lead ? (
                     <p className="max-w-3xl text-ds-m font-bold text-primary">
-                      {s.lead}
+                      {renderInline(s.lead, `lead-${index}`)}
                     </p>
                   ) : null}
                   {paragraphs.length || bullets.length ? (
                     <div className="mt-4 max-w-3xl space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep">
                       {paragraphs.map((p, i) => (
-                        <p key={i}>{p}</p>
+                        <p key={i}>{renderInline(p, `p-${index}-${i}`)}</p>
                       ))}
                       {bullets.length ? (
                         <ListTag className={cn(listClass, "space-y-1 pl-6")}>
                           {bullets.map((b, i) => (
-                            <li key={i}>{b}</li>
+                            <li key={i}>{renderInline(b, `b-${index}-${i}`)}</li>
                           ))}
                         </ListTag>
                       ) : null}
+                    </div>
+                  ) : null}
+                  {s.table?.rows?.length ? (
+                    <div className="mt-6">
+                      <ReferenceTable
+                        title={s.table.title}
+                        rows={s.table.rows}
+                      />
                     </div>
                   ) : null}
                   {s.cta ? (
@@ -227,7 +241,9 @@ export function ArticleView({
                   {article.faqs.map((faq, i) => (
                     <AccordionItem key={`${faq.question}-${i}`} value={faq.question}>
                       <AccordionTrigger>{faq.question}</AccordionTrigger>
-                      <AccordionContent>{faq.answer}</AccordionContent>
+                      <AccordionContent>
+                        {renderInline(faq.answer, `faq-${i}`)}
+                      </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
