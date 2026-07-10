@@ -66,11 +66,17 @@ export default async function AdminLayout({ children }) {
               Admin Hub
             </span>
           </header>
-          {/* Cross-fade the content pane on route change. The <ViewTransition>
-              boundary persists while its children swap per route, so React
-              animates old↔new; the sidebar sits outside it and stays put. Timing +
-              reduced-motion live in globals.css (::view-transition-*). */}
-          <ViewTransition>{children}</ViewTransition>
+          {/* SidebarInset is a flex column, where a bare `mx-auto max-w-*` page
+              collapses to its content width. This block wrapper restores normal
+              block flow so every route's own centering + full max width work
+              exactly as they did before the sidebar rebuild. */}
+          <div className="min-w-0 flex-1">
+            {/* Cross-fade the content pane on route change. The <ViewTransition>
+                boundary persists while its children swap per route, so React
+                animates old↔new; the sidebar sits outside it and stays put.
+                Timing + reduced-motion live in globals.css (::view-transition-*). */}
+            <ViewTransition>{children}</ViewTransition>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
