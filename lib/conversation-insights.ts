@@ -374,13 +374,23 @@ async function callCloudflare(prompt: string): Promise<string | null> {
 }
 
 async function callAnthropic(prompt: string): Promise<string | null> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  // Direct Anthropic, or — when ANTHROPIC_BASE_URL is set to a Cloudflare AI
+  // Gateway endpoint (…/{account}/{gateway}/anthropic) — the same Claude call
+  // routed through your Cloudflare for caching, analytics and unified billing.
+  // Same request either way; only the base URL changes.
+  const base = process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com";
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    "x-api-key": process.env.ANTHROPIC_API_KEY as string,
+    "anthropic-version": "2023-06-01",
+  };
+  // Only needed if the gateway is set to "authenticated".
+  if (process.env.CLOUDFLARE_AIG_TOKEN) {
+    headers["cf-aig-authorization"] = `Bearer ${process.env.CLOUDFLARE_AIG_TOKEN}`;
+  }
+  const res = await fetch(`${base}/v1/messages`, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY as string,
-      "anthropic-version": "2023-06-01",
-    },
+    headers,
     body: JSON.stringify({
       model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
       max_tokens: 300,
