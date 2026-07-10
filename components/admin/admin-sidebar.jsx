@@ -9,6 +9,7 @@ import {
   BarChart3,
   ClipboardCheck,
   Contact,
+  ExternalLink,
   History,
   LayoutDashboard,
   ListChecks,
@@ -18,7 +19,6 @@ import {
 
 import {
   IconChatBot,
-  IconInternalLink,
   IconMail,
   IconMenu,
   IconNotes,
@@ -132,7 +132,7 @@ function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
           className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           View live site
-          <IconInternalLink className="size-3.5" />
+          <ExternalLink className="size-3.5" strokeWidth={2} />
         </Link>
         <Link
           href="/components"
@@ -141,7 +141,7 @@ function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
           className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
         >
           Design system
-          <IconInternalLink className="size-3.5" />
+          <ExternalLink className="size-3.5" strokeWidth={2} />
         </Link>
       </div>
     </>

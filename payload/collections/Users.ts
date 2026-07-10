@@ -14,7 +14,13 @@ const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
 // checks explicitly in app/(frontend)/admin/users/actions.js.
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  auth: {
+    // Keep team members signed in for 30 days. This is an internal tool used in
+    // short bursts across the week, and Payload's 2h default kept logging people
+    // out mid-edit. `tokenExpiration` is in seconds; the session cookie's
+    // lifetime follows it.
+    tokenExpiration: 60 * 60 * 24 * 30, // 30 days
+  },
   access: {
     read: ({ req }) => Boolean(req.user),
     create: isAdmin,

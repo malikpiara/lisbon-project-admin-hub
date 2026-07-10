@@ -23,12 +23,11 @@ export const metadata = {
 // Admin) so the dashboard and the nav share one mental model — the same
 // vocabulary, the same order. `meta` is a short status line (a count, or what
 // the section is for); it stays quiet when there's nothing useful to say.
-function DashCard({ href, icon: Icon, label, hint, meta, delay = 0 }) {
+function DashCard({ href, icon: Icon, label, hint, meta }) {
   return (
     <Link
       href={href}
-      style={{ animationDelay: `${delay}ms` }}
-      className="group animate-entry-appear rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="group rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     >
       <Card className="h-full transition-shadow group-hover:shadow-md">
         <div className="flex items-start gap-4 px-4 xl:px-6">
@@ -169,29 +168,27 @@ export default async function AdminDashboard() {
         </p>
       </header>
 
+      {/* No entry animation on the cards — admins land here many times a day,
+          and a stagger they've seen a hundred times reads as friction, not
+          delight (per the animation guidance: don't animate the frequent). */}
       <div className="mt-10 space-y-10">
-        {(() => {
-          // Running index across all groups so the whole board cascades in one
-          // continuous sweep (capped) rather than restarting per section.
-          let i = 0;
-          return groups.map((group) => (
-            <section key={group.title}>
-              <div className="flex items-baseline justify-between gap-3">
-                <h2 className="text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
-                  {group.title}
-                </h2>
-                <p className="text-ds-xxs font-medium text-muted-foreground">
-                  {group.hint}
-                </p>
-              </div>
-              <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                {group.cards.map((c) => (
-                  <DashCard key={c.href} {...c} delay={Math.min(i++, 8) * 45} />
-                ))}
-              </div>
-            </section>
-          ));
-        })()}
+        {groups.map((group) => (
+          <section key={group.title}>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
+                {group.title}
+              </h2>
+              <p className="text-ds-xxs font-medium text-muted-foreground">
+                {group.hint}
+              </p>
+            </div>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {group.cards.map((c) => (
+                <DashCard key={c.href} {...c} />
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );

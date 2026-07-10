@@ -2,14 +2,10 @@
 
 import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
-// Activity glyphs the DS doesn't cover yet (created/edited/submitted/declined) —
-// kept on lucide, flagged for Rafael. Approved→Check and deleted→Minus use DS.
-import { FilePlus2, Pencil, Send, XCircle } from "lucide-react";
-import {
-  IconCheck,
-  IconMinus,
-  IconSearch,
-} from "@/components/icons/ds-icons";
+// Activity glyphs the DS doesn't cover yet (created/edited/submitted/declined/
+// deleted) — kept on lucide, flagged for Rafael. Approved→Check uses the DS.
+import { FilePlus2, Pencil, Send, Trash2, XCircle } from "lucide-react";
+import { IconCheck, IconSearch } from "@/components/icons/ds-icons";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -17,7 +13,7 @@ import { cn } from "@/lib/utils";
 const ACTION = {
   created: { icon: FilePlus2, verb: "created", cls: "text-primary" },
   updated: { icon: Pencil, verb: "edited", cls: "text-brand-link" },
-  deleted: { icon: IconMinus, verb: "deleted", cls: "text-destructive" },
+  deleted: { icon: Trash2, verb: "deleted", cls: "text-destructive" },
   // The review flow (editors submit drafts; admins approve or decline).
   submitted: {
     icon: Send,
