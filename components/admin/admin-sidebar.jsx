@@ -112,11 +112,14 @@ export function AdminSidebar({
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      {/* A little more air than the shadcn defaults (gap-0 everywhere): space
+          between the groups, a small gap between items, and a slightly taller
+          row so the nav breathes. */}
+      <SidebarContent className="gap-2 py-2">
         {groups.map((group) => (
-          <SidebarGroup key={group.title}>
+          <SidebarGroup key={group.title} className="gap-1 py-1">
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const active = item.exact
@@ -128,6 +131,7 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       isActive={active}
                       tooltip={item.label}
+                      className="h-9"
                       render={
                         <Link href={item.href} aria-current={active ? "page" : undefined}>
                           <Icon />
