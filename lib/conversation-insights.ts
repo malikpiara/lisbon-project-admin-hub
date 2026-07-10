@@ -317,55 +317,95 @@ export function synthesizeHeuristic(
   return { need, theme, status, summary, language };
 }
 
-// ── AI synthesis (Claude, env-gated, defensive) ──────────────────────────────
+// ── AI synthesis (Cloudflare Workers AI or Claude — env-gated, defensive) ─────
+//
+// Enable with CONVERSATION_SYNTHESIS=ai. The provider is auto-detected so no
+// credential ever needs to be read here — set them in the environment:
+//   • Cloudflare Workers AI  → CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN
+//                              (optional CLOUDFLARE_AI_MODEL, default below)
+//   • Anthropic Claude       → ANTHROPIC_API_KEY (optional ANTHROPIC_MODEL)
+// One pass per conversation → {need, theme, status, summary}. Every path returns
+// null on any problem so the caller falls back to the heuristic — never throws.
 
-const AI_ENABLED =
-  process.env.CONVERSATION_SYNTHESIS === "ai" && Boolean(process.env.ANTHROPIC_API_KEY);
+const AI_PROVIDER: "cloudflare" | "anthropic" | null =
+  process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN
+    ? "cloudflare"
+    : process.env.ANTHROPIC_API_KEY
+      ? "anthropic"
+      : null;
 
-// One Claude pass per conversation → {need, theme, status, summary}. Provider is
-// Anthropic (ANTHROPIC_API_KEY); to run this on Cloudflare Workers AI instead,
-// swap the fetch below for the Workers AI REST endpoint. Returns null on any
-// problem so the caller falls back to the heuristic — this must never throw.
-async function synthesizeAI(
-  turns: Turn[],
-  transcript: string
-): Promise<ConversationInsight | null> {
-  if (!AI_ENABLED) return null;
-  try {
-    const language = synthesizeHeuristic(turns, transcript).language; // cheap + reliable
-    const prompt =
-      `You classify a migrant-support help-assistant transcript for a caseworker team. ` +
-      `Personal details are already redacted as [email]/[phone]. ` +
-      `Return ONLY minified JSON: {"need":string,"theme":string,"status":string,"summary":string}. ` +
-      `"need": ≤8 words naming what the person needed (never the language). ` +
-      `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}. ` +
-      `"status": "resolved" (assistant answered well), "needs_follow_up" (a human should reach out), or "bot_gap" (assistant answered poorly/wrongly). ` +
-      `"summary": one sentence — the ask and what the assistant did.\n\nTRANSCRIPT:\n${transcript.slice(0, 6000)}`;
+const AI_ENABLED = process.env.CONVERSATION_SYNTHESIS === "ai" && AI_PROVIDER !== null;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+function synthesisPrompt(transcript: string): string {
+  return (
+    `You classify a migrant-support help-assistant transcript for a caseworker team. ` +
+    `Personal details are already redacted as [email]/[phone]. ` +
+    `Respond with ONLY minified JSON: {"need":string,"theme":string,"status":string,"summary":string}. ` +
+    `"need": at most 8 words naming what the person needed — never the language, a name, or contact details. ` +
+    `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}. ` +
+    `"status": "resolved" (assistant answered well), "needs_follow_up" (a human should reach out), or "bot_gap" (assistant answered poorly, wrongly or off-topic). ` +
+    `"summary": one sentence — the ask and what the assistant did.\n\nTRANSCRIPT:\n${transcript.slice(0, 6000)}`
+  );
+}
+
+async function callCloudflare(prompt: string): Promise<string | null> {
+  const account = process.env.CLOUDFLARE_ACCOUNT_ID as string;
+  const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${model}`,
+    {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY as string,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN as string}`,
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 300,
         messages: [{ role: "user", content: prompt }],
+        max_tokens: 300,
       }),
-    });
-    if (!res.ok) return null;
-    const json = (await res.json()) as { content?: { text?: string }[] };
-    const text = json.content?.[0]?.text ?? "";
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return null;
+    }
+  );
+  if (!res.ok) return null;
+  const json = (await res.json()) as {
+    result?: { response?: string };
+    success?: boolean;
+  };
+  return json.success ? json.result?.response ?? null : null;
+}
+
+async function callAnthropic(prompt: string): Promise<string | null> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": process.env.ANTHROPIC_API_KEY as string,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
+      max_tokens: 300,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  if (!res.ok) return null;
+  const json = (await res.json()) as { content?: { text?: string }[] };
+  return json.content?.[0]?.text ?? null;
+}
+
+function parseInsight(
+  text: string | null,
+  language: string | null
+): ConversationInsight | null {
+  if (!text) return null;
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
     const parsed = JSON.parse(match[0]) as Partial<ConversationInsight>;
+    if (!parsed.need || !parsed.summary) return null;
     const status: ConversationStatus =
       parsed.status === "needs_follow_up" || parsed.status === "bot_gap"
         ? parsed.status
         : "resolved";
-    if (!parsed.need || !parsed.summary) return null;
     return {
       need: titleCase(String(parsed.need)),
       theme: THEME_NAMES.includes(String(parsed.theme)) ? String(parsed.theme) : THEME_OTHER,
@@ -374,7 +414,25 @@ async function synthesizeAI(
       language,
     };
   } catch {
-    return null; // network/parse error → heuristic fallback
+    return null;
+  }
+}
+
+async function synthesizeAI(
+  turns: Turn[],
+  transcript: string
+): Promise<ConversationInsight | null> {
+  if (!AI_ENABLED) return null;
+  try {
+    const language = synthesizeHeuristic(turns, transcript).language; // cheap + reliable
+    const prompt = synthesisPrompt(transcript);
+    const text =
+      AI_PROVIDER === "cloudflare"
+        ? await callCloudflare(prompt)
+        : await callAnthropic(prompt);
+    return parseInsight(text, language);
+  } catch {
+    return null; // network / parse error → heuristic fallback
   }
 }
 
