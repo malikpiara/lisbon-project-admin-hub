@@ -60,3 +60,14 @@ export async function login(_prevState, formData) {
   // Outside try/catch — redirect() throws control flow that the catch must not eat.
   redirect("/admin");
 }
+
+// Sign out: drop the session cookie the admin reads and send them to /login.
+// (The app had no sign-out before — the sidebar's user menu is the first place
+// to offer one.) The `payload-token` cookie is httpOnly, so it must be cleared
+// server-side; clearing it makes authedPayload() redirect any further /admin
+// request back to /login.
+export async function logout() {
+  const cookieStore = await cookies();
+  cookieStore.delete("payload-token");
+  redirect("/login");
+}

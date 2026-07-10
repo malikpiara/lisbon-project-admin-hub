@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// DS lacks these nav/utility glyphs (Dashboard, Quick Access, Services,
-// Contacts, Insights, History, Review, close) — kept on lucide, flagged for Rafael.
+// DS lacks these nav/utility glyphs — kept on lucide, flagged for Rafael.
 import {
   BarChart3,
   ClipboardCheck,
@@ -13,23 +11,38 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  LogOut,
   Sparkles,
-  X,
 } from "lucide-react";
 
+import { IconChatBot, IconMail, IconNotes, IconUsers } from "@/components/icons/ds-icons";
 import {
-  IconChatBot,
-  IconMail,
-  IconMenu,
-  IconNotes,
-  IconUsers,
-} from "@/components/icons/ds-icons";
-import { cn } from "@/lib/utils";
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { logout } from "@/app/(frontend)/login/actions";
 
 // The unified team-workspace sidebar for the /admin group — content editor
-// (Quick Access / Services / Articles), analytics (Insights / History) and
-// team management (admins only). The Payload CMS lives in its own app at
-// /cms-admin (separate root layout), so it's reached directly, not from here.
+// (Quick Access / Services / Articles), analytics (Insights / History) and team
+// management (admins only). Built on the shadcn Sidebar: collapses to an icon
+// rail (⌘B or the rail), and the mobile drawer is the primitive's own Sheet.
 const navGroups = [
   {
     title: "Content",
@@ -54,180 +67,129 @@ const navGroups = [
     adminOnly: true,
     items: [
       // `badge: "pendingReviews"` renders the live count passed by the layout.
-      {
-        href: "/admin/review",
-        label: "Review",
-        icon: ClipboardCheck,
-        badge: "pendingReviews",
-      },
+      { href: "/admin/review", label: "Review", icon: ClipboardCheck, badge: "pendingReviews" },
       { href: "/admin/users", label: "Team", icon: IconUsers },
       { href: "/admin/subscribers", label: "Subscribers", icon: IconMail },
     ],
   },
 ];
 
-// The sidebar's inner markup, shared verbatim between the md+ <aside> and the
-// mobile drawer so the two can never drift apart.
-function SidebarContent({ userEmail, isAdmin, pathname, badges = {} }) {
-  const groups = navGroups.filter((g) => !g.adminOnly || isAdmin);
-  return (
-    <>
-      <div className="mb-6 px-2">
-        <p className="font-heading text-ds-s font-bold text-brand-dark">
-          Admin Hub
-        </p>
-        <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-          Team workspace
-        </p>
-      </div>
-
-      <nav className="space-y-5">
-        {groups.map((group) => (
-          <div key={group.title} className="space-y-1">
-            <p className="px-3 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
-              {group.title}
-            </p>
-            {group.items.map((item) => {
-              const Icon = item.icon;
-              const active = item.exact
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-ds-xs font-bold transition-colors",
-                    active
-                      ? "bg-secondary text-primary"
-                      : "text-brand-link hover:bg-secondary/60"
-                  )}
-                >
-                  <Icon className="size-4" strokeWidth={2} />
-                  {item.label}
-                  {item.badge && badges[item.badge] > 0 ? (
-                    <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-ds-xxs font-bold text-primary-foreground">
-                      {badges[item.badge]}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      <div className="mt-auto space-y-3 px-2 pt-6">
-        {userEmail ? (
-          <p className="truncate text-ds-xxs font-medium text-muted-foreground">
-            Signed in as{" "}
-            <span className="font-bold text-foreground">{userEmail}</span>
-          </p>
-        ) : null}
-        <Link
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
-        >
-          View live site
-          <ExternalLink className="size-3.5" strokeWidth={2} />
-        </Link>
-        <Link
-          href="/components"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex w-fit items-center gap-1.5 text-ds-xxs font-bold text-brand-link hover:underline"
-        >
-          Design system
-          <ExternalLink className="size-3.5" strokeWidth={2} />
-        </Link>
-      </div>
-    </>
-  );
+function initials(email) {
+  const base = (email || "?").split("@")[0].replace(/[^a-z0-9]/gi, "");
+  return (base.slice(0, 2) || "?").toUpperCase();
 }
 
 export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  // The drawer is navigation: following a link should dismiss it.
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  // Escape closes; the page behind a modal drawer must not scroll.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-
-  const content = (
-    <SidebarContent
-      userEmail={userEmail}
-      isAdmin={isAdmin}
-      pathname={pathname}
-      badges={{ pendingReviews }}
-    />
-  );
+  const groups = navGroups.filter((g) => !g.adminOnly || isAdmin);
 
   return (
-    <>
-      {/* Mobile: slim sticky header; the nav lives in the drawer below. */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-border bg-card px-4 md:hidden">
-        <p className="font-heading text-ds-s font-bold text-brand-dark">
-          Admin Hub
-        </p>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Open menu"
-          aria-expanded={open}
-          className="grid size-11 place-items-center rounded-lg text-brand-link transition-colors hover:bg-secondary/60"
-        >
-          <IconMenu className="size-5" />
-        </button>
-      </header>
-
-      {open ? (
-        <div className="md:hidden">
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-foreground/25"
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Admin navigation"
-            className="scroll-fade-y scrollbar-hide fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6"
-          >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-              className="absolute right-3 top-4 grid size-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-            >
-              <X className="size-5" strokeWidth={2} />
-            </button>
-            {content}
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <div className="flex items-center gap-2 px-1 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+            <IconNotes className="size-4.5" />
+          </span>
+          <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="font-heading text-ds-s font-bold text-brand-dark">Admin Hub</span>
+            <span className="text-ds-xxs font-medium text-muted-foreground">Team workspace</span>
           </div>
         </div>
-      ) : null}
+      </SidebarHeader>
 
-      {/* Desktop: the familiar sticky sidebar. */}
-      <aside className="scroll-fade-y scrollbar-hide sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r-2 border-border bg-card px-4 py-6 md:flex">
-        {content}
-      </aside>
-    </>
+      <SidebarContent>
+        {groups.map((group) => (
+          <SidebarGroup key={group.title}>
+            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = item.exact
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+                const badge = item.badge === "pendingReviews" ? pendingReviews : 0;
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      isActive={active}
+                      tooltip={item.label}
+                      render={
+                        <Link href={item.href} aria-current={active ? "page" : undefined}>
+                          <Icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      }
+                    />
+                    {badge > 0 ? <SidebarMenuBadge>{badge}</SidebarMenuBadge> : null}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  // No `tooltip` here: it would wrap the button in a
+                  // TooltipTrigger and swallow the dropdown's own trigger wiring.
+                  <SidebarMenuButton size="lg">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-ds-xxs font-bold text-primary">
+                      {initials(userEmail)}
+                    </span>
+                    <span className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+                      <span className="truncate text-ds-xs font-bold text-foreground">Signed in</span>
+                      <span className="truncate text-ds-xxs font-medium text-muted-foreground">
+                        {userEmail}
+                      </span>
+                    </span>
+                  </SidebarMenuButton>
+                }
+              />
+              <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-56">
+                <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+                  {userEmail}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  render={
+                    <Link href="/" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="size-4" />
+                      View live site
+                    </Link>
+                  }
+                />
+                <DropdownMenuItem
+                  render={
+                    <Link href="/components" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="size-4" />
+                      Design system
+                    </Link>
+                  }
+                />
+                <DropdownMenuSeparator />
+                <form action={logout}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    render={
+                      <button type="submit" className="w-full">
+                        <LogOut className="size-4" />
+                        Sign out
+                      </button>
+                    }
+                  />
+                </form>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
   );
 }
