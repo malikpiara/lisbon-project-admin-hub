@@ -1,93 +1,42 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode, useState } from "react";
 import { ChevronDown, MessagesSquare } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tag } from "@/components/ui/tag";
+import type {
+  ConversationsView,
+  ConversationStatus,
+  EnrichedConversation,
+} from "@/lib/conversation-insights";
 
-export type ChatbotConversation = {
-  conversationId: string;
-  transcript: string;
-  at: string; // ISO timestamp
+// Actionable status is the bridge from "read logs" to "do something": amber = a
+// human should follow up, red = the assistant answered poorly (fix the bot),
+// muted-green = handled. Semantic colours, deliberately not the brand teal.
+const STATUS_META: Record<
+  ConversationStatus,
+  { label: string; chip: string; dot: string }
+> = {
+  needs_follow_up: {
+    label: "Needs follow-up",
+    chip: "bg-amber-50 text-amber-700",
+    dot: "bg-amber-500",
+  },
+  bot_gap: {
+    label: "Bot gap",
+    chip: "bg-destructive/10 text-destructive",
+    dot: "bg-destructive",
+  },
+  resolved: {
+    label: "Resolved",
+    chip: "bg-emerald-50 text-emerald-700",
+    dot: "bg-emerald-500",
+  },
 };
 
-type Turn = { speaker: string; role: "user" | "bot"; text: string };
-
-// Speaker labels we trust enough to split a transcript into turns. We split ONLY
-// on these — never on an arbitrary "Word:" — so a bot answer that happens to
-// contain "Housing:" or "Tip:" stays one turn instead of fragmenting. If a
-// transcript uses labels outside this set, parseTranscript returns [] and we
-// fall back to readable prose (see below).
-const USER_LABELS = new Set([
-  "user",
-  "visitor",
-  "you",
-  "human",
-  "guest",
-  "client",
-  "me",
-]);
-const BOT_LABELS = new Set([
-  "bot",
-  "assistant",
-  "ai",
-  "agent",
-  "chatbot",
-  "carebot",
-  "system",
-  "support",
-  "helper",
-]);
-
-// Carebot opens every conversation with the same greeting + numbered language
-// menu, so a visitor's FIRST message is almost always which number they picked.
-// Map it back to a language name so the team reads "Português", not "3" — and so
-// we can tell a real question apart from a menu pick.
-const MENU_LANGUAGES: Record<string, string> = {
-  "1": "English",
-  "2": "Français",
-  "3": "Português",
-  "4": "Español",
-  "5": "العربية",
-};
-
-// A bare menu pick ("3", "3.", "3)") — a language choice, not a real question.
-function isMenuPick(text: string): boolean {
-  return /^[1-5][.)]?$/.test(text.trim());
-}
-
-// The opener is long, identical every time, and dominates the card — treat the
-// first bot turn as the greeting when it carries the language menu (or is very
-// long) so it can be collapsed and the real exchange leads.
-function isGreeting(turn: Turn): boolean {
-  return turn.role === "bot" && (turn.text.length > 220 || /language/i.test(turn.text));
-}
-
-function parseTranscript(raw: string): Turn[] {
-  if (!raw || !raw.trim()) return [];
-  const lines = raw.replace(/\r\n/g, "\n").split("\n");
-  const turns: Turn[] = [];
-  for (const line of lines) {
-    // Drop a leading [timestamp] if present, then look for "Speaker: text".
-    const stripped = line.replace(/^\s*\[[^\]]*\]\s*/, "");
-    const idx = stripped.indexOf(":");
-    const label = idx > 0 && idx <= 24 ? stripped.slice(0, idx).trim() : "";
-    const key = label.toLowerCase();
-    if (USER_LABELS.has(key) || BOT_LABELS.has(key)) {
-      turns.push({
-        speaker: label,
-        role: USER_LABELS.has(key) ? "user" : "bot",
-        text: stripped.slice(idx + 1).trim(),
-      });
-    } else if (line.trim() && turns.length > 0) {
-      // Continuation of the turn in progress (wrapped line, list item, etc.).
-      turns[turns.length - 1].text += "\n" + line.trim();
-    }
-  }
-  return turns
-    .map((t) => ({ ...t, text: t.text.trim() }))
-    .filter((t) => t.text.length > 0);
-}
+type Filter = "all" | ConversationStatus;
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
@@ -96,171 +45,270 @@ function formatWhen(iso: string): string {
   return d.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function firstNonEmptyLine(raw: string): string {
-  for (const line of raw.split("\n")) {
-    const t = line.trim();
-    if (t) return t;
-  }
-  return "";
-}
-
-// Read-only list of help-chatbot transcripts. Special-category data on this site
-// — kept plain and team-only, never linked to a web-session person (the
-// distinct_id is the conversation id, by design). Emails/phones are masked
-// upstream (see lib/redact-pii).
-//
-// Information hierarchy is built around the one question the team scans for:
-// "what did this person actually want?" So each card LEADS with the first real
-// question (the boilerplate greeting and the language-menu pick are demoted to a
-// tag + a collapsed block), and says so plainly when someone only picked a
-// language and left. Parsing failures degrade to plain prose, never a broken card.
+// ── the whole page body: needs overview + filters + conversation cards ──
 export function ChatbotConversations({
-  data,
+  view,
   emptyLabel,
 }: {
-  data: ChatbotConversation[];
+  view: ConversationsView;
   emptyLabel?: ReactNode;
 }) {
-  if (data.length === 0) {
+  const [filter, setFilter] = useState<Filter>("all");
+
+  if (view.total === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-brand-100 text-primary">
             <MessagesSquare aria-hidden className="size-6" />
           </span>
-          <p className="text-ds-s font-bold text-foreground">
-            No conversations yet
-          </p>
+          <p className="text-ds-s font-bold text-foreground">No conversations yet</p>
           <p className="max-w-sm text-ds-xs leading-relaxed text-muted-foreground">
             {emptyLabel ??
-              "Once people start chatting with the assistant, their questions will appear here."}
+              "Once people start chatting with the assistant, their needs will appear here."}
           </p>
         </CardContent>
       </Card>
     );
   }
 
+  const conversations = view.conversations.filter(
+    (c) => filter === "all" || c.insight.status === filter
+  );
+  const maxTheme = view.themes[0]?.count ?? 1;
+
   return (
-    <div className="space-y-4">
-      {data.map((c) => {
-        const turns = parseTranscript(c.transcript);
-        const userTurns = turns.filter((t) => t.role === "user");
-        const pick = userTurns.find((t) => isMenuPick(t.text));
-        const language = pick ? MENU_LANGUAGES[pick.text.trim()[0]] : null;
-        const questions = userTurns.filter((t) => !isMenuPick(t.text));
-        const questionCount = questions.length;
+    <div className="space-y-6">
+      {/* ── Top needs: the thesis. What people needed, at a glance. ── */}
+      <div className="rounded-lg border-2 border-border bg-card px-5 py-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
+            Top needs
+          </p>
+          <p className="text-ds-xxs font-medium text-muted-foreground">
+            {view.total} conversation{view.total === 1 ? "" : "s"}
+          </p>
+        </div>
 
-        // Lead with the real question. If they only chose a language and left,
-        // say that plainly (muted) rather than showing a bare "3".
-        const hasQuestion = Boolean(questions[0]?.text);
-        const title = hasQuestion
-          ? questions[0].text
-          : language
-            ? "No question asked"
-            : firstNonEmptyLine(c.transcript) || "Conversation";
+        <div className="mt-4 space-y-2.5">
+          {view.themes.map((t) => (
+            <div
+              key={t.name}
+              className="grid grid-cols-[minmax(0,9.5rem)_1fr_1.75rem] items-center gap-3.5"
+            >
+              <span className="truncate text-ds-xs font-bold text-foreground">
+                {t.name}
+              </span>
+              <span className="h-3 overflow-hidden rounded-full bg-secondary">
+                <span
+                  className="block h-full rounded-full bg-primary"
+                  style={{ width: `${Math.max(8, (t.count / maxTheme) * 100)}%` }}
+                />
+              </span>
+              <span className="text-right text-ds-xs font-bold tabular-nums text-primary">
+                {t.count}
+              </span>
+            </div>
+          ))}
+        </div>
 
-        const meta = [
-          formatWhen(c.at),
-          questionCount > 0
-            ? `${questionCount} question${questionCount === 1 ? "" : "s"}`
-            : "no question",
-        ]
-          .filter(Boolean)
-          .join(" · ");
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t-2 border-border pt-4">
+          <p className="text-ds-xs font-medium text-foreground">
+            {view.followUpCount > 0 ? (
+              <>
+                <span className="font-bold text-amber-700">
+                  {view.followUpCount} of {view.total}
+                </span>{" "}
+                look like they need a human follow-up
+              </>
+            ) : (
+              "Nothing looks like it needs a human follow-up"
+            )}
+          </p>
+          {view.languages.length > 0 ? (
+            <span className="flex items-center gap-1.5">
+              <span className="text-ds-xxs font-medium text-muted-foreground">
+                Languages
+              </span>
+              {view.languages.map((l) => (
+                <span
+                  key={l.name}
+                  className="rounded-full border-2 border-border bg-secondary/40 px-2 py-0.5 text-ds-xxs font-bold text-muted-foreground"
+                >
+                  {l.name} {l.count}
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </div>
+      </div>
 
-        return (
-          <Card key={`${c.conversationId}-${c.at}`}>
-            <details className="group/conv px-4 xl:px-6">
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35 [&::-webkit-details-marker]:hidden">
-                <div className="min-w-0">
+      {/* ── Filters: make the follow-ups + bot gaps a worklist. ── */}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={filter === "all"} onClick={() => setFilter("all")} count={view.total}>
+          All
+        </FilterChip>
+        <FilterChip
+          active={filter === "needs_follow_up"}
+          onClick={() => setFilter("needs_follow_up")}
+          count={view.followUpCount}
+          dot="bg-amber-500"
+        >
+          Needs follow-up
+        </FilterChip>
+        {view.botGapCount > 0 ? (
+          <FilterChip
+            active={filter === "bot_gap"}
+            onClick={() => setFilter("bot_gap")}
+            count={view.botGapCount}
+            dot="bg-destructive"
+          >
+            Bot gaps
+          </FilterChip>
+        ) : null}
+      </div>
+
+      {/* ── Conversations, each titled by its need. ── */}
+      <div className="space-y-3">
+        {conversations.map((c) => (
+          <ConversationCard key={`${c.conversationId}-${c.at}`} c={c} />
+        ))}
+        {conversations.length === 0 ? (
+          <p className="rounded-lg border-2 border-dashed border-border p-8 text-center text-ds-xs font-medium text-muted-foreground">
+            Nothing in this view.
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  count,
+  dot,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  count: number;
+  dot?: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border-2 px-3.5 py-1.5 text-ds-xs font-bold transition-colors",
+        active
+          ? "border-brand-dark bg-brand-dark text-brand-000"
+          : "border-border bg-card text-muted-foreground hover:border-foreground/20"
+      )}
+    >
+      {dot ? <span className={cn("size-2 rounded-full", dot)} /> : null}
+      {children}
+      <span className="tabular-nums opacity-80">{count}</span>
+    </button>
+  );
+}
+
+function ConversationCard({ c }: { c: EnrichedConversation }) {
+  const { insight, turns, questionCount, at } = c;
+  const s = STATUS_META[insight.status];
+
+  return (
+    <Card className="px-5 py-4">
+      <details className="group/conv">
+        <summary className="flex cursor-pointer list-none flex-col gap-2 rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35 [&::-webkit-details-marker]:hidden">
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="font-heading text-ds-s font-bold text-foreground">
+              {insight.need}
+            </h2>
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-ds-xxs font-bold",
+                s.chip
+              )}
+            >
+              <span className={cn("size-1.5 rounded-full", s.dot)} />
+              {s.label}
+            </span>
+          </div>
+
+          <p className="text-ds-xs leading-relaxed text-foreground/80">
+            {insight.summary}
+          </p>
+
+          <div className="mt-0.5 flex items-center gap-2 text-ds-xxs text-muted-foreground">
+            {insight.language ? <Tag>{insight.language}</Tag> : null}
+            <span>{formatWhen(at)}</span>
+            <span className="text-border">·</span>
+            <span>
+              {questionCount} question{questionCount === 1 ? "" : "s"}
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1 font-bold text-primary">
+              <span className="group-open/conv:hidden">Show transcript</span>
+              <span className="hidden group-open/conv:inline">Hide transcript</span>
+              <ChevronDown
+                aria-hidden
+                className="size-3.5 transition-transform duration-200 group-open/conv:rotate-180"
+              />
+            </span>
+          </div>
+        </summary>
+
+        <div className="mt-4 space-y-3 border-t-2 border-border pt-4 group-open/conv:animate-in group-open/conv:fade-in group-open/conv:slide-in-from-top-1 group-open/conv:duration-200">
+          {turns.length > 0 ? (
+            turns.map((t, i) =>
+              t.isGreeting ? (
+                <details
+                  key={i}
+                  className="group/greet rounded-md border-2 border-border bg-secondary/30 px-3 py-2"
+                >
+                  <summary className="flex cursor-pointer list-none items-center gap-1.5 text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground [&::-webkit-details-marker]:hidden">
+                    <ChevronDown className="size-3.5 shrink-0 transition-transform group-open/greet:rotate-180" />
+                    Chatbot greeting &amp; language menu
+                  </summary>
+                  <p className="mt-2 whitespace-pre-wrap break-words text-ds-xxs leading-relaxed text-muted-foreground">
+                    {t.text}
+                  </p>
+                </details>
+              ) : (
+                <div
+                  key={i}
+                  className={cn(
+                    "border-l-2 pl-3",
+                    t.role === "user" ? "border-primary" : "border-border"
+                  )}
+                >
                   <p
                     className={cn(
-                      "line-clamp-2 text-ds-s font-bold",
-                      hasQuestion
-                        ? "text-foreground"
-                        : "italic text-muted-foreground",
+                      "text-ds-xxs font-bold uppercase tracking-wide",
+                      t.role === "user" ? "text-primary" : "text-muted-foreground"
                     )}
                   >
-                    {title}
+                    {t.role === "user" ? "Person" : "Assistant"}
                   </p>
-                  <p className="mt-1 text-ds-xxs text-muted-foreground">{meta}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2.5">
-                  {language ? <Tag>{language}</Tag> : null}
-                  <ChevronDown
-                    aria-hidden
-                    className="mt-0.5 size-4 text-muted-foreground transition-transform duration-200 group-open/conv:rotate-180"
-                  />
-                </div>
-              </summary>
-
-              <div className="mt-4 border-t border-border pt-4 group-open/conv:animate-in group-open/conv:fade-in group-open/conv:slide-in-from-top-1 group-open/conv:duration-200">
-                {turns.length > 0 ? (
-                  <div className="space-y-3">
-                    {turns.map((t, i) =>
-                      i === 0 && isGreeting(t) ? (
-                        <details
-                          key={i}
-                          className="group/greet rounded-md border border-border/70 bg-muted/40 px-3 py-2"
-                        >
-                          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-ds-xxs font-semibold uppercase tracking-wide text-muted-foreground [&::-webkit-details-marker]:hidden">
-                            <ChevronDown className="size-3.5 shrink-0 transition-transform group-open/greet:rotate-180" />
-                            Chatbot greeting &amp; language menu
-                          </summary>
-                          <p className="mt-2 whitespace-pre-wrap break-words text-ds-xxs leading-relaxed text-muted-foreground">
-                            {t.text}
-                          </p>
-                        </details>
-                      ) : (
-                        <div
-                          key={i}
-                          className={cn(
-                            "border-l-2 pl-3",
-                            t.role === "user"
-                              ? "border-primary"
-                              : "border-border",
-                          )}
-                        >
-                          <p
-                            className={cn(
-                              "text-ds-xxs font-semibold uppercase tracking-wide",
-                              t.role === "user"
-                                ? "text-primary"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {t.speaker}
-                          </p>
-                          <p
-                            className={cn(
-                              "mt-0.5 whitespace-pre-wrap break-words text-ds-xs leading-relaxed",
-                              t.role === "user"
-                                ? "font-medium text-foreground"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {t.text}
-                          </p>
-                        </div>
-                      ),
+                  <p
+                    className={cn(
+                      "mt-0.5 whitespace-pre-wrap break-words text-ds-xs leading-relaxed",
+                      t.role === "user" ? "font-medium text-foreground" : "text-muted-foreground"
                     )}
-                  </div>
-                ) : (
-                  <p className="scroll-fade max-h-96 overflow-auto whitespace-pre-wrap break-words text-ds-xs leading-relaxed text-muted-foreground">
-                    {c.transcript || "(empty transcript)"}
+                  >
+                    {t.text}
                   </p>
-                )}
-
-                {c.conversationId ? (
-                  <p className="mt-4 text-ds-xxs text-muted-foreground/70">
-                    Session {c.conversationId}
-                  </p>
-                ) : null}
-              </div>
-            </details>
-          </Card>
-        );
-      })}
-    </div>
+                </div>
+              )
+            )
+          ) : (
+            <p className="scroll-fade max-h-96 overflow-auto whitespace-pre-wrap break-words text-ds-xs leading-relaxed text-muted-foreground">
+              (transcript unavailable)
+            </p>
+          )}
+        </div>
+      </details>
+    </Card>
   );
 }
