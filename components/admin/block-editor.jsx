@@ -1,17 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+// DS lacks link + trash glyphs — interim lucide icons, flagged for Rafael.
+import { Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   IconNotes,
   IconMenu,
   IconArrowRight,
   IconArrowDown,
   IconPlus,
-  IconMinus,
-  IconInternalLink,
 } from "@/components/icons/ds-icons";
 import { cn } from "@/lib/utils";
 
@@ -173,19 +178,25 @@ export function blocksToPayload(blocks) {
 
 function IconBtn({ label, onClick, disabled, danger, children }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors disabled:pointer-events-none disabled:opacity-30",
-        danger ? "hover:bg-destructive/10 hover:text-destructive" : "hover:bg-secondary hover:text-foreground"
-      )}
-    >
-      {children}
-    </button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            aria-label={label}
+            onClick={onClick}
+            disabled={disabled}
+            className={cn(
+              "grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors disabled:pointer-events-none disabled:opacity-30",
+              danger ? "hover:bg-destructive/10 hover:text-destructive" : "hover:bg-secondary hover:text-foreground"
+            )}
+          >
+            {children}
+          </button>
+        }
+      />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -246,7 +257,7 @@ function LinkableField({ value, onChange, rows = 3, placeholder, hint }) {
           onClick={openForm}
           className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
         >
-          <IconInternalLink className="size-3.5" />
+          <Link2 className="size-3.5" strokeWidth={2} />
           Add link
         </button>
       </div>
@@ -389,7 +400,7 @@ function BlockFields({ block, onPatch }) {
           <div className="mb-2 flex items-center justify-between">
             <span className="text-ds-xxs font-bold text-muted-foreground">Row {k + 1}</span>
             <IconBtn label="Remove row" danger onClick={() => removeRow(k)}>
-              <IconMinus className="size-4" />
+              <Trash2 className="size-4" strokeWidth={2} />
             </IconBtn>
           </div>
           <label className="block">
@@ -419,10 +430,16 @@ function BlockFields({ block, onPatch }) {
   );
 }
 
-function BlockCard({ block, index, count, onPatch, onMove, onRemove }) {
+function BlockCard({ block, index, count, flashing, onPatch, onMove, onRemove }) {
   const { label, Icon } = BLOCK_META[block.type];
   return (
-    <div className="overflow-hidden rounded-lg border-2 border-border bg-card">
+    <div
+      data-block-card
+      className={cn(
+        "overflow-hidden rounded-lg border-2 border-border bg-card",
+        flashing && "reorder-flash"
+      )}
+    >
       <div className="flex items-center gap-2 border-b-2 border-border px-3 py-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-ds-xxs font-bold text-primary">
           <Icon className="size-3.5" />
@@ -436,7 +453,7 @@ function BlockCard({ block, index, count, onPatch, onMove, onRemove }) {
           <IconArrowDown className="size-4" />
         </IconBtn>
         <IconBtn label="Delete block" danger onClick={onRemove}>
-          <IconMinus className="size-4" />
+          <Trash2 className="size-4" strokeWidth={2} />
         </IconBtn>
       </div>
       <div className="p-3">
@@ -451,9 +468,35 @@ function BlockCard({ block, index, count, onPatch, onMove, onRemove }) {
 // next array (the parent keeps it in draft state, so dirty-tracking just works).
 export function SectionBlocks({ blocks, onChange }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  // Creation feedback for blocks — mirrors the section / link / FAQ rows and the
+  // block-redesign prototype: a new block flashes, scrolls into view and its
+  // first field takes focus, so adding a block is never silent. The flash class
+  // is React-driven and starts unset on both the server and the client, so it
+  // can't hydrate-mismatch; after commit we find the new node via that class.
+  const [flashKey, setFlashKey] = useState(null);
+  useEffect(() => {
+    if (!flashKey) return;
+    const node = wrapRef.current?.querySelector(".reorder-flash");
+    if (node) {
+      requestAnimationFrame(() => {
+        node.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        node.querySelector("textarea, input")?.focus({ preventScroll: true });
+      });
+    }
+    const t = setTimeout(
+      () => setFlashKey((k) => (k === flashKey ? null : k)),
+      700
+    );
+    return () => clearTimeout(t);
+  }, [flashKey]);
+
   const add = (type) => {
-    onChange([...blocks, emptyBlock(type)]);
+    const b = emptyBlock(type);
+    onChange([...blocks, b]);
     setMenuOpen(false);
+    setFlashKey(b._k);
   };
   const patch = (j, p) => onChange(blocks.map((b, k) => (k === j ? { ...b, ...p } : b)));
   const move = (j, dir) => {
@@ -466,13 +509,14 @@ export function SectionBlocks({ blocks, onChange }) {
   const remove = (j) => onChange(blocks.filter((_, k) => k !== j));
 
   return (
-    <div className="space-y-2">
+    <div ref={wrapRef} className="space-y-2">
       {blocks.map((b, j) => (
         <BlockCard
           key={b._k}
           block={b}
           index={j}
           count={blocks.length}
+          flashing={flashKey === b._k}
           onPatch={(p) => patch(j, p)}
           onMove={(d) => move(j, d)}
           onRemove={() => remove(j)}
@@ -484,21 +528,32 @@ export function SectionBlocks({ blocks, onChange }) {
           variant="secondary"
           size="sm"
           onClick={() => setMenuOpen((o) => !o)}
+          aria-expanded={menuOpen}
           className="w-full border-dashed"
         >
-          <IconPlus className="size-3.5" />
+          {/* The plus rotates 45° into an ✕ while the menu is open — a quiet
+              cue that the same button now closes it (ease-out, 200ms). */}
+          <IconPlus
+            className={cn(
+              "size-3.5 transition-transform duration-200",
+              menuOpen && "rotate-45"
+            )}
+          />
           Add block
         </Button>
         {menuOpen ? (
           <div className="mt-2 grid grid-cols-2 gap-2">
-            {BLOCK_TYPES.map((t) => {
+            {BLOCK_TYPES.map((t, i) => {
               const { label, desc, Icon } = BLOCK_META[t];
               return (
+                // Cascade the choices in (same entry-appear + staggered delay as
+                // the dashboard cards); press gives the Button's 1px nudge.
                 <button
                   key={t}
                   type="button"
                   onClick={() => add(t)}
-                  className="flex items-center gap-3 rounded-lg border-2 border-border bg-card p-2.5 text-left transition-colors hover:border-primary"
+                  style={{ animationDelay: `${i * 45}ms` }}
+                  className="flex animate-entry-appear items-center gap-3 rounded-lg border-2 border-border bg-card p-2.5 text-left transition-all hover:border-primary active:translate-y-px"
                 >
                   <span className="grid size-8 shrink-0 place-items-center rounded-md bg-secondary text-primary">
                     <Icon className="size-4" />

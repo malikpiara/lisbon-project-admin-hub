@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 // DS lacks these — flagged for Rafael. ExternalLink signals "opens the live site
-// in a new tab"; Sparkles marks the standard-sections shortcut.
-import { ExternalLink, Sparkles } from "lucide-react";
+// in a new tab"; LayoutTemplate marks the standard-sections template shortcut.
+import { ExternalLink, LayoutTemplate } from "lucide-react";
 import {
   IconInfo,
   IconInternalLink,
@@ -624,16 +624,10 @@ export function ArticleEditor({
           title="Article sections"
           count={draft.sections.length}
           action={
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm" onClick={insertStandardSections}>
-                <Sparkles className="size-3.5" />
-                Insert standard sections
-              </Button>
-              <Button size="sm" onClick={addSection}>
-                <IconPlus className="size-3.5" />
-                Add section
-              </Button>
-            </div>
+            <Button size="sm" onClick={addSection}>
+              <IconPlus className="size-3.5" />
+              Add section
+            </Button>
           }
         >
           {draft.sections.length === 0 ? (
@@ -643,7 +637,7 @@ export function ArticleEditor({
               hint="Most articles follow the same five sections. Start from the standard set, then edit each one."
               action={
                 <Button variant="secondary" size="sm" onClick={insertStandardSections}>
-                  <Sparkles className="size-3.5" />
+                  <LayoutTemplate className="size-3.5" />
                   Insert standard sections
                 </Button>
               }
@@ -691,8 +685,13 @@ export function ArticleEditor({
                           />
                         </div>
                         <div>
-                          <p className="mb-2 text-ds-xs font-bold text-foreground">
+                          <p className="mb-2 flex items-center gap-2 text-ds-xs font-bold text-foreground">
                             Content
+                            {s.blocks.length ? (
+                              <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">
+                                {s.blocks.length}
+                              </span>
+                            ) : null}
                           </p>
                           <SectionBlocks
                             blocks={s.blocks}

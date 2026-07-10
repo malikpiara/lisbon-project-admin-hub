@@ -1,6 +1,7 @@
 import { ViewTransition } from "react";
 
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { authedPayload } from "@/lib/admin-auth";
 
 // A passthrough title template ("%s") stops the root layout's public brand
@@ -35,20 +36,23 @@ export default async function AdminLayout({ children }) {
 
   return (
     // Block flow on mobile (header bar stacks above the content), classic
-    // sidebar row from md up.
-    <div className="min-h-dvh md:flex">
-      <AdminSidebar
-        userEmail={user.email}
-        isAdmin={user.role === "admin"}
-        pendingReviews={pendingReviews}
-      />
-      <div className="min-w-0 flex-1 bg-card">
-        {/* Cross-fade the content pane on route change. The <ViewTransition>
-            boundary persists while its children swap per route, so React
-            animates old↔new; the sidebar sits outside it and stays put. Timing +
-            reduced-motion live in globals.css (::view-transition-*). */}
-        <ViewTransition>{children}</ViewTransition>
+    // sidebar row from md up. TooltipProvider groups every admin icon-button
+    // tooltip so hovering between them skips the reopen delay (delay: 150ms).
+    <TooltipProvider>
+      <div className="min-h-dvh md:flex">
+        <AdminSidebar
+          userEmail={user.email}
+          isAdmin={user.role === "admin"}
+          pendingReviews={pendingReviews}
+        />
+        <div className="min-w-0 flex-1 bg-card">
+          {/* Cross-fade the content pane on route change. The <ViewTransition>
+              boundary persists while its children swap per route, so React
+              animates old↔new; the sidebar sits outside it and stays put. Timing +
+              reduced-motion live in globals.css (::view-transition-*). */}
+          <ViewTransition>{children}</ViewTransition>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

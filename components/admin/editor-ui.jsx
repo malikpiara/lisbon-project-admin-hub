@@ -8,6 +8,11 @@ import {
 } from "@/components/ui/collapsible";
 import { IconArrowDown, IconArrowRight } from "@/components/icons/ds-icons";
 import { DeleteButton } from "@/components/admin/delete-button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // The DS has no up-arrow — reuse arrow/down rotated 180.
@@ -20,16 +25,22 @@ const IconMoveUp = ({ className, ...props }) => (
 // recall (Nielsen #6), and keyboard-accessible by default.
 function RowAction({ icon: Icon, label, onClick, disabled }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      disabled={disabled}
-      className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-    >
-      <Icon className="size-4" strokeWidth={2} />
-    </button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            aria-label={label}
+            onClick={onClick}
+            disabled={disabled}
+            className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+          >
+            <Icon className="size-4" strokeWidth={2} />
+          </button>
+        }
+      />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
