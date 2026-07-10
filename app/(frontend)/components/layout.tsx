@@ -36,7 +36,7 @@ export default function StyleguideLayout({ children }: { children: ReactNode }) 
 
       <div className="mx-auto grid max-w-[1800px] grid-cols-1 lg:grid-cols-[17rem_minmax(0,1fr)]">
         <aside className="hidden border-r-2 border-border lg:block">
-          <div className="scrollbar-hide sticky top-20 h-[calc(100dvh-5rem)] overflow-y-auto px-6 py-10">
+          <div className="scroll-fade-y scrollbar-hide sticky top-20 h-[calc(100dvh-5rem)] overflow-y-auto px-6 py-10">
             <StyleguideNav groups={STYLEGUIDE_NAV_GROUPS} />
           </div>
         </aside>

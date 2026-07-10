@@ -71,7 +71,7 @@ export function CodeBlock({
             <div key={i}>{i + 1}</div>
           ))}
         </div>
-        <pre className="min-w-0 flex-1 overflow-x-auto py-3 pl-4 pr-12 font-mono">
+        <pre className="scroll-fade-x min-w-0 flex-1 overflow-x-auto py-3 pl-4 pr-12 font-mono">
           <code
             dangerouslySetInnerHTML={{ __html: highlightCode(code) }}
           />

@@ -215,7 +215,8 @@ const TYPE_SCALE = [
 
 function TypeScaleTable() {
   return (
-    <div className="overflow-x-auto rounded-lg ring-2 ring-border">
+    <div className="overflow-hidden rounded-lg ring-2 ring-border">
+      <div className="scroll-fade-x overflow-x-auto">
       <table className="w-full min-w-[720px] text-left text-ds-xs">
         <thead className="border-b-2 border-border text-muted-foreground">
           <tr>
@@ -240,6 +241,7 @@ function TypeScaleTable() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
