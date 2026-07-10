@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-// The DS has no trash icon yet — use the removal glyph (IconMinus). Flagged for Rafael.
-import { IconMinus } from "@/components/icons/ds-icons";
+// The DS has no trash icon yet — use lucide's Trash2 (a minus glyph reads as
+// "decrement", not "delete"). Flagged for Rafael to add a DS trash icon.
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,7 @@ export function DeleteButton({ onConfirm, label = "Delete", className = "" }) {
       onClick={() => setArmed(true)}
       className={cn("text-destructive hover:text-destructive", className)}
     >
-      <IconMinus className="size-4" />
+      <Trash2 className="size-4" strokeWidth={2} />
       {label}
     </Button>
   );

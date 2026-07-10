@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react"; // no DS equivalent yet — flagged for Rafael
+// DS lacks these — flagged for Rafael. ExternalLink signals "opens the live site
+// in a new tab"; Sparkles marks the standard-sections shortcut.
+import { ExternalLink, Sparkles } from "lucide-react";
 import {
   IconInfo,
   IconInternalLink,
@@ -128,6 +130,56 @@ export function ArticleEditor({
   const [flashKeyLinkKey, setFlashKeyLinkKey] = useState(null);
   const [flashFaqKey, setFlashFaqKey] = useState(null);
 
+  // Creation feedback: several editors added a section / link / FAQ without
+  // realising, because a new row appends at the bottom — often below the fold —
+  // with no motion. On create we flash the row AND scroll it into view.
+  //
+  // We look the row up through a client-only node registry rather than a DOM
+  // `data-*` attribute: row keys come from a module-level counter that advances
+  // independently on the SSR pass and the client, so rendering the key as an
+  // attribute would hydrate-mismatch. `rowRef` composes the FLIP ref with a
+  // collector, cached per key so the ref identity stays stable across renders.
+  const rowNodes = useRef(new Map()); // key -> element
+  const rowRefCbs = useRef(new Map()); // key -> stable combined ref callback
+  const rowRef = (flipRef, key) => {
+    let cb = rowRefCbs.current.get(key);
+    if (!cb || cb._flip !== flipRef) {
+      cb = (el) => {
+        flipRef(el);
+        if (el) {
+          rowNodes.current.set(key, el);
+        } else {
+          rowNodes.current.delete(key);
+          rowRefCbs.current.delete(key); // keys are never reused (monotonic)
+        }
+      };
+      cb._flip = flipRef;
+      rowRefCbs.current.set(key, cb);
+    }
+    return cb;
+  };
+
+  const [scrollToKey, setScrollToKey] = useState(null);
+  useEffect(() => {
+    if (!scrollToKey) return;
+    const el = rowNodes.current.get(scrollToKey);
+    // rAF so the just-mounted, auto-expanding row has laid out before we scroll.
+    if (el) {
+      requestAnimationFrame(() =>
+        el.scrollIntoView({ behavior: "smooth", block: "center" })
+      );
+    }
+    setScrollToKey(null);
+  }, [scrollToKey]);
+
+  // Flash + scroll a freshly-created row so it can't be missed. `k` is the new
+  // row's stable key; `setFlashKey` is that list's flash setter.
+  const revealRow = (k, setFlashKey) => {
+    setFlashKey(k);
+    setTimeout(() => setFlashKey((c) => (c === k ? null : c)), 700);
+    setScrollToKey(k);
+  };
+
   // Reorder by identity (`_k`): a row is "moved" when its key sits at a different
   // index than in the saved baseline. Wash/count compare by key too, so moving an
   // unedited row doesn't light up its fields.
@@ -181,30 +233,33 @@ export function ArticleEditor({
         : { ...b, _k: nextRowKey() }
     );
   const addSection = () => {
+    const k = nextRowKey();
     setDraft((d) => ({
       ...d,
       sections: [
         ...d.sections,
-        { _k: nextRowKey(), heading: "New section", lead: "", blocks: [] },
+        { _k: k, heading: "New section", lead: "", blocks: [] },
       ],
     }));
+    revealRow(k, setFlashSectionKey);
   };
   // Scaffold the five standard sections most articles follow. Idempotent:
   // only appends templates whose heading isn't already present. Step-by-Step
   // starts with an empty numbered list; "Documents Required" with a starter table.
   const insertStandardSections = () => {
-    setDraft((d) => {
-      const existing = new Set(d.sections.map((s) => s.heading.trim()));
-      const additions = ARTICLE_SECTION_TEMPLATES.filter(
-        (t) => !existing.has(t.heading)
-      ).map((t) => ({
-        _k: nextRowKey(),
-        heading: t.heading,
-        lead: "",
-        blocks: blocksFromTemplate(t),
-      }));
-      return { ...d, sections: [...d.sections, ...additions] };
-    });
+    const existing = new Set(draft.sections.map((s) => s.heading.trim()));
+    const additions = ARTICLE_SECTION_TEMPLATES.filter(
+      (t) => !existing.has(t.heading)
+    ).map((t) => ({
+      _k: nextRowKey(),
+      heading: t.heading,
+      lead: "",
+      blocks: blocksFromTemplate(t),
+    }));
+    if (additions.length === 0) return;
+    setDraft((d) => ({ ...d, sections: [...d.sections, ...additions] }));
+    // Land on the first inserted section so the batch is unmistakably visible.
+    setScrollToKey(additions[0]._k);
   };
   const removeSection = (i) => {
     setDraft((d) => ({ ...d, sections: d.sections.filter((_, idx) => idx !== i) }));
@@ -222,11 +277,13 @@ export function ArticleEditor({
     setTimeout(() => setFlashSectionKey((c) => (c === movedKey ? null : c)), 700);
   };
   const duplicateSection = (i) => {
+    const k = nextRowKey();
     setDraft((d) => {
       const arr = [...d.sections];
-      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
+      arr.splice(i + 1, 0, { ...arr[i], _k: k });
       return { ...d, sections: arr };
     });
+    revealRow(k, setFlashSectionKey);
   };
   const setKeyLink = (i, patch) => {
     setDraft((d) => ({
@@ -237,13 +294,12 @@ export function ArticleEditor({
     }));
   };
   const addKeyLink = () => {
+    const k = nextRowKey();
     setDraft((d) => ({
       ...d,
-      keyLinks: [
-        ...d.keyLinks,
-        { _k: nextRowKey(), label: "New link", href: "" },
-      ],
+      keyLinks: [...d.keyLinks, { _k: k, label: "New link", href: "" }],
     }));
+    revealRow(k, setFlashKeyLinkKey);
   };
   const removeKeyLink = (i) => {
     setDraft((d) => ({
@@ -267,11 +323,13 @@ export function ArticleEditor({
     );
   };
   const duplicateKeyLink = (i) => {
+    const k = nextRowKey();
     setDraft((d) => {
       const arr = [...d.keyLinks];
-      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
+      arr.splice(i + 1, 0, { ...arr[i], _k: k });
       return { ...d, keyLinks: arr };
     });
+    revealRow(k, setFlashKeyLinkKey);
   };
   const setFaq = (i, patch) => {
     setDraft((d) => ({
@@ -280,10 +338,12 @@ export function ArticleEditor({
     }));
   };
   const addFaq = () => {
+    const k = nextRowKey();
     setDraft((d) => ({
       ...d,
-      faqs: [...d.faqs, { _k: nextRowKey(), question: "New question", answer: "" }],
+      faqs: [...d.faqs, { _k: k, question: "New question", answer: "" }],
     }));
+    revealRow(k, setFlashFaqKey);
   };
   const removeFaq = (i) => {
     setDraft((d) => ({ ...d, faqs: d.faqs.filter((_, idx) => idx !== i) }));
@@ -301,11 +361,13 @@ export function ArticleEditor({
     setTimeout(() => setFlashFaqKey((c) => (c === movedKey ? null : c)), 700);
   };
   const duplicateFaq = (i) => {
+    const k = nextRowKey();
     setDraft((d) => {
       const arr = [...d.faqs];
-      arr.splice(i + 1, 0, { ...arr[i], _k: nextRowKey() });
+      arr.splice(i + 1, 0, { ...arr[i], _k: k });
       return { ...d, faqs: arr };
     });
+    revealRow(k, setFlashFaqKey);
   };
 
   const save = () => {
@@ -413,7 +475,7 @@ export function ArticleEditor({
                   className={buttonVariants({ variant: "secondary", size: "sm" })}
                 >
                   View on site
-                  <IconInternalLink className="size-3.5" />
+                  <ExternalLink className="size-3.5" strokeWidth={2} />
                 </Link>
               ) : null}
               <DeleteButton
@@ -518,7 +580,7 @@ export function ArticleEditor({
                 const si = savedKeyLinkKeys.indexOf(l._k);
                 const moved = si !== -1 && si !== i;
                 return (
-                  <div key={l._k} ref={keyLinkFlip(l._k)}>
+                  <div key={l._k} ref={rowRef(keyLinkFlip(l._k), l._k)}>
                     <EditorRow
                       title={l.label || "Untitled link"}
                       subtitle={l.href}
@@ -593,7 +655,7 @@ export function ArticleEditor({
                 const si = savedSectionKeys.indexOf(s._k);
                 const moved = si !== -1 && si !== i;
                 return (
-                  <div key={s._k} ref={sectionFlip(s._k)}>
+                  <div key={s._k} ref={rowRef(sectionFlip(s._k), s._k)}>
                     <EditorRow
                       title={s.heading || "Untitled section"}
                       subtitle={s.lead}
@@ -676,7 +738,7 @@ export function ArticleEditor({
                 const si = savedFaqKeys.indexOf(f._k);
                 const moved = si !== -1 && si !== i;
                 return (
-                  <div key={f._k} ref={faqFlip(f._k)}>
+                  <div key={f._k} ref={rowRef(faqFlip(f._k), f._k)}>
                     <EditorRow
                       title={f.question || "Untitled question"}
                       subtitle={f.answer}

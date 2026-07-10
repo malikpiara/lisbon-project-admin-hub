@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 // keystroke because it reads the same draft state the form mutates.
 export function ArticlePreview({ draft, topicTitle }) {
   return (
-    <div className="overflow-hidden rounded-lg border-2 border-border bg-bg-page">
-      <div className="border-b-2 border-border bg-card px-6 py-5">
+    <div className="flex max-h-[calc(100dvh-8rem)] flex-col overflow-hidden rounded-lg border-2 border-border bg-bg-page">
+      <div className="shrink-0 border-b-2 border-border bg-card px-6 py-5">
         <p className="text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
           Live preview
         </p>
@@ -27,7 +27,7 @@ export function ArticlePreview({ draft, topicTitle }) {
         ) : null}
       </div>
 
-      <div className="space-y-6 px-6 py-6">
+      <div className="scroll-fade-y min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
         {draft.keyLinks?.length ? (
           <div>
             <h3 className="font-heading text-ds-s font-bold text-brand-dark">
