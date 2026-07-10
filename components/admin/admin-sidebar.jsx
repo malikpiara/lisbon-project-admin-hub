@@ -180,6 +180,7 @@ export function AdminSidebar({
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  className="cursor-pointer"
                   render={
                     <Link href="/" target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="size-4" />
@@ -188,6 +189,7 @@ export function AdminSidebar({
                   }
                 />
                 <DropdownMenuItem
+                  className="cursor-pointer"
                   render={
                     <Link href="/components" target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="size-4" />
@@ -199,6 +201,10 @@ export function AdminSidebar({
                 <form action={logout}>
                   <DropdownMenuItem
                     variant="destructive"
+                    className="cursor-pointer"
+                    // The render target is a real <button> (it submits the logout
+                    // form), so tell Base UI not to re-apply button semantics.
+                    nativeButton
                     render={
                       <button type="submit" className="w-full">
                         <LogOut className="size-4" />
