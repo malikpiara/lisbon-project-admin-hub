@@ -135,5 +135,8 @@ export async function deleteTopic(id, serviceId) {
   revalidatePath("/admin/services");
   revalidatePath("/admin/articles");
   revalidatePublicContent();
-  redirect(serviceId ? `/admin/services/${serviceId}` : "/admin/services");
+  // Land back in the full Articles list, not inside the service the article
+  // belonged to — the article is gone, and the list is where you pick what to
+  // do next. (`serviceId` is still used above for revalidation.)
+  redirect("/admin/articles");
 }

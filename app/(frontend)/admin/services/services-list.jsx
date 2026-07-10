@@ -5,9 +5,9 @@ import Link from "next/link";
 import { IconArrowRight, IconPlus } from "@/components/icons/ds-icons";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MoveControls } from "@/components/admin/editor-ui";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 import { SaveBar } from "@/components/admin/save-bar";
 import { useFlip } from "@/lib/use-flip";
@@ -100,11 +100,13 @@ export function ServicesList({ services, userEmail }) {
             {order.length} categories, in the order they appear on the home page.
           </p>
         </div>
+        {/* SubmitButton disables itself the moment it's clicked (useFormStatus),
+            so rapid clicks can't fire createService several times before the
+            redirect to the new category lands — and it shows progress. */}
         <form action={createService}>
-          <Button size="sm" type="submit">
-            <IconPlus />
+          <SubmitButton size="sm" icon={IconPlus} pendingLabel="Creating…">
             Add category
-          </Button>
+          </SubmitButton>
         </form>
       </div>
 
