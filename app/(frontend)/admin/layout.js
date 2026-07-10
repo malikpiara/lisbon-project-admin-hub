@@ -54,6 +54,7 @@ export default async function AdminLayout({ children }) {
       <SidebarProvider defaultOpen={defaultOpen}>
         <AdminSidebar
           userEmail={user.email}
+          userName={user.name}
           isAdmin={user.role === "admin"}
           pendingReviews={pendingReviews}
         />

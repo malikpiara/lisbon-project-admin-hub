@@ -32,6 +32,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -74,12 +75,26 @@ const navGroups = [
   },
 ];
 
-function initials(email) {
-  const base = (email || "?").split("@")[0].replace(/[^a-z0-9]/gi, "");
-  return (base.slice(0, 2) || "?").toUpperCase();
+// Same rule as the Team page (users-manager): first + last initial from a name,
+// else the first two letters of the email — so the avatar reads the same in the
+// sidebar and the team list ("Malik Piara" → MP, not the email's MA).
+function initials(name, email) {
+  const src = (name || "").trim();
+  if (src) {
+    const parts = src.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2)
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return src.slice(0, 2).toUpperCase();
+  }
+  return (email || "?").slice(0, 2).toUpperCase();
 }
 
-export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 }) {
+export function AdminSidebar({
+  userEmail,
+  userName,
+  isAdmin = false,
+  pendingReviews = 0,
+}) {
   const pathname = usePathname();
   const groups = navGroups.filter((g) => !g.adminOnly || isAdmin);
 
@@ -139,10 +154,12 @@ export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 })
                   // TooltipTrigger and swallow the dropdown's own trigger wiring.
                   <SidebarMenuButton size="lg">
                     <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-ds-xxs font-bold text-primary">
-                      {initials(userEmail)}
+                      {initials(userName, userEmail)}
                     </span>
                     <span className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                      <span className="truncate text-ds-xs font-bold text-foreground">Signed in</span>
+                      <span className="truncate text-ds-xs font-bold text-foreground">
+                        {userName || "Signed in"}
+                      </span>
                       <span className="truncate text-ds-xxs font-medium text-muted-foreground">
                         {userEmail}
                       </span>
@@ -151,9 +168,12 @@ export function AdminSidebar({ userEmail, isAdmin = false, pendingReviews = 0 })
                 }
               />
               <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-56">
-                <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
-                  {userEmail}
-                </DropdownMenuLabel>
+                {/* Base UI requires a GroupLabel to live inside a Group. */}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+                    {userEmail}
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   render={
