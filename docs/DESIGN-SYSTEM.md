@@ -301,5 +301,6 @@ Grouped into three nav sections:
 The Payload admin is themed to the DS in `app/(payload)/custom.css` (it doesn't
 load `globals.css`, so values are hardcoded hex). **See that file for the full
 mapping** — it's the source of truth. Secondary surface: the team works in the
-custom `/admin`; `/cms-admin` is `notFound()`'d in production (`ALLOW_CMS_ADMIN=1`
-escape hatch) and only runs locally, on previews, and as the `/api` host.
+custom `/admin`, and `/cms-admin` is a **maintenance-only escape hatch** —
+`notFound()`'d in production, live only locally / on previews / as the `/api` host.
+See [ADMIN-HANDOVER.md](./ADMIN-HANDOVER.md) for why it's blocked in prod.

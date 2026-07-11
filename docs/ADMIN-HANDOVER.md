@@ -96,7 +96,25 @@ that way and have **no migration files yet**:
 migration. (See [project memory `project_ts_build_strict`] — untyped helpers also
 broke deploys before; typecheck before pushing.)
 
-## What's left to retire `/cms-admin`
+## `/cms-admin` — blocked in production, why, and what's left to remove it
+
+**Why it's blocked in prod.** The native Payload admin is a **maintenance-only
+escape hatch**. The team works in the custom `/admin` (DS-styled, with guardrails,
+review flow, and role checks the raw admin doesn't have), so exposing a second,
+unbranded admin login on the live site is needless surface. `/cms-admin` therefore
+`notFound()`s on the **production** deployment (`app/(payload)/cms-admin/[[...segments]]/page.tsx`).
+
+- It **stays live locally and on preview deploys** for debugging and migrations,
+  and can be re-enabled in prod temporarily with `ALLOW_CMS_ADMIN=1` (redeploy).
+- Gating is on `VERCEL_ENV`, **not** `NODE_ENV`, so a local `next start` production
+  build stays usable.
+- Blocking the **UI** does not touch the REST/GraphQL **API** at `/api` or the
+  Local API the app writes through — those still run in the `(payload)` group.
+- The one team-facing thing `/cms-admin` uniquely did — view the newsletter
+  subscribers list — now lives at `/admin/subscribers` (admin-only, read-only, CSV
+  export), so nothing team-facing was lost.
+
+**What's left to remove it outright:**
 
 1. **Custom login — done.** `/admin` now has its own DS-styled login at `/login`
    (`app/(frontend)/login/`, `login/actions.js`) and redirects there, not to
