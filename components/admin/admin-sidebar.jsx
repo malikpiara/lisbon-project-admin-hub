@@ -131,7 +131,10 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       isActive={active}
                       tooltip={item.label}
-                      className="h-9"
+                      // Nav labels sit a step above the DS body weight (500) so the
+                      // navigation reads with a touch more presence; the active row
+                      // keeps that weight (overrides the primitive's data-active:font-medium).
+                      className="h-9 font-semibold data-active:font-semibold"
                       render={
                         <Link href={item.href} aria-current={active ? "page" : undefined}>
                           <Icon />

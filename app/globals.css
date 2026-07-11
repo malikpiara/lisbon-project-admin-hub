@@ -374,6 +374,11 @@
   html {
     @apply font-sans;
   }
+  /* Brand-tinted text selection (soft mint) instead of the browser default blue. */
+  ::selection {
+    background-color: var(--brand-300);
+    color: var(--brand-1000);
+  }
   /* Tailwind v4 preflight leaves buttons at cursor: default (the native OS
      convention). Our DS treats every enabled button as clickable-looking —
      restore the pointer app-wide, including Base UI triggers, which all
