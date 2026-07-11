@@ -12,17 +12,17 @@ import type {
   EnrichedConversation,
 } from "@/lib/conversation-insights";
 
-// Status is the bridge from "read logs" to "do something": amber = a team member
-// should follow up, red = the assistant answered a real question poorly (worth
-// improving), green = answered, grey = the person never asked anything (a
-// greeting, test, or drop-off, so nothing to act on). Semantic colours,
-// deliberately not the brand teal.
+// Status turns "read logs" into "understand needs": amber = a real need the
+// assistant couldn't meet (a gap to prepare for or build resources for; the chat
+// is anonymous so no one can be contacted), red = the assistant mishandled it
+// (fix the bot), green = answered, grey = the person never asked anything (a
+// greeting, test, or drop-off). Semantic colours, deliberately not the brand teal.
 const STATUS_META: Record<
   ConversationStatus,
   { label: string; chip: string; dot: string }
 > = {
   needs_follow_up: {
-    label: "Needs follow-up",
+    label: "Unmet need",
     chip: "bg-amber-50 text-amber-700",
     dot: "bg-amber-500",
   },
@@ -126,10 +126,10 @@ export function ChatbotConversations({
                 <span className="font-bold text-amber-700">
                   {view.followUpCount} of {view.total}
                 </span>{" "}
-                need a team member to follow up
+                raised a need the assistant couldn&apos;t meet
               </>
             ) : (
-              "Nothing needs a team member to follow up"
+              "Every need was met or self-served"
             )}
             {view.incompleteCount > 0 ? (
               <span className="text-muted-foreground">
@@ -167,7 +167,7 @@ export function ChatbotConversations({
           count={view.followUpCount}
           dot="bg-amber-500"
         >
-          Needs follow-up
+          Unmet needs
         </FilterChip>
         {view.botGapCount > 0 ? (
           <FilterChip
@@ -224,6 +224,86 @@ function FilterChip({
       {children}
       <span className="tabular-nums opacity-80">{count}</span>
     </button>
+  );
+}
+
+// ── rich text for transcript messages ──────────────────────────────────────
+// Carebot's replies are plain text carrying a few patterns: markdown links
+// [label](url), bare URLs, **bold**, and numbered menus. Render them so a long
+// URL becomes a short labelled link and a menu reads as a tidy list.
+
+function friendlyLinkLabel(url: string): string {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host.includes("goo.gl") || u.pathname.includes("maps")) return "Open in Maps";
+    if (host.includes("padlet")) return "External contacts list";
+    if (host.includes("whatsapp")) return "WhatsApp channel";
+    if (host.includes("mailerpage")) return "Open AdminHub";
+    return host;
+  } catch {
+    return "Open link";
+  }
+}
+
+// One pass matches, in order: [label](url) | bare url | **bold**.
+const INLINE_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/[^\s)]+)|\*\*([^*]+)\*\*/g;
+
+function renderInline(text: string, keyBase: string): ReactNode[] {
+  const out: ReactNode[] = [];
+  const linkCls = "font-medium text-primary underline underline-offset-2 hover:opacity-80";
+  let last = 0;
+  let i = 0;
+  let m: RegExpExecArray | null;
+  INLINE_RE.lastIndex = 0;
+  while ((m = INLINE_RE.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const key = `${keyBase}-${i++}`;
+    if (m[1]) {
+      out.push(
+        <a key={key} href={m[2]} target="_blank" rel="noreferrer noopener" className={linkCls}>
+          {m[1]}
+        </a>
+      );
+    } else if (m[3]) {
+      out.push(
+        <a key={key} href={m[3]} target="_blank" rel="noreferrer noopener" className={linkCls}>
+          {friendlyLinkLabel(m[3])}
+        </a>
+      );
+    } else if (m[4]) {
+      out.push(
+        <strong key={key} className="font-bold text-foreground">
+          {m[4]}
+        </strong>
+      );
+    }
+    last = INLINE_RE.lastIndex;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+// Splits on newlines; a line like "3. Education" becomes a hanging-indent list row.
+function RichMessage({ text }: { text: string }) {
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, i) => {
+        const item = line.match(/^(\d{1,2})[.)]\s+(.*)/);
+        return item ? (
+          <div key={i} className="flex gap-2 pl-1">
+            <span className="shrink-0 tabular-nums text-muted-foreground">{item[1]}.</span>
+            <span>{renderInline(item[2], `l${i}`)}</span>
+          </div>
+        ) : (
+          <p key={i}>{renderInline(line, `l${i}`)}</p>
+        );
+      })}
+    </div>
   );
 }
 
@@ -284,9 +364,9 @@ function ConversationCard({ c }: { c: EnrichedConversation }) {
                     <ChevronDown className="size-3.5 shrink-0 transition-transform group-open/greet:rotate-180" />
                     Chatbot greeting &amp; language menu
                   </summary>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-ds-xxs leading-relaxed text-muted-foreground">
-                    {t.text}
-                  </p>
+                  <div className="mt-2 break-words text-ds-xxs leading-relaxed text-muted-foreground">
+                    <RichMessage text={t.text} />
+                  </div>
                 </details>
               ) : (
                 <div
@@ -304,14 +384,14 @@ function ConversationCard({ c }: { c: EnrichedConversation }) {
                   >
                     {t.role === "user" ? "Person" : "Assistant"}
                   </p>
-                  <p
+                  <div
                     className={cn(
-                      "mt-0.5 whitespace-pre-wrap break-words text-ds-xs leading-relaxed",
+                      "mt-0.5 break-words text-ds-xs leading-relaxed",
                       t.role === "user" ? "font-medium text-foreground" : "text-muted-foreground"
                     )}
                   >
-                    {t.text}
-                  </p>
+                    <RichMessage text={t.text} />
+                  </div>
                 </div>
               )
             )

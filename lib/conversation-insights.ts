@@ -329,7 +329,7 @@ export function synthesizeHeuristic(
     const topic = need.replace(/…$/, "").toLowerCase();
     summary =
       status === "needs_follow_up"
-        ? `Asked about ${topic}. The assistant pointed to another service, so a team member may need to follow up.`
+        ? `Asked about ${topic}. The assistant pointed to another service, so this need was not fully met.`
         : `Asked about ${topic}. The assistant answered.`;
   }
 
@@ -376,7 +376,7 @@ function synthesisPrompt(transcript: string): string {
     `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}, chosen for that main need.\n` +
     `"status": one of\n` +
     `"resolved" = the assistant routed the person to the right resource for what they asked, for example the AdminHub page for that exact topic. The assistant's job is to point people to the correct self-serve resource, so doing that for the topic asked counts as resolved.\n` +
-    `"needs_follow_up" = the assistant could NOT meet the need itself: it said this is not something the Lisbon Project handles and there is no resource for it (for example legal advice), OR the need is urgent or sensitive (a sick child, homelessness, safety, a legal deadline) so a team member should check in even though a link was shared.\n` +
+    `"needs_follow_up" = an UNMET need the assistant could not meet itself. Either it said this is not something the Lisbon Project handles and there is no resource for it (for example legal advice), OR the need is urgent or sensitive (a sick child, homelessness, safety, a legal deadline) and only a general link was shared. The chat is anonymous so the person cannot be contacted; these are the needs the team should be aware of and may want to prepare for or build resources for.\n` +
     `"bot_gap" = the assistant clearly mishandled a clear request: it answered the wrong topic, gave wrong information, or ignored a clear question the person asked.\n` +
     `"incomplete" = the person never clearly asked for help or chose a topic: they only greeted, chose a language, or gave a name (or one unclear line) and then stopped.\n` +
     `Rules: choosing a numbered menu topic (Finances, Housing) IS a real need, never "incomplete". ` +
