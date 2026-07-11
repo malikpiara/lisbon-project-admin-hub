@@ -76,14 +76,13 @@ auth-gated server actions, and is meant to replace Payload's default admin
 **[docs/ADMIN-HANDOVER.md](docs/ADMIN-HANDOVER.md)**; the path to launch is
 **[docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md)**.
 
-> **The public site still renders from a localStorage store, not Payload.** A
-> single `AdminProvider` seeds `localStorage["lp-admin-data-v1"]`, and the public
-> home/service/article pages read it client-side — so those pages are seed-only
-> content today, and wiring them to Payload is the next milestone. (The earlier
-> localStorage *editor* that lived at `/admin` was removed; the store stays
-> because the public site renders from it.) See
-> [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow, the two seed
-> sources, the article model, and the design-system gotchas.
+> **The public site renders server-side from Payload** (since 2026-07-07). The
+> home/service/article pages are async server components that fetch **published**
+> content via `lib/content.js` (SSG + on-demand revalidate); the old localStorage
+> store (`AdminProvider` / `useAdmin` / `lib/admin-store.js`) was removed. So
+> `/admin` edits reach visitors, and crawlers get real HTML instead of empty
+> client shells. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data
+> flow, the seed source, the article model, and the design-system gotchas.
 
 ## CMS — Payload on Supabase Postgres
 
@@ -95,8 +94,8 @@ Set `PAYLOAD_SECRET` and a Supabase `DATABASE_URI` in `.env.local` (see
 > Decided 2026-06-23 after a hands-on bake-off (Payload vs Sanity vs a custom
 > Supabase admin); the Sanity spike has since been removed. The full comparison,
 > the decision, and the content-model mapping are in
-> **[docs/archive/CMS-EVALUATION.md](docs/archive/CMS-EVALUATION.md)**. The public site still
-> reads `localStorage` — wiring it to Payload is the next milestone.
+> **[docs/archive/CMS-EVALUATION.md](docs/archive/CMS-EVALUATION.md)**. The public site
+> now reads Payload server-side (done 2026-07-07); the localStorage store was removed.
 
 ## Newsletter — MailerLite
 

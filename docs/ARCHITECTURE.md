@@ -7,8 +7,9 @@ bitten us before.
 ## Stack
 
 Next.js 16 (App Router) · React 19 · Tailwind v4 · Base UI primitives ·
-`shadcn` (base-nova). The public site is still a localStorage prototype (below);
-the chosen CMS is **Payload on Supabase Postgres** (see archive/CMS-EVALUATION.md).
+`shadcn` (base-nova). The public site renders **server-side from Payload**
+(since 2026-07-07; the old localStorage prototype store was removed — see Data
+flow below); the CMS is **Payload on Supabase Postgres** (see archive/CMS-EVALUATION.md).
 
 - `app/(frontend)/(site)` — the public site (home, `/services` + detail, article, calendar, privacy)
 - `app/(frontend)/admin` — the **Payload-backed team workspace** (custom admin UI; reads Payload, not the localStorage store — see [ADMIN-HANDOVER.md](./ADMIN-HANDOVER.md))
@@ -140,7 +141,7 @@ Each topic can carry an `article`:
 | 6 | The "Where we are" map is a Google Maps **iframe embed** (no API key) — it renders blank in headless screenshots or where embeds are blocked. The Calendar API key is unrelated. | Expected |
 | 7 | Navigation (breadcrumb / main-menu / footer / list-item) and Sections (contact / grid / header / text) are **not** fully audited against Figma. The header menu button is fixed; the rest is outstanding. | Outstanding |
 | 8 | Infobox border (`border-2 border-brand-link`) contradicts the `infobox/border` token (#0d635d). | Pending a designer call |
-| 9 | The public pages are client-rendered from localStorage (hydration gap; not true SSG). | Architectural, by design for the prototype |
+| 9 | ~~The public pages are client-rendered from localStorage (hydration gap; not true SSG).~~ **Resolved 2026-07-07** — public pages are async server components reading Payload (SSG + on-demand revalidate); the localStorage store was removed. | Fixed |
 
 ## Pre-release review — revisit before shipping
 

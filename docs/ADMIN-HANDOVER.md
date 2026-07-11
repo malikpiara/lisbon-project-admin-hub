@@ -14,7 +14,8 @@ Postgres); the UI is ours, built from the LP design system.
 > **If you are the Claude reading this:** the `/admin` routes are a working spike
 > on branch **`spike-cms-eval`**. Read [ARCHITECTURE.md](./ARCHITECTURE.md) and
 > [`AGENTS.md`](../AGENTS.md) first (non-standard radius scale; `cn()` over
-> `twMerge`; the localStorage store still backs the public site). Do **not** commit
+> `twMerge`; the public site reads Payload server-side — the localStorage store was
+> removed 2026-07-07). Do **not** commit
 > secrets (`.env.local` is gitignored). Commits use **no** `Co-Authored-By`
 > trailer. The strategic decision (Payload on Supabase Postgres) lives in
 > [CMS-EVALUATION.md](./archive/CMS-EVALUATION.md); the teardown that motivated

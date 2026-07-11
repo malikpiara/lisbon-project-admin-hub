@@ -8,7 +8,7 @@ Everything in `docs/`, grouped by why you'd reach for it. New here? Read
 | Doc | What it covers |
 | --- | --- |
 | [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | **What stands between today and the team using the platform** — ordered by dependency, with links into the detail docs. The working to-do list for the release. |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Data flow (one shared localStorage store still feeds the public site), the non-standard radius scale, `cn()`/tailwind-merge, how `tone` works, the token system, and the running list of known inconsistencies + the pre-release checklist. **Read before touching data flow or the design system.** |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Data flow (public site reads Payload server-side — SSG + revalidate), the non-standard radius scale, `cn()`/tailwind-merge, how `tone` works, the token system, and the running list of known inconsistencies + the pre-release checklist. **Read before touching data flow or the design system.** |
 | [ADMIN-HANDOVER.md](./ADMIN-HANDOVER.md) | The Payload-backed custom admin at `/admin` — the headless pattern (server reads via Local API, writes via gated server actions), what's built (editors, invites, review/approval queue with word diffs, history), the dev-pushed schema list that needs migrations, and what's left to retire `/cms-admin`. |
 
 ## Audits (2026-07-05)

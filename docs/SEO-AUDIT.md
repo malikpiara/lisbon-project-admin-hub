@@ -14,10 +14,12 @@ donations.** Everything below is weighed against that outcome.
 The site had solid per-page titles on service routes but was missing the whole
 SEO baseline: no `metadataBase`, no sitemap, no robots, no structured data, no
 social image, and an admin-flavoured default title leaking onto public pages.
-The baseline is now in place and verified. **One high-impact issue is
-deliberately left for a larger, separate task: the public content pages render
-client-side from `localStorage`, so crawlers see empty pages** (see
-[Known limitation](#known-limitation-client-rendered-content)).
+The baseline is now in place and verified. At audit time one high-impact issue
+was left for a larger task: the public content pages rendered client-side from
+`localStorage`, so crawlers saw empty pages (see
+[Known limitation](#known-limitation-client-rendered-content)). **Update
+(2026-07-07): resolved** — the public pages now render server-side from Payload
+(SSG + on-demand revalidate), so crawlers get full HTML.
 
 ## What was implemented this session
 
@@ -45,6 +47,11 @@ client-side from `localStorage`, so crawlers see empty pages** (see
   `[NGO, WebSite]`; `og:image`/`twitter:image` → 200 `image/png`.
 
 ## Known limitation — client-rendered content
+
+> **✅ RESOLVED 2026-07-07 (after this audit).** The public pages were migrated to
+> async server components reading Payload via `lib/content.js` (SSG + on-demand
+> revalidate); the localStorage store was removed. The description below is kept
+> as the audit's original record of the problem and its fix.
 
 **Severity: high. Deliberately out of scope for this pass (it is a large,
 separate task).**
