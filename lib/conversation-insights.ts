@@ -317,13 +317,16 @@ export function synthesizeHeuristic(
   return { need, theme, status, summary, language };
 }
 
-// ── AI synthesis (Cloudflare Workers AI or Claude — env-gated, defensive) ─────
+// ── AI synthesis (Cloudflare or Claude — env-gated, defensive) ────────────────
 //
 // Enable with CONVERSATION_SYNTHESIS=ai. The provider is auto-detected so no
-// credential ever needs to be read here — set them in the environment:
-//   • Cloudflare Workers AI  → CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN
-//                              (optional CLOUDFLARE_AI_MODEL, default below)
-//   • Anthropic Claude       → ANTHROPIC_API_KEY (optional ANTHROPIC_MODEL)
+// credential is ever read here — set them in the environment:
+//   • Cloudflare — CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN, plus
+//     CLOUDFLARE_AI_MODEL: a Workers AI model ("@cf/meta/llama-3.1-8b-instruct")
+//     OR, via Unified Billing, a third-party one ("anthropic/claude-haiku-4-5").
+//     No provider key — Cloudflare bills your account.
+//   • Anthropic direct — ANTHROPIC_API_KEY (optional ANTHROPIC_MODEL, or
+//     ANTHROPIC_BASE_URL to proxy a BYOK key through your own AI Gateway).
 // One pass per conversation → {need, theme, status, summary}. Every path returns
 // null on any problem so the caller falls back to the heuristic — never throws.
 
@@ -349,10 +352,15 @@ function synthesisPrompt(transcript: string): string {
 }
 
 async function callCloudflare(prompt: string): Promise<string | null> {
+  // Cloudflare's unified AI REST API (OpenAI-compatible endpoint). One call shape
+  // for every model: set CLOUDFLARE_AI_MODEL to a Workers AI open model
+  // ("@cf/meta/llama-3.1-8b-instruct") OR — via Unified Billing — a third-party
+  // model like "anthropic/claude-haiku-4-5". Either way it's just your Cloudflare
+  // account + token; no provider key, and the bill lands on Cloudflare.
   const account = process.env.CLOUDFLARE_ACCOUNT_ID as string;
   const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
   const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${model}`,
+    `https://api.cloudflare.com/client/v4/accounts/${account}/ai/v1/chat/completions`,
     {
       method: "POST",
       headers: {
@@ -360,17 +368,17 @@ async function callCloudflare(prompt: string): Promise<string | null> {
         authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN as string}`,
       },
       body: JSON.stringify({
-        messages: [{ role: "user", content: prompt }],
+        model,
         max_tokens: 300,
+        messages: [{ role: "user", content: prompt }],
       }),
     }
   );
   if (!res.ok) return null;
   const json = (await res.json()) as {
-    result?: { response?: string };
-    success?: boolean;
+    choices?: { message?: { content?: string } }[];
   };
-  return json.success ? json.result?.response ?? null : null;
+  return json.choices?.[0]?.message?.content ?? null;
 }
 
 async function callAnthropic(prompt: string): Promise<string | null> {
