@@ -296,16 +296,10 @@ Grouped into three nav sections:
 
 ---
 
-## 6. Applying the DS to the Payload admin (`/cms-admin`) — secondary surface
+## 6. Payload admin (`/cms-admin`) styling — secondary surface
 
-> **Relevance:** the team works in the custom `/admin`, not here. `/cms-admin` is
-> `notFound()`'d in production (escape hatch: `ALLOW_CMS_ADMIN=1`) but still runs
-> locally, on preview deploys, and as the host for the Payload REST/GraphQL API at
-> `/api`. So this styling is live but low-traffic — kept for whoever opens the raw
-> admin or maintains `custom.css`, not something the team sees day to day.
-
-The Payload admin is themed to the DS via plain CSS in `app/(payload)/custom.css`
-(Payload's admin doesn't load `globals.css`, so values are hardcoded hex). Mapping:
-brand-green primary actions (`#0D635D`), the brand-200 mint card border (`#D9F7F5`),
-the brand accent ramp remapped onto Payload's `--color-blue-*`, mint select-option
-hover, DS-ward radii, and Quicksand. See that file for the full mapping.
+The Payload admin is themed to the DS in `app/(payload)/custom.css` (it doesn't
+load `globals.css`, so values are hardcoded hex). **See that file for the full
+mapping** — it's the source of truth. Secondary surface: the team works in the
+custom `/admin`; `/cms-admin` is `notFound()`'d in production (`ALLOW_CMS_ADMIN=1`
+escape hatch) and only runs locally, on previews, and as the `/api` host.
