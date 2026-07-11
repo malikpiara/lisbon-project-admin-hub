@@ -12,9 +12,11 @@ import type {
   EnrichedConversation,
 } from "@/lib/conversation-insights";
 
-// Actionable status is the bridge from "read logs" to "do something": amber = a
-// human should follow up, red = the assistant answered poorly (fix the bot),
-// muted-green = handled. Semantic colours, deliberately not the brand teal.
+// Status is the bridge from "read logs" to "do something": amber = a team member
+// should follow up, red = the assistant answered a real question poorly (worth
+// improving), green = answered, grey = the person never asked anything (a
+// greeting, test, or drop-off, so nothing to act on). Semantic colours,
+// deliberately not the brand teal.
 const STATUS_META: Record<
   ConversationStatus,
   { label: string; chip: string; dot: string }
@@ -25,14 +27,19 @@ const STATUS_META: Record<
     dot: "bg-amber-500",
   },
   bot_gap: {
-    label: "Bot gap",
+    label: "Assistant fell short",
     chip: "bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
   resolved: {
-    label: "Resolved",
+    label: "Answered",
     chip: "bg-emerald-50 text-emerald-700",
     dot: "bg-emerald-500",
+  },
+  incomplete: {
+    label: "No question asked",
+    chip: "bg-secondary text-muted-foreground",
+    dot: "bg-muted-foreground/40",
   },
 };
 
@@ -119,11 +126,17 @@ export function ChatbotConversations({
                 <span className="font-bold text-amber-700">
                   {view.followUpCount} of {view.total}
                 </span>{" "}
-                look like they need a human follow-up
+                need a team member to follow up
               </>
             ) : (
-              "Nothing looks like it needs a human follow-up"
+              "Nothing needs a team member to follow up"
             )}
+            {view.incompleteCount > 0 ? (
+              <span className="text-muted-foreground">
+                {" · "}
+                {view.incompleteCount} had no question (greetings or drop-offs)
+              </span>
+            ) : null}
           </p>
           {view.languages.length > 0 ? (
             <span className="flex items-center gap-1.5">
@@ -163,7 +176,7 @@ export function ChatbotConversations({
             count={view.botGapCount}
             dot="bg-destructive"
           >
-            Bot gaps
+            Assistant fell short
           </FilterChip>
         ) : null}
       </div>

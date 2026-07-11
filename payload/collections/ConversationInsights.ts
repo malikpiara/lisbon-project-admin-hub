@@ -50,7 +50,7 @@ export const ConversationInsights: CollectionConfig = {
       name: "status",
       type: "select",
       required: true,
-      options: ["resolved", "needs_follow_up", "bot_gap"],
+      options: ["resolved", "needs_follow_up", "bot_gap", "incomplete"],
     },
     { name: "summary", type: "text", required: true },
     { name: "language", type: "text" },

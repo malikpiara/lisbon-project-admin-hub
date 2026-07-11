@@ -24,7 +24,11 @@ export type Turn = {
   isGreeting?: boolean;
 };
 
-export type ConversationStatus = "resolved" | "needs_follow_up" | "bot_gap";
+export type ConversationStatus =
+  | "resolved" // the assistant answered the person's question well
+  | "needs_follow_up" // a real need a team member should act on
+  | "bot_gap" // the person asked a real question and the answer fell short
+  | "incomplete"; // no real question was asked (greeting, test, or drop-off)
 
 export type ConversationInsight = {
   need: string; // the card title — what this person needed
@@ -48,6 +52,7 @@ export type ConversationsView = {
   languages: { name: string; count: number }[];
   followUpCount: number;
   botGapCount: number;
+  incompleteCount: number; // conversations where no real question was asked
   total: number;
   synthesizedBy: "ai" | "heuristic";
 };
@@ -298,28 +303,35 @@ export function synthesizeHeuristic(
     const oneLine = firstQ.replace(/\s+/g, " ").trim();
     need = titleCase(oneLine.length > 90 ? oneLine.slice(0, 88).trimEnd() + "…" : oneLine);
   } else if (turns.length === 0) {
-    // Transcript didn't parse into turns — show its first line, not nothing.
+    // Transcript didn't parse into turns; show its first line, not nothing.
     need = firstNonEmptyLine(transcript) || "Conversation";
   } else {
-    need = "No specific need stated";
+    need = "No question asked";
   }
 
   const haystack = `${questions.join(" ")} ${transcript}`;
   const theme = hasQuestion ? matchTheme(haystack) : THEME_OTHER;
 
-  // Status: heuristic can tell "resolved" from "needs a human" by whether the
-  // assistant referred out / hedged. bot_gap needs judgement, so it only comes
-  // from the AI provider.
-  const status: ConversationStatus =
-    hasQuestion && REFERRAL_RE.test(botText) ? "needs_follow_up" : "resolved";
+  // Status: with no real question it's "incomplete" (a greeting, test, or
+  // drop-off). With a question, the heuristic can tell "resolved" from "needs a
+  // person" by whether the assistant referred out or hedged. "bot_gap" takes
+  // judgement, so it only ever comes from the AI provider.
+  const status: ConversationStatus = !hasQuestion
+    ? "incomplete"
+    : REFERRAL_RE.test(botText)
+      ? "needs_follow_up"
+      : "resolved";
 
-  const summary = hasQuestion
-    ? `Asked about ${need.replace(/…$/, "").toLowerCase()}.${
-        status === "needs_follow_up"
-          ? " The assistant pointed elsewhere — may need a human."
-          : ""
-      }`
-    : "No specific question was asked — mostly a greeting, name or contact details.";
+  let summary: string;
+  if (!hasQuestion) {
+    summary = "The person opened the chat but did not ask for anything.";
+  } else {
+    const topic = need.replace(/…$/, "").toLowerCase();
+    summary =
+      status === "needs_follow_up"
+        ? `Asked about ${topic}. The assistant pointed to another service, so a team member may need to follow up.`
+        : `Asked about ${topic}. The assistant answered.`;
+  }
 
   return { need, theme, status, summary, language };
 }
@@ -353,13 +365,23 @@ const AI_TIMEOUT_MS = 8000;
 
 function synthesisPrompt(transcript: string): string {
   return (
-    `You classify a migrant-support help-assistant transcript for a caseworker team. ` +
-    `Personal details are already redacted as [email]/[phone]. ` +
+    `You read a help-assistant transcript for the Lisbon Project, a charity supporting migrants and refugees. ` +
+    `The team reads these to understand what people need and to spot where the assistant should improve. ` +
+    `Personal details are already hidden as [email]/[phone]. ` +
     `Respond with ONLY minified JSON: {"need":string,"theme":string,"status":string,"summary":string}. ` +
-    `"need": at most 8 words naming what the person needed — never the language, a name, or contact details. ` +
+    `"need": at most 8 words naming what the person needed. Never the language, a name, or contact details. ` +
     `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}. ` +
-    `"status": "resolved" (assistant answered well), "needs_follow_up" (a human should reach out), or "bot_gap" (assistant answered poorly, wrongly or off-topic). ` +
-    `"summary": one sentence — the ask and what the assistant did.\n\nTRANSCRIPT:\n${transcript.slice(0, 6000)}`
+    `"status": one of ` +
+    `"resolved" (the assistant answered the need well), ` +
+    `"needs_follow_up" (a real need where a team member should reach out), ` +
+    `"bot_gap" (the person raised a real need and the assistant answered poorly, wrongly, or off-topic), ` +
+    `"incomplete" (the person never expressed a need: they only greeted, picked a language, or gave their name and then stopped, without asking anything or choosing a topic). ` +
+    `Choosing a topic from the numbered menu, such as Finances or Housing, counts as the person's need, so that is never "incomplete". ` +
+    `Only use "bot_gap" when the person raised a real need AND the answer was genuinely poor. ` +
+    `If the person never expressed a need, use "incomplete", never "bot_gap". ` +
+    `"summary": one plain sentence for the team, saying what the person needed and whether the assistant helped. ` +
+    `Write clearly, with no jargon. Do not use dashes; use commas or short sentences.` +
+    `\n\nTRANSCRIPT:\n${transcript.slice(0, 6000)}`
   );
 }
 
@@ -463,10 +485,11 @@ function parseInsight(
   try {
     const parsed = JSON.parse(match[0]) as Partial<ConversationInsight>;
     if (!parsed.need || !parsed.summary) return null;
-    const status: ConversationStatus =
-      parsed.status === "needs_follow_up" || parsed.status === "bot_gap"
-        ? parsed.status
-        : "resolved";
+    const status: ConversationStatus = (
+      ["resolved", "needs_follow_up", "bot_gap", "incomplete"] as const
+    ).includes(parsed.status as ConversationStatus)
+      ? (parsed.status as ConversationStatus)
+      : "resolved";
     return {
       need: titleCase(String(parsed.need)),
       theme: THEME_NAMES.includes(String(parsed.theme)) ? String(parsed.theme) : THEME_OTHER,
@@ -598,11 +621,17 @@ export async function buildConversationsView(
   const conversations: EnrichedConversation[] = await Promise.all(
     raw.map(async (c, i) => {
       const turns = parseTranscript(c.transcript);
+      const questionCount = countRealQuestions(turns);
       const hash = hashes[i];
       const hit = cached.get(hash);
 
       let insight: ConversationInsight;
-      if (hit) {
+      if (questionCount === 0) {
+        // Nothing was actually asked (greeting, test, or drop-off). Skip the AI
+        // entirely: there's no need to interpret, and it stops these from being
+        // mislabelled as "bot_gap". The heuristic marks them "incomplete".
+        insight = synthesizeHeuristic(turns, c.transcript);
+      } else if (hit) {
         insight = hit; // already analysed — no AI call
         anyAI = true; // only AI results are ever cached
       } else {
@@ -620,7 +649,7 @@ export async function buildConversationsView(
         conversationId: c.conversationId,
         at: c.at,
         turns,
-        questionCount: countRealQuestions(turns),
+        questionCount,
         insight,
       };
     })
@@ -628,14 +657,21 @@ export async function buildConversationsView(
   const usedAI = anyAI;
 
   // Aggregates: rank themes and languages by frequency; count the actionable ones.
+  // "incomplete" conversations expressed no need, so they're kept out of the Top
+  // needs ranking (they'd otherwise inflate "Other / general") and counted apart.
   const themeCounts = new Map<string, number>();
   const langCounts = new Map<string, number>();
   let followUpCount = 0;
   let botGapCount = 0;
+  let incompleteCount = 0;
   for (const c of conversations) {
     const { theme, status, language } = c.insight;
-    themeCounts.set(theme, (themeCounts.get(theme) ?? 0) + 1);
     if (language) langCounts.set(language, (langCounts.get(language) ?? 0) + 1);
+    if (status === "incomplete") {
+      incompleteCount++;
+      continue;
+    }
+    themeCounts.set(theme, (themeCounts.get(theme) ?? 0) + 1);
     if (status === "needs_follow_up") followUpCount++;
     if (status === "bot_gap") botGapCount++;
   }
@@ -648,6 +684,7 @@ export async function buildConversationsView(
     languages: rank(langCounts),
     followUpCount,
     botGapCount,
+    incompleteCount,
     total: conversations.length,
     synthesizedBy: usedAI ? "ai" : "heuristic",
   };

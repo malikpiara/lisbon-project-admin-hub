@@ -513,7 +513,7 @@ export interface ConversationInsight {
   conversationId?: string | null;
   need: string;
   theme: string;
-  status: 'resolved' | 'needs_follow_up' | 'bot_gap';
+  status: 'resolved' | 'needs_follow_up' | 'bot_gap' | 'incomplete';
   summary: string;
   language?: string | null;
   /**

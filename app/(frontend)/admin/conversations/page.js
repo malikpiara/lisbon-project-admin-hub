@@ -26,7 +26,7 @@ export default async function AdminConversationsPage() {
   const view = await buildConversationsView(conversations ?? [], payload);
 
   const emptyLabel = configured
-    ? "Once people start chatting with the assistant, their needs will appear here — with any emails and phone numbers automatically hidden."
+    ? "Once people start chatting with the assistant, their needs will show up here. Any emails and phone numbers are hidden automatically."
     : "Set POSTHOG_PERSONAL_API_KEY to read captured conversations here.";
 
   return (
@@ -36,16 +36,16 @@ export default async function AdminConversationsPage() {
           What people are asking for
         </h1>
         <p className="mt-2 max-w-2xl text-ds-s leading-relaxed text-muted-foreground">
-          The needs behind help-assistant conversations · Personal details hidden
-          · Team only
+          What people ask the help assistant, and whether they got the help they
+          needed.
         </p>
         {view.total > 0 ? (
           <p className="mt-2 max-w-2xl text-ds-xxs font-medium text-muted-foreground">
-            Any email or phone number is automatically hidden and shown as{" "}
+            Personal details are hidden and shown as{" "}
             <span className="font-bold">[email]</span> or{" "}
-            <span className="font-bold">[phone]</span>.
+            <span className="font-bold">[phone]</span>. Visible to the team only.
             {view.synthesizedBy === "heuristic"
-              ? " Needs, themes and status are inferred from each transcript."
+              ? " Needs and status are inferred from each transcript."
               : null}
           </p>
         ) : null}
