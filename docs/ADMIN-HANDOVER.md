@@ -29,7 +29,8 @@ Postgres); the UI is ours, built from the LP design system.
 3. **Login:** `/admin` is gated on the Payload session and redirects to
    **`/login`** — the custom DS-styled sign-in (`app/(frontend)/login/`), which
    authenticates against the same Payload `users` collection and sets the shared
-   `payload-token` cookie. Dev creds: `malik@roundtwenty.com` / `changeme123`.
+   `payload-token` cookie. Sign in with your own Payload account (seed a local one
+   with `pnpm seed:payload`, or use a Team invite link on a real deployment).
    The session **expires over long sessions**; re-login the same way. (The
    Payload-native `/cms-admin/login` still exists and shares the session, but the
    app no longer routes there.)
