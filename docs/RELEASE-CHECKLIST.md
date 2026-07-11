@@ -111,6 +111,16 @@ Tracked in full in [CONTENT-MIGRATION-AUDIT.md](./CONTENT-MIGRATION-AUDIT.md):
 - [ ] Set a short PostHog retention window for
       `chatbot_conversation_logged` (special-category data —
       [SECURITY-AUDIT.md](./SECURITY-AUDIT.md) item 4).
+- [x] **Conversation AI synthesis** (`/admin/conversations`) — the 4 Cloudflare
+      vars were added to Vercel (Production + Preview) 2026-07-11:
+      `CONVERSATION_SYNTHESIS=ai`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`
+      (Sensitive), `CLOUDFLARE_AI_MODEL`. **Redeploy to apply** (env changes don't
+      touch the running deployment). Optional feature: unset it and the page uses
+      a heuristic, so this can never block a release. No DB migration — the
+      `conversation-insights` cache table already exists on prod Supabase
+      (dev-pushed). After a model/prompt change, re-run
+      `pnpm tsx scripts/purge-conversation-insights.ts --confirm` to re-analyse
+      (hits **prod**). Full reference: [ENVIRONMENT.md](./ENVIRONMENT.md).
 
 ## 7. Security follow-ups (decide, don't drift)
 

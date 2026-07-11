@@ -46,6 +46,14 @@ expect. They render statically and revalidate on demand.
   `lib/admin-store.js`) was **removed**. The public pages no longer hydrate from
   localStorage — the server HTML is the content (fixes the SEO gap where
   crawlers saw empty client shells).
+- **`/admin/conversations`** is a separate read-only flow: it pulls help-assistant
+  transcripts from **PostHog** (not Payload) and, when AI synthesis is enabled,
+  turns each into a need / theme / status / summary via **Cloudflare Workers AI**
+  (`lib/conversation-insights.ts`). Each transcript is analysed **once** and
+  cached in the `conversation-insights` Payload table (content-addressed by
+  transcript hash), so reloads are free. Env-gated and defensive — with the
+  Cloudflare vars unset it falls back to a no-network heuristic and never breaks.
+  Full setup + caveats in [ENVIRONMENT.md](./ENVIRONMENT.md).
 
 ### Seed source — for `pnpm seed:payload` only
 
