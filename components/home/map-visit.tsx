@@ -33,11 +33,24 @@ export function MapVisit() {
                 Where we are
               </h3>
               <address className="mt-4 text-ds-m font-medium not-italic text-brand-dark">
-                Rua Carvalho Araújo 66-B
-                <br />
-                1900-140 Lisboa
-                <br />
-                Portugal
+                {/* Opens the address in Google Maps (native map app on mobile).
+                    Inherits the address styling so the default state matches
+                    Figma exactly — the only change is a hover affordance. */}
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    MAP_QUERY
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open our address in Google Maps"
+                  className="transition-colors hover:text-primary hover:underline"
+                >
+                  Rua Carvalho Araújo 66-B
+                  <br />
+                  1900-140 Lisboa
+                  <br />
+                  Portugal
+                </a>
               </address>
               <p className="mt-5 text-ds-s font-bold text-brand-dark">How to Get Here</p>
               <ul className="mt-2 space-y-2 text-ds-xs font-medium text-brand-dark">

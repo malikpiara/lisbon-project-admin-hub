@@ -4,20 +4,26 @@ import { CardShortcut } from "@/components/ui/card";
 import {
   IconArrowRight,
   IconHeartOpen,
-  IconInternalLink,
   IconTip,
   IconUserPlus,
 } from "@/components/icons/ds-icons";
+import { DONATE_URL } from "@/lib/site";
 
 // Per-card icon + call-to-action, keyed by the card's href (stable across the
 // seed and Payload, whose auto-increment ids differ from the seed's string ids).
 // Icons are the actual DS glyphs exported from Figma (iconography page):
-// user/plus, tip (donor), heart-open, internal-link.
+// user/plus, tip (donor), heart-open. A card may override its link target and
+// external flag (Donate always points at the main charity site).
 const cardMeta = {
   "/register": { icon: IconUserPlus, cta: "Get Started" },
-  "/donate": { icon: IconTip, cta: "Donate Now" },
+  "/donate": {
+    icon: IconTip,
+    cta: "Donate Now",
+    href: DONATE_URL,
+    external: true,
+  },
   "https://lisbonproject.org": { icon: IconHeartOpen, cta: "Visit Website" },
-  "/internal": { icon: IconInternalLink, cta: "Open Portal" },
+  "/internal": { icon: IconArrowRight, cta: "Open Portal" },
 };
 
 export function QuickAccess({ items = [], embedded = false }) {
@@ -26,6 +32,10 @@ export function QuickAccess({ items = [], embedded = false }) {
       {items.map((item) => {
         const meta = cardMeta[item.href] ?? { icon: IconArrowRight, cta: "Learn more" };
         const Icon = meta.icon;
+        // A card's meta may pin its destination (e.g. Donate → charity site);
+        // otherwise use the stored href/external flag.
+        const href = meta.href ?? item.href;
+        const external = meta.external ?? item.external;
         return (
           <CardShortcut
             key={item.id}
@@ -35,8 +45,8 @@ export function QuickAccess({ items = [], embedded = false }) {
             description={item.description}
             action={
               <Link
-                href={item.href}
-                {...(item.external
+                href={href}
+                {...(external
                   ? { target: "_blank", rel: "noopener noreferrer" }
                   : {})}
                 className={buttonVariants({ className: "w-fit" })}

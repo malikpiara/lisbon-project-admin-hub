@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Download } from "lucide-react"; // no DS equivalent yet — flagged for Rafael
-import { IconInternalLink, IconSearch } from "@/components/icons/ds-icons";
+import { IconArrowRight, IconSearch } from "@/components/icons/ds-icons";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +98,7 @@ export function SubscribersList({
               className={buttonVariants({ size: "sm" })}
             >
               Manage in MailerLite
-              <IconInternalLink className="size-4" />
+              <IconArrowRight className="size-4" />
             </a>
           ) : null}
         </div>

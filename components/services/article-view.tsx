@@ -156,7 +156,7 @@ export function ArticleView({
                 )}
               >
                 <div className="mx-auto max-w-[760px]">
-                  <header className="mb-6 flex items-center gap-4">
+                  <header className="mb-10 flex items-center gap-4">
                     <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
                       <CategoryIcon className="size-5" />
                     </div>

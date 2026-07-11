@@ -5,6 +5,7 @@ import {
   IconLisbonBrandMark,
 } from "@/components/icons/ds-icons";
 import { SiteNav } from "@/components/site/site-nav";
+import { DONATE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader({ sticky = true } = {}) {
@@ -40,15 +41,17 @@ export function SiteHeader({ sticky = true } = {}) {
 
         <nav className="flex items-center gap-3 sm:gap-4">
           <SiteNav />
-          <Link
-            href="/donate"
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className={buttonVariants({
               size: "lg",
               className: "px-4",
             })}
           >
             Donate
-          </Link>
+          </a>
         </nav>
       </div>
     </header>

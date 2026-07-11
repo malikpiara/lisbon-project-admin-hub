@@ -247,7 +247,7 @@ export function ContactsSection({
                             title={`Show only ${label}`}
                             className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
                           >
-                            <Tag className="max-w-full cursor-pointer whitespace-normal py-1 text-center leading-snug transition-colors hover:border-primary hover:text-primary">
+                            <Tag className="max-w-full cursor-pointer justify-start whitespace-normal py-1 text-left leading-snug transition-colors hover:border-primary hover:text-primary">
                               {label}
                             </Tag>
                           </button>

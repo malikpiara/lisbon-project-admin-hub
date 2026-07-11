@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 // Saves the service doc (basics + intro + contacts-page header). `data` is
 // already mapped to Payload's shape by the editor; fields we don't send (slug,
@@ -13,10 +14,17 @@ import { revalidatePublicContent } from "@/lib/revalidate-public";
 // their own collection now, edited at /admin/contacts. Stamp the last modifier.
 export async function saveService(id, data) {
   const { payload, user } = await authedPayload();
+  const patch = { ...data, updatedBy: user.id };
+  // Keep the slug (the category's public URL) in step with the title — the
+  // editor has no slug field. Globally unique across services. NOTE: renaming a
+  // category changes its URL (and its articles' URLs, which nest under it).
+  if (typeof data.title === "string" && data.title.trim()) {
+    patch.slug = await uniqueSlug(payload, "services", slugify(data.title), id);
+  }
   await payload.update({
     collection: "services",
     id,
-    data: { ...data, updatedBy: user.id },
+    data: patch,
   });
   await logAudit(payload, {
     action: "updated",

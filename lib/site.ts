@@ -13,6 +13,10 @@ export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://lp.lisboaux.com"
 ).replace(/\/$/, "");
 
+// Donations are handled on the main charity site, not this admin-hub property.
+// Every "Donate" CTA points here — one place to change the destination.
+export const DONATE_URL = "https://www.lisbonproject.org/donate";
+
 export const SITE = {
   /** Public-facing brand (logo/hero voice). */
   name: "The Lisbon Project",

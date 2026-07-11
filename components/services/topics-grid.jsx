@@ -6,6 +6,7 @@ import {
   IconNotes,
 } from "@/components/icons/ds-icons";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function TopicsGrid({ topics, categorySlug }) {
   return (
@@ -44,7 +45,15 @@ export function TopicsGrid({ topics, categorySlug }) {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
+            <div
+              className={cn(
+                "grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4",
+                // A lone card would otherwise stretch across the full row
+                // (2–3 cards wide). Cap it to a middle-ground width so it reads
+                // as a card, not a banner.
+                topics.length === 1 && "max-w-[460px]"
+              )}
+            >
               {topics.map((topic) => (
                 <div
                   key={topic.slug}
