@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     'audit-log': AuditLog;
     subscribers: Subscriber;
+    'conversation-insights': ConversationInsight;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
+    'conversation-insights': ConversationInsightsSelect<false> | ConversationInsightsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -497,6 +499,32 @@ export interface Subscriber {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversation-insights".
+ */
+export interface ConversationInsight {
+  id: number;
+  /**
+   * Hash of the transcript the insight was derived from
+   */
+  transcriptHash: string;
+  /**
+   * PostHog conversation_id, when the log carried one
+   */
+  conversationId?: string | null;
+  need: string;
+  theme: string;
+  status: 'resolved' | 'needs_follow_up' | 'bot_gap';
+  summary: string;
+  language?: string | null;
+  /**
+   * Provider/model that produced this insight (provenance)
+   */
+  model?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -546,6 +574,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'subscribers';
         value: number | Subscriber;
+      } | null)
+    | ({
+        relationTo: 'conversation-insights';
+        value: number | ConversationInsight;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -811,6 +843,22 @@ export interface SubscribersSelect<T extends boolean = true> {
   email?: T;
   firstName?: T;
   source?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversation-insights_select".
+ */
+export interface ConversationInsightsSelect<T extends boolean = true> {
+  transcriptHash?: T;
+  conversationId?: T;
+  need?: T;
+  theme?: T;
+  status?: T;
+  summary?: T;
+  language?: T;
+  model?: T;
   updatedAt?: T;
   createdAt?: T;
 }

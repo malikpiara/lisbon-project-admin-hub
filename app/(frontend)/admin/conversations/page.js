@@ -17,11 +17,13 @@ export const metadata = {
 // (heuristic today; AI when CONVERSATION_SYNTHESIS=ai + a key are set) and rolls
 // them up into the "top needs" overview.
 export default async function AdminConversationsPage() {
-  await authedPayload(); // auth gate (redirects to /login when unauthenticated)
+  const { payload } = await authedPayload(); // auth gate (redirects when unauthenticated)
 
   const configured = isInsightsConfigured();
   const conversations = await getChatbotConversations();
-  const view = await buildConversationsView(conversations ?? []);
+  // Pass Payload so each transcript is synthesised once and cached in the
+  // conversation-insights collection — reloads read from Postgres, no AI re-run.
+  const view = await buildConversationsView(conversations ?? [], payload);
 
   const emptyLabel = configured
     ? "Once people start chatting with the assistant, their needs will appear here — with any emails and phone numbers automatically hidden."

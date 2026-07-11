@@ -9,6 +9,13 @@
 //     is present and CONVERSATION_SYNTHESIS=ai
 // buildConversationsView() tries AI when enabled and always falls back to the
 // heuristic on any error, so the page can never break on the synthesis step.
+//
+// AI results are cached once per conversation in the `conversation-insights`
+// collection (keyed by conversationId + a transcript hash), so an already
+// analysed transcript is read from Postgres and never sent to the AI again.
+
+import { createHash } from "node:crypto";
+import type { Payload } from "payload";
 
 export type Turn = {
   speaker: string;
@@ -490,19 +497,125 @@ async function synthesizeAI(
   }
 }
 
+// ── durable "analyse once" cache (conversation-insights collection) ──────────
+
+/** Stable fingerprint of a transcript — a changed transcript re-synthesises. */
+function transcriptHash(transcript: string): string {
+  return createHash("sha1").update(transcript).digest("hex");
+}
+
+/** The model string stored as provenance on a freshly synthesised insight. */
+function currentModel(): string {
+  if (AI_PROVIDER === "cloudflare") {
+    return process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
+  }
+  if (AI_PROVIDER === "anthropic") {
+    return process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
+  }
+  return "heuristic";
+}
+
+/**
+ * Load cached insights for these transcript hashes in a single query, returning
+ * a hash→insight map. Content-addressed: the transcript is the key, so a
+ * conversation with no conversation_id still caches, and identical transcripts
+ * share one entry.
+ */
+async function loadCachedInsights(
+  payload: Payload,
+  hashes: string[]
+): Promise<Map<string, ConversationInsight>> {
+  const map = new Map<string, ConversationInsight>();
+  const keys = [...new Set(hashes)];
+  if (keys.length === 0) return map;
+  try {
+    const { docs } = await payload.find({
+      collection: "conversation-insights",
+      where: { transcriptHash: { in: keys } },
+      limit: keys.length,
+      pagination: false,
+      depth: 0,
+    });
+    for (const d of docs) {
+      map.set(String(d.transcriptHash), {
+        need: String(d.need),
+        theme: String(d.theme),
+        status: d.status as ConversationStatus,
+        summary: String(d.summary),
+        language: (d.language as string | null) ?? null,
+      });
+    }
+  } catch {
+    // A cache-read failure just means we synthesise fresh this time.
+  }
+  return map;
+}
+
+/** Store a freshly synthesised (AI) insight so this transcript is never recomputed. */
+async function saveInsight(
+  payload: Payload,
+  hash: string,
+  conversationId: string,
+  insight: ConversationInsight
+): Promise<void> {
+  try {
+    await payload.create({
+      collection: "conversation-insights",
+      data: {
+        transcriptHash: hash,
+        conversationId: conversationId || undefined,
+        need: insight.need,
+        theme: insight.theme,
+        status: insight.status,
+        summary: insight.summary,
+        language: insight.language ?? undefined,
+        model: currentModel(),
+      },
+    });
+  } catch {
+    // Best-effort: a duplicate-hash race or write failure must never break the
+    // page — the insight is still returned for this render either way.
+  }
+}
+
 // ── build the whole view (per-conversation insight + aggregates) ─────────────
 
 export async function buildConversationsView(
-  raw: RawConversation[]
+  raw: RawConversation[],
+  payload?: Payload
 ): Promise<ConversationsView> {
-  // Synthesise every conversation in parallel — one AI round-trip each, so the
-  // page waits ~1 request, not N. Each falls back to the heuristic on its own.
+  // Read the durable cache first (content-addressed by transcript hash), so an
+  // already-analysed transcript is served from Postgres and never re-sent to the AI.
+  const hashes = raw.map((c) => transcriptHash(c.transcript));
+  const cached = payload
+    ? await loadCachedInsights(payload, hashes)
+    : new Map<string, ConversationInsight>();
+
+  let anyAI = false;
+
+  // Synthesise the cache misses in parallel — one AI round-trip each, so the page
+  // waits ~1 request, not N. Each falls back to the heuristic on its own.
   const conversations: EnrichedConversation[] = await Promise.all(
-    raw.map(async (c) => {
+    raw.map(async (c, i) => {
       const turns = parseTranscript(c.transcript);
-      const insight =
-        (await synthesizeAI(turns, c.transcript)) ??
-        synthesizeHeuristic(turns, c.transcript);
+      const hash = hashes[i];
+      const hit = cached.get(hash);
+
+      let insight: ConversationInsight;
+      if (hit) {
+        insight = hit; // already analysed — no AI call
+        anyAI = true; // only AI results are ever cached
+      } else {
+        const ai = await synthesizeAI(turns, c.transcript);
+        insight = ai ?? synthesizeHeuristic(turns, c.transcript);
+        // Persist only AI results: the heuristic is cheap and deterministic, and
+        // caching it would pin the team to it once the AI comes online.
+        if (ai) {
+          anyAI = true;
+          if (payload) await saveInsight(payload, hash, c.conversationId, ai);
+        }
+      }
+
       return {
         conversationId: c.conversationId,
         at: c.at,
@@ -512,7 +625,7 @@ export async function buildConversationsView(
       };
     })
   );
-  const usedAI = AI_ENABLED;
+  const usedAI = anyAI;
 
   // Aggregates: rank themes and languages by frequency; count the actionable ones.
   const themeCounts = new Map<string, number>();
