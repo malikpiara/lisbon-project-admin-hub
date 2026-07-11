@@ -339,6 +339,11 @@ const AI_PROVIDER: "cloudflare" | "anthropic" | null =
 
 const AI_ENABLED = process.env.CONVERSATION_SYNTHESIS === "ai" && AI_PROVIDER !== null;
 
+// Cap each AI round-trip so one slow/hung provider call can't block the whole
+// page — on timeout the fetch aborts, we catch, and that conversation falls
+// back to the heuristic instead of leaving the render hanging.
+const AI_TIMEOUT_MS = 8000;
+
 function synthesisPrompt(transcript: string): string {
   return (
     `You classify a migrant-support help-assistant transcript for a caseworker team. ` +
@@ -352,32 +357,62 @@ function synthesisPrompt(transcript: string): string {
 }
 
 async function callCloudflare(prompt: string): Promise<string | null> {
-  // Cloudflare's unified AI REST API (OpenAI-compatible endpoint). One call shape
-  // for every model: set CLOUDFLARE_AI_MODEL to a Workers AI open model
-  // ("@cf/meta/llama-3.1-8b-instruct") OR — via Unified Billing — a third-party
-  // model like "anthropic/claude-haiku-4-5". Either way it's just your Cloudflare
-  // account + token; no provider key, and the bill lands on Cloudflare.
+  // Two endpoints, chosen by the model so the smallest token works:
+  //   • "@cf/…" Workers AI models → /ai/run/{model}; a plain Workers AI token is
+  //     enough (the one-click "Workers AI" API-token template), free-tier billed.
+  //   • third-party models ("anthropic/claude-…") → the unified
+  //     /ai/v1/chat/completions endpoint via AI Gateway Unified Billing (needs an
+  //     AI Gateway token + credits). Same account + token env either way; no
+  //     provider key.
   const account = process.env.CLOUDFLARE_ACCOUNT_ID as string;
+  const token = process.env.CLOUDFLARE_API_TOKEN as string;
   const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
+  const headers = {
+    "content-type": "application/json",
+    authorization: `Bearer ${token}`,
+  };
+
+  if (model.startsWith("@cf/")) {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${model}`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], max_tokens: 300 }),
+        signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+      }
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      success?: boolean;
+      result?: {
+        response?: unknown;
+        choices?: { message?: { content?: string } }[];
+      };
+    };
+    if (!json.success) return null;
+    // Newer @cf models reply in chat shape (choices[].message.content); older ones
+    // put the text in `response`; and when the model emits valid JSON, Cloudflare
+    // pre-parses it into `response` as an object — cover all three.
+    const r = json.result;
+    const content = r?.choices?.[0]?.message?.content;
+    if (typeof content === "string") return content;
+    if (typeof r?.response === "string") return r.response;
+    if (r?.response != null) return JSON.stringify(r.response);
+    return null;
+  }
+
   const res = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${account}/ai/v1/chat/completions`,
     {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN as string}`,
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 300,
-        messages: [{ role: "user", content: prompt }],
-      }),
+      headers,
+      body: JSON.stringify({ model, max_tokens: 300, messages: [{ role: "user", content: prompt }] }),
+      signal: AbortSignal.timeout(AI_TIMEOUT_MS),
     }
   );
   if (!res.ok) return null;
-  const json = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
+  const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   return json.choices?.[0]?.message?.content ?? null;
 }
 
@@ -404,6 +439,7 @@ async function callAnthropic(prompt: string): Promise<string | null> {
       max_tokens: 300,
       messages: [{ role: "user", content: prompt }],
     }),
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
   });
   if (!res.ok) return null;
   const json = (await res.json()) as { content?: { text?: string }[] };
@@ -459,22 +495,24 @@ async function synthesizeAI(
 export async function buildConversationsView(
   raw: RawConversation[]
 ): Promise<ConversationsView> {
-  const conversations: EnrichedConversation[] = [];
-  let usedAI = false;
-
-  for (const c of raw) {
-    const turns = parseTranscript(c.transcript);
-    const insight = (await synthesizeAI(turns, c.transcript)) ?? synthesizeHeuristic(turns, c.transcript);
-    if (AI_ENABLED) usedAI = true;
-    const questionCount = countRealQuestions(turns);
-    conversations.push({
-      conversationId: c.conversationId,
-      at: c.at,
-      turns,
-      questionCount,
-      insight,
-    });
-  }
+  // Synthesise every conversation in parallel — one AI round-trip each, so the
+  // page waits ~1 request, not N. Each falls back to the heuristic on its own.
+  const conversations: EnrichedConversation[] = await Promise.all(
+    raw.map(async (c) => {
+      const turns = parseTranscript(c.transcript);
+      const insight =
+        (await synthesizeAI(turns, c.transcript)) ??
+        synthesizeHeuristic(turns, c.transcript);
+      return {
+        conversationId: c.conversationId,
+        at: c.at,
+        turns,
+        questionCount: countRealQuestions(turns),
+        insight,
+      };
+    })
+  );
+  const usedAI = AI_ENABLED;
 
   // Aggregates: rank themes and languages by frequency; count the actionable ones.
   const themeCounts = new Map<string, number>();
