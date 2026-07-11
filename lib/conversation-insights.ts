@@ -365,22 +365,25 @@ const AI_TIMEOUT_MS = 8000;
 
 function synthesisPrompt(transcript: string): string {
   return (
-    `You read a help-assistant transcript for the Lisbon Project, a charity supporting migrants and refugees. ` +
-    `The team reads these to understand what people need and to spot where the assistant should improve. ` +
+    `You read a help-assistant (Carebot) transcript for the Lisbon Project, a charity supporting migrants and refugees. ` +
+    `The team reads these to understand what people need, to follow up in time, and to spot where the assistant should improve. ` +
+    `The assistant can only share self-serve links (its "AdminHub" pages and an external contacts list) and its office hours. It cannot do anything on the person's behalf. ` +
     `Personal details are already hidden as [email]/[phone]. ` +
-    `Respond with ONLY minified JSON: {"need":string,"theme":string,"status":string,"summary":string}. ` +
-    `"need": at most 8 words naming what the person needed. Never the language, a name, or contact details. ` +
-    `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}. ` +
-    `"status": one of ` +
-    `"resolved" (the assistant answered the need well), ` +
-    `"needs_follow_up" (a real need where a team member should reach out), ` +
-    `"bot_gap" (the person raised a real need and the assistant answered poorly, wrongly, or off-topic), ` +
-    `"incomplete" (the person never expressed a need: they only greeted, picked a language, or gave their name and then stopped, without asking anything or choosing a topic). ` +
-    `Choosing a topic from the numbered menu, such as Finances or Housing, counts as the person's need, so that is never "incomplete". ` +
-    `Only use "bot_gap" when the person raised a real need AND the answer was genuinely poor. ` +
-    `If the person never expressed a need, use "incomplete", never "bot_gap". ` +
-    `"summary": one plain sentence for the team, saying what the person needed and whether the assistant helped. ` +
-    `Write clearly, with no jargon. Do not use dashes; use commas or short sentences.` +
+    `Respond with ONLY minified JSON: {"need":string,"theme":string,"status":string,"summary":string}.\n` +
+    `"need": at most 8 words naming the MAIN reason the person reached out. Use their FIRST real request, the one they led with. ` +
+    `If they raised several things, keep the first and most important one and ignore topics they only browsed afterwards. ` +
+    `Never the language, a name, or contact details.\n` +
+    `"theme": exactly one of ${JSON.stringify(THEME_NAMES)}, chosen for that main need.\n` +
+    `"status": one of\n` +
+    `"resolved" = the assistant routed the person to the right resource for what they asked, for example the AdminHub page for that exact topic. The assistant's job is to point people to the correct self-serve resource, so doing that for the topic asked counts as resolved.\n` +
+    `"needs_follow_up" = the assistant could NOT meet the need itself: it said this is not something the Lisbon Project handles and there is no resource for it (for example legal advice), OR the need is urgent or sensitive (a sick child, homelessness, safety, a legal deadline) so a team member should check in even though a link was shared.\n` +
+    `"bot_gap" = the assistant clearly mishandled a clear request: it answered the wrong topic, gave wrong information, or ignored a clear question the person asked.\n` +
+    `"incomplete" = the person never clearly asked for help or chose a topic: they only greeted, chose a language, or gave a name (or one unclear line) and then stopped.\n` +
+    `Rules: choosing a numbered menu topic (Finances, Housing) IS a real need, never "incomplete". ` +
+    `Asking once for the person's name during the opening is normal onboarding, NOT a bot_gap. ` +
+    `The assistant always ends by mentioning its office hours and an external contacts list; that standard footer alone does not make a conversation "needs_follow_up" or "resolved". Judge by whether the person's specific need was actually met.\n` +
+    `"summary": one plain sentence for the team stating the person's main need and what the assistant actually did about it (answered it, pointed to external help, asked for a name, repeated the menu, and so on). ` +
+    `Be concrete and honest about whether the person was helped. Write clearly, with no jargon, and do not use dashes.` +
     `\n\nTRANSCRIPT:\n${transcript.slice(0, 6000)}`
   );
 }
