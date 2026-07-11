@@ -296,7 +296,13 @@ Grouped into three nav sections:
 
 ---
 
-## 6. Applying the DS to the Payload admin (`/cms-admin`)
+## 6. Applying the DS to the Payload admin (`/cms-admin`) — secondary surface
+
+> **Relevance:** the team works in the custom `/admin`, not here. `/cms-admin` is
+> `notFound()`'d in production (escape hatch: `ALLOW_CMS_ADMIN=1`) but still runs
+> locally, on preview deploys, and as the host for the Payload REST/GraphQL API at
+> `/api`. So this styling is live but low-traffic — kept for whoever opens the raw
+> admin or maintains `custom.css`, not something the team sees day to day.
 
 The Payload admin is themed to the DS via plain CSS in `app/(payload)/custom.css`
 (Payload's admin doesn't load `globals.css`, so values are hardcoded hex). Mapping:
