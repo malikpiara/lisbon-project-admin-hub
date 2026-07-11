@@ -15,8 +15,9 @@ important should get lost because the new app "has no box to put it in."
 This document lists where those missing boxes are, what we propose to do
 about each one, and the handful of decisions we need from you.
 
-**Important context:** everything currently visible on the new app is
-placeholder text. Nothing has been migrated yet — the full page-by-page
+**Important context (as of 2026-07-07):** most of what's visible on the new app
+is placeholder text; the large-scale migration hasn't started, though a small
+amount of real content entry has since begun in production. The full page-by-page
 checklist is at the end of this document.
 
 ---

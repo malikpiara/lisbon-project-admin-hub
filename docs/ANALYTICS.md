@@ -56,10 +56,11 @@ cloud). Two questions drive it:
 - **Chatbot data surfaced (2026-07-03):** a dedicated **`/admin/conversations`**
   route + a summary tile on `/admin/insights` read `chatbot_conversation_logged`
   from the Query API, and a PostHog dashboard tile ("Assistant — opens vs
-  conversations logged", insight `xyCgvZa1`) tracks it. **All three stay empty
-  until the capture Zap below is live** — that inbound pipeline has never fired
-  (`chatbot_conversation_logged` isn't in the project taxonomy yet). This is the
-  priority pipeline: capture what people ask → PostHog → visible on `/admin`.
+  conversations logged", insight `xyCgvZa1`) tracks it. **This pipeline is live**
+  (see "Chatbot conversation logging" below) — transcripts flow capture → PostHog
+  → visible on `/admin`. `/admin/conversations` additionally synthesises each
+  transcript into a need / status / summary (a no-network heuristic, or Cloudflare
+  Workers AI when enabled — see [ENVIRONMENT.md](./ENVIRONMENT.md)).
 
 ## Naming convention (Amplitude object-action)
 

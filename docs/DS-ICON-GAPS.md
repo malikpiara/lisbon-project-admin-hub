@@ -16,7 +16,7 @@ component. Search the codebase for the lucide name to find every call site.
 | Needed DS icon | Used for | Interim |
 |---|---|---|
 | **table** | Reference-table block chip (block editor) | Provisional outlined glyph in `block-editor.jsx` |
-| **trash / delete** | Delete button, block delete, history "deleted" | `IconMinus` (removal glyph) |
+| **trash / delete** | Delete button, block delete, history "deleted" | lucide `Trash2` |
 | **list-numbered** | List block "Numbered" toggle | Text label only (no icon) |
 | **spinner / loader** | `SubmitButton` pending state | CSS spinning ring |
 | **copy / duplicate** | Row duplicate (`editor-ui`), copy invite link (`users-manager`) | lucide `Copy` |

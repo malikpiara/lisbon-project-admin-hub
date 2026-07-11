@@ -4,6 +4,10 @@ _Audited 2026-07-05. Scope: application code + source (auth, server actions,
 public endpoints, PII handling, secrets, XSS/injection surface, headers,
 dependencies)._
 
+_Re-verified 2026-07-11: all four open items below are still open (no
+`pnpm.overrides`/`undici` pin; CSP still report-only; privacy-contact TODO
+unchanged; HSTS to confirm on Vercel)._
+
 ## Summary
 
 The app is well-secured by design: auth is centralised and re-checked at every

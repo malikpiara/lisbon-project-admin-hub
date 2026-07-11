@@ -13,9 +13,11 @@ It's also a programme that gives early-career designers and developers
 hands-on experience on real projects with social impact, guided by mentors
 from the tech industry.
 
-This repository is the Admin Hub prototype for the Lisbon Project site rebuild:
-Next.js 16 + React 19 + Tailwind v4 + shadcn (base-nova). Built from Figma
-screens; backend deferred.
+This repository is the **Admin Hub** for the Lisbon Project site rebuild:
+Next.js 16 + React 19 + Tailwind v4 + shadcn (base-nova), on a **Payload CMS
+(Supabase Postgres)** backend. It's deployed on Vercel — the public site renders
+server-side from Payload, and the team edits content through a custom admin at
+`/admin`.
 
 ## Getting Started
 
@@ -131,13 +133,14 @@ opt-in/unsubscribe flow is needed here.
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data flow, the
 non-standard radius scale, the `cn()`/tailwind-merge setup, how `tone` works, and
 the known-issues + pre-release checklist) — read it before changing data flow or
-the design system. A full index of everything in `docs/` — including the SEO, AI
-discoverability and security audits added 2026-07-05 — is in
-**[docs/README.md](docs/README.md)**.
+the design system. For environment variables and deployment, see
+**[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)**. A full index of everything in
+`docs/` is in **[docs/README.md](docs/README.md)**.
 
 ## Deploy on Vercel
 
-Deploy via the [Vercel Platform](https://vercel.com/new). Set both
-`GOOGLE_CALENDAR_API_KEY` and `GOOGLE_CALENDAR_ID` as Environment Variables
-in the project settings — plus `MAILERLITE_API_KEY` (and optional
-`MAILERLITE_GROUP_ID`) once MailerLite is live. Do not commit `.env.local`.
+Deploy via the [Vercel Platform](https://vercel.com/new). The full environment
+variable list — which are required, which are optional feature flags, which are
+secrets, and where to get each — is in **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)**.
+At minimum the app needs `PAYLOAD_SECRET` and `DATABASE_URI`; everything else
+turns a feature on or off. Do not commit `.env.local`.

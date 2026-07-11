@@ -24,10 +24,11 @@ extractable, authoritative, and present where AI looks.
 ## The three pillars — where we stand
 
 **1. Structure (extractability).** Good bones: semantic HTML, breadcrumb + entity
-schema, a server-rendered `/services` hub. **Gap:** article bodies render
-client-side (see the SEO doc's "Known limitation") — an AI crawler that doesn't
-execute JS sees titles + schema but little body text. This is the single biggest
-AI-visibility limiter and is tracked as the "wire public pages to Payload" task.
+schema, a server-rendered `/services` hub. **Resolved (2026-07-07):** article
+bodies used to render client-side — an AI crawler without JS saw titles + schema
+but little body text, once the single biggest AI-visibility limiter. The public
+pages now render **server-side from Payload** (SSG + revalidate), so crawlers get
+full body content. See [SEO-AUDIT.md](./SEO-AUDIT.md).
 
 **2. Authority (citability).** Princeton's GEO study ranks _citing sources_
 (+40%) and _adding statistics_ (+37%) as the top citation boosters. The site's

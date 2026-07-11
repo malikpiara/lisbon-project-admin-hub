@@ -85,6 +85,11 @@ Each topic can carry an `article`:
 
 ## Design-system gotchas
 
+> The full design-system reference — every token, per-component specs, the icon
+> system — is **[DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md)**; the `/components`
+> styleguide is the living version. The bullets below are just the gotchas those
+> summarise, the ones that actually bite.
+
 - **Radius scale is non-standard** (`app/globals.css`): `rounded-lg`=16px,
   `rounded-xl`=24px, `rounded-2xl`=32px, `rounded-3xl`=**56px**. Content cards
   are **16px** (`rounded-lg`); the DS `Card` is `rounded-lg`. Do **not** use
@@ -122,8 +127,8 @@ Each topic can carry an `article`:
   (palette ToC) instead of the generic Installation/Usage/Composition.
   `components/ui/tooltip.tsx` is a new Base UI wrapper (inverted dark chip that
   auto-adapts to dark) reused app-wide.
-- **Motion layer** (`app/globals.css`, bottom). Entrances use the `.animate-enter`
-  helper (`ds-enter` keyframe — ease-out, 260ms, transform+opacity only); stagger
+- **Motion layer** (`app/globals.css`, bottom). Entrances use the `.animate-entry-appear`
+  helper (`entry-appear` keyframe — ease-out, 260ms, transform+opacity only); stagger
   a list by giving items an inline `animation-delay`. A single global
   `prefers-reduced-motion: reduce` guard neutralises **all** animation/transition
   (the one sanctioned place for `!important` — it must beat utility classes). Add

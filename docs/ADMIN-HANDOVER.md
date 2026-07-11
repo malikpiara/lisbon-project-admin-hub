@@ -11,8 +11,9 @@ Postgres); the UI is ours, built from the LP design system.
 > earlier Sanity spike also briefly lived at `/studio` — see the superseded
 > [PROTOTYPE-HANDOVER.md](./archive/PROTOTYPE-HANDOVER.md).)
 
-> **If you are the Claude reading this:** the `/admin` routes are a working spike
-> on branch **`spike-cms-eval`**. Read [ARCHITECTURE.md](./ARCHITECTURE.md) and
+> **If you are the Claude reading this:** the `/admin` routes are the
+> Payload-backed team workspace, **merged to `main` (2026-07-07)** and deployed.
+> Read [ARCHITECTURE.md](./ARCHITECTURE.md) and
 > [`AGENTS.md`](../AGENTS.md) first (non-standard radius scale; `cn()` over
 > `twMerge`; the public site reads Payload server-side — the localStorage store was
 > removed 2026-07-07). Do **not** commit
@@ -129,7 +130,7 @@ broke deploys before; typecheck before pushing.)
 
 ## Git state
 
-Branch `spike-cms-eval`. The `/studio`→`/admin` merge, the `/insights` fold-in to
-`/admin/insights`, the auth-gate consolidation into `lib/admin-auth.js`, and the
-quick-access unsaved-changes guard landed in `refactor(admin): merge /studio into
-/admin, fold in insights, centralise auth`.
+Merged to `main` (2026-07-07) and deployed. The `/studio`→`/admin` merge, the
+`/insights` fold-in to `/admin/insights`, the auth-gate consolidation into
+`lib/admin-auth.js`, and the quick-access unsaved-changes guard landed in
+`refactor(admin): merge /studio into /admin, fold in insights, centralise auth`.

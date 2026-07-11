@@ -7,8 +7,10 @@
 > mirrors the Figma file *"Lisbon-Project---DS" v11.06.2026* (file key
 > `Fr0mUEYdhWhdoxPjHNPSaD`, owned by Rafael), but **the code is authoritative**.
 >
-> **Light mode only.** A `.dark` block exists in `globals.css` but is **not part
-> of the DS** — it carries leftover generic shadcn `oklch` values and is unmaintained.
+> **Light-only in practice.** Dark mode is **fully defined** in `globals.css` (a
+> 3-layer dark palette mirroring the Figma Dark mode) but **not wired to a toggle**,
+> so the app always renders light. Only the `--chart-*` values remain legacy
+> shadcn `oklch`.
 >
 > **Stack.** Next.js 16 (App Router) · React 19 · Tailwind v4 (`@theme inline`) ·
 > Base UI primitives (`@base-ui/react/*`) · shadcn (base-nova) · `react-day-picker` v10.
@@ -22,8 +24,9 @@
 ### 1.1 Color
 
 All DS colors are plain hex/sRGB defined in `:root` in `app/globals.css`. The only
-`oklch()` values are legacy shadcn carry-overs (charts, sidebar, dark mode) and are
-**not** DS tokens. Every token is registered as a Tailwind `--color-*` in
+remaining `oklch()` values are the legacy shadcn `--chart-*` carry-overs, which are
+**not** DS tokens (the `--sidebar-*` tokens are now remapped onto DS roles, and the
+dark palette is real hex). Every token is registered as a Tailwind `--color-*` in
 `@theme inline`, so `bg-brand-100`, `text-brand-800`, `border-brand-link`,
 `text-project-education`, `bg-positive`, etc. all work.
 
@@ -62,11 +65,11 @@ same as the admin `tone` field (see §4).
 
 | Token | Hex | Programme |
 |---|---|---|
-| `--project-social-care` | `#D66B00` | Social Care (orange) |
-| `--project-people-culture` | `#CE1DD7` | People & Culture (magenta) |
-| `--project-community-life` | `#DB0F0F` | Community Life (red) |
-| `--project-education` | `#6A40E2` | Education (violet) |
-| `--project-employability` | `#1A72D5` | Employability (blue) |
+| `--project-social-care` | `#CC6300` | Social Care (orange) |
+| `--project-people-culture` | `#B530B5` | People & Culture (magenta) |
+| `--project-community-life` | `#DA2916` | Community Life (red) |
+| `--project-education` | `#443FD9` | Education (violet) |
+| `--project-employability` | `#006DBD` | Employability (blue) |
 
 #### Layer 2 — Semantic roles
 
