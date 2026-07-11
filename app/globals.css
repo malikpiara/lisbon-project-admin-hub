@@ -374,9 +374,9 @@
   html {
     @apply font-sans;
   }
-  /* Brand-tinted text selection (soft mint) instead of the browser default blue. */
+  /* Brand-tinted text selection (subtle mint) instead of the browser default blue. */
   ::selection {
-    background-color: var(--brand-300);
+    background-color: var(--brand-200);
     color: var(--brand-1000);
   }
   /* Tailwind v4 preflight leaves buttons at cursor: default (the native OS
