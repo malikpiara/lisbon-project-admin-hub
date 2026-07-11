@@ -11,12 +11,33 @@ const NAV_ITEMS = [
   { label: "Home", href: "/" },
   { label: "Services & Information", href: "/#services" },
   { label: "Contacts", href: "/#contacts" },
-  { label: "Calendar", href: "/calendar" },
 ];
 
 export function SiteNav() {
   const [open, setOpen] = useState(false);
+  // Whether a team member is signed in. The public site is static, so we can't
+  // read the session at render — instead ask Payload's `me` endpoint on mount
+  // (the httpOnly session cookie rides along same-origin). Defaults to `false`
+  // so logged-out visitors — the common case — see "Log in" with no flash; a
+  // signed-in admin gets the dashboard link once the check resolves (well before
+  // they open this closed-by-default menu).
+  const [authed, setAuthed] = useState(false);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/users/me", { credentials: "include", cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (active) setAuthed(Boolean(data?.user));
+      })
+      .catch(() => {
+        /* offline / not signed in — keep the default "Log in" affordance */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -65,14 +86,16 @@ export function SiteNav() {
               {item.label}
             </Link>
           ))}
-          {/* Team sign-in — separated from the public destinations above. */}
+          {/* Team session — separated from the public destinations above.
+              Signed-in members jump straight to the dashboard; everyone else
+              gets the sign-in link. */}
           <div className="my-1 border-t-2 border-border" />
           <Link
-            href="/login"
+            href={authed ? "/admin" : "/login"}
             onClick={() => setOpen(false)}
             className="block rounded-md px-3 py-2 text-ds-xs font-medium text-foreground outline-none hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            Log in
+            {authed ? "Admin dashboard" : "Log in"}
           </Link>
         </div>
       ) : null}

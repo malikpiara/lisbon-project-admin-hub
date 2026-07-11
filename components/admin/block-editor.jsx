@@ -39,6 +39,10 @@ export function normUrl(v) {
   if (!v) return null;
   if (v[0] === "/") return v;
   if (/^(mailto:|tel:)/i.test(v)) return v;
+  // An email address becomes a mailto:, never a website. Without this it slips
+  // through to the bare-domain branch below and turns jrs@jrsportugal.pt into
+  // https://jrs@jrsportugal.pt (a website link with userinfo).
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return `mailto:${v}`;
   try {
     const u = new URL(v);
     if (/^https?:$/i.test(u.protocol)) return v;

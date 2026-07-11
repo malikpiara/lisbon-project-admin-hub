@@ -5,7 +5,6 @@ import Link from "next/link";
 import { History, RotateCcw } from "lucide-react"; // no DS equivalents yet — flagged for Rafael
 import {
   IconArrowRight,
-  IconInternalLink,
   IconNotes,
   IconPlus,
 } from "@/components/icons/ds-icons";
@@ -226,7 +225,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                 className={buttonVariants({ variant: "secondary", size: "sm" })}
               >
                 View on site
-                <IconInternalLink className="size-3.5" />
+                <IconArrowRight className="size-3.5" />
               </Link>
               <DeleteButton
                 onConfirm={() =>

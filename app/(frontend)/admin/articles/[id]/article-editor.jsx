@@ -6,8 +6,8 @@ import Link from "next/link";
 // in a new tab"; LayoutTemplate marks the standard-sections template shortcut.
 import { ExternalLink, LayoutTemplate } from "lucide-react";
 import {
+  IconArrowRight,
   IconInfo,
-  IconInternalLink,
   IconNotes,
   IconPlus,
 } from "@/components/icons/ds-icons";
@@ -569,7 +569,7 @@ export function ArticleEditor({
         >
           {draft.keyLinks.length === 0 ? (
             <EmptyState
-              icon={IconInternalLink}
+              icon={IconArrowRight}
               label="No key links yet"
               hint="Key links appear as a short list of shortcuts at the top of the article."
             />

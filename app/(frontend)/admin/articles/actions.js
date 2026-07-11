@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
 import { DEFAULT_FAQ_SUBHEADING } from "@/lib/article-defaults";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs) and the `service` relationship. `data` is already mapped to Payload's
@@ -37,6 +38,16 @@ export async function saveTopic(id, data) {
     String(prevServiceId) !== String(nextServiceId);
 
   const patch = { ...data, updatedBy: user.id };
+  // Keep the slug (the public URL segment) in step with the title. The editor
+  // has no slug field, so the title is the only source of truth. Unique within
+  // the destination service, since two services can each have a "documents"
+  // article. NOTE: renaming an article changes its public URL — an accepted
+  // trade-off for keeping slugs readable pre-release.
+  if (typeof data.title === "string" && data.title.trim()) {
+    patch.slug = await uniqueSlug(payload, "topics", slugify(data.title), id, {
+      service: { equals: nextServiceId },
+    });
+  }
   if (moved) {
     // Land it at the end of the destination service's list.
     const dest = await payload.count({
