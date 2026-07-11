@@ -373,7 +373,7 @@ async function callCloudflare(prompt: string): Promise<string | null> {
   //     provider key.
   const account = process.env.CLOUDFLARE_ACCOUNT_ID as string;
   const token = process.env.CLOUDFLARE_API_TOKEN as string;
-  const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
+  const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/google/gemma-4-26b-a4b-it";
   const headers = {
     "content-type": "application/json",
     authorization: `Bearer ${token}`,
@@ -507,7 +507,7 @@ function transcriptHash(transcript: string): string {
 /** The model string stored as provenance on a freshly synthesised insight. */
 function currentModel(): string {
   if (AI_PROVIDER === "cloudflare") {
-    return process.env.CLOUDFLARE_AI_MODEL || "@cf/meta/llama-3.1-8b-instruct";
+    return process.env.CLOUDFLARE_AI_MODEL || "@cf/google/gemma-4-26b-a4b-it";
   }
   if (AI_PROVIDER === "anthropic") {
     return process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
