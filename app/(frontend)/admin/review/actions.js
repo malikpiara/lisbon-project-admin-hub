@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 const notAllowed = { ok: false, error: "Only admins can review changes." };
 
@@ -11,7 +12,10 @@ function revalidateTopic(id) {
   revalidatePath("/admin/review");
   revalidatePath("/admin/articles");
   revalidatePath(`/admin/articles/${id}`);
-  revalidatePath("/"); // article pages — live once the public site reads Payload
+  // Approving is what makes a draft public, so it must refresh the public
+  // article and its category page — not just the home page, which is all this
+  // did back when the public site still read from localStorage.
+  revalidatePublicContent();
 }
 
 // Publish the pending draft. Payload's update merges onto the LATEST version
