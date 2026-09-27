@@ -1,5 +1,24 @@
 # scripts/
 
+## `db-push-dry-run.ts` — what will `pnpm dev` push to prod?
+
+A **read-only** preview of Payload's dev schema push. In development Payload
+diffs the live database against `payload.config.ts` and applies the
+difference, and `.env.local` points at **production**. This runs the same
+drizzle-kit diff (same arguments as `pushDevSchema`) and only prints it.
+
+```bash
+pnpm tsx scripts/db-push-dry-run.ts
+```
+
+Exits **1** if the push would run `DISABLE ROW LEVEL SECURITY` on any table,
+which is the regression that exposed every table through the Supabase Data API
+until 2026-09-27 (see [SECURITY-AUDIT.md](../docs/SECURITY-AUDIT.md)). Run it
+before `pnpm dev` on any branch that changes collections or fields. A handful
+of long-standing non-RLS statements are expected (an index/FK whose name
+exceeds Postgres's 63-character limit, a `login_attempts` default). They're
+re-applied harmlessly on every push.
+
 ## `ds-parity.mjs` — design-system parity check
 
 A **read-only** audit that catches DS divergence in product code

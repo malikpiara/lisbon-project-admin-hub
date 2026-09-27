@@ -40,7 +40,10 @@ the full list is in
 (audit fields, audit-log + its enum, versions on Services, drafts on
 Topics, `joinedAt` on Users, …).
 
-- [ ] `payload migrate:create` → commit the migration(s).
+- [ ] `payload migrate:create` → commit the migration(s). Expect an
+      `ENABLE ROW LEVEL SECURITY` line per table (from the `afterSchemaInit`
+      hook). Keep them: that's how a fresh database gets RLS
+      ([SECURITY-AUDIT.md](./SECURITY-AUDIT.md)).
 - [ ] Prod boot must **run migrations, not push** (push is dev-only).
 - [ ] Verify against a fresh database that migrate produces a working schema.
 

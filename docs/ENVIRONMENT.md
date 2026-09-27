@@ -30,6 +30,10 @@ whether it's required, and whether it's a secret.
 - **Dev points at the production database.** `DATABASE_URI` in your local
   `.env.local` is the **live Supabase prod** DB. `pnpm dev` and `tsx scripts/*`
   read and write production. Dry-run and back up before any destructive script.
+  They also **push the schema** to prod on start. `pnpm tsx
+  scripts/db-push-dry-run.ts` shows what that push will do. Never run `pnpm dev`
+  from a branch older than the RLS hook in `payload.config.ts` (2026-09-27): its
+  push would switch RLS off on every table again.
 - **Secrets never get `NEXT_PUBLIC_`.** That prefix ships a value to the browser
   bundle. Only genuinely public values (the site URL, the write-only PostHog
   `phc_` key, the PostHog host) may carry it. A secret with that prefix is a leak.

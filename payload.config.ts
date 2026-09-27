@@ -59,6 +59,18 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI,
       max: Number(process.env.DATABASE_POOL_MAX ?? 3),
     },
+    // Row Level Security on every table, with no policies: the Supabase Data API
+    // (anon/authenticated roles) gets nothing. Payload connects as `postgres`
+    // (table owner + BYPASSRLS), so its own queries are unaffected. Declared here,
+    // not only in the DB, because dev push diffs the DB against this schema and
+    // emitted DISABLE ROW LEVEL SECURITY for any table not marked here (50 tables
+    // by Sep 2026, undoing Supabase's ensure_rls trigger). See docs/SECURITY-AUDIT.md.
+    afterSchemaInit: [
+      ({ schema }) => {
+        for (const table of Object.values(schema.tables)) table.enableRLS();
+        return schema;
+      },
+    ],
   }),
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
 });
