@@ -63,7 +63,17 @@ const nextConfig = {
     viewTransition: true,
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The Worker's own *.workers.dev URL is a copy of the site, not the
+      // site: keep it out of search so it never competes with the real
+      // domain (as Cherrydock does).
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ".*\\.workers\\.dev" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+    ];
   },
 };
 
