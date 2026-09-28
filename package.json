@@ -23,7 +23,7 @@
     "date-fns": "^4.3.0",
     "lucide-react": "^1.14.0",
     "moment": "^2.30.1",
-    "next": "16.2.6",
+    "next": "16.3.4",
     "payload": "^3.85.1",
     "posthog-js": "^1.393.0",
     "react": "19.2.4",
@@ -41,7 +41,7 @@
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
