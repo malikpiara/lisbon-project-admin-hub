@@ -1,0 +1,78 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // SPIKE (2026-09-27): can this app run on Cloudflare Workers through the
+  // OpenNext adapter? Local only so far (`bash scripts/cf.sh preview`);
+  // nothing here has been created in a Cloudflare account yet. Modelled on
+  // Cherrydock's setup (moved from Vercel 2026-09-24).
+  "name": "lisbon-project",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-24",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      // OpenNext calls back into this Worker for cache revalidation; the
+      // service name must match the Worker's own name.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "lisbon-project",
+    },
+  ],
+  // Next's caches (open-next.config.ts says what each one holds).
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "lisbon-project-opennext-cache",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "lisbon-project-tag-cache",
+      // Placeholder: local preview keys its SQLite file on this. Replace with
+      // the id from `wrangler d1 create` before any real deploy.
+      "database_id": "00000000-0000-4000-8000-000000000000",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"],
+    },
+  ],
+  // next/image optimization, through Cloudflare Images.
+  "images": {
+    "binding": "IMAGES",
+  },
+  // Run next to the database (Supabase, AWS eu-west-3 Paris) rather than next
+  // to each visitor: every uncached request makes several DB round trips.
+  "placement": {
+    "region": "aws:eu-west-3",
+  },
+  "vars": {
+    // payload.config.ts. A Worker can't touch a socket another request opened,
+    // so the pg pool must never hand one over: close each connection after one
+    // query (MAX_USES), and allow enough connections that no request ever
+    // waits in the pool's queue (a waiter woken by another request's I/O hangs).
+    "DATABASE_POOL_MAX_USES": "1",
+    "DATABASE_POOL_MAX": "50",
+    // Blocks the native Payload admin at /cms-admin, as VERCEL_ENV does on
+    // Vercel (app/(payload)/cms-admin/[[...segments]]/page.tsx).
+    "DEPLOY_ENV": "production",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "workers_dev": true,
+  "preview_urls": false,
+}

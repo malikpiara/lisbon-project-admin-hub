@@ -10,6 +10,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare build output (scripts/cf.sh): ~80 MB of bundled JS that
+    // runs ESLint out of memory.
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

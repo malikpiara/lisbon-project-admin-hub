@@ -12,6 +12,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev", "--port", "3100"],
       "port": 3100
+    },
+    {
+      "name": "cf-preview",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["scripts/cf.sh", "preview"],
+      "port": 8787
     }
   ]
 }

@@ -58,6 +58,13 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI,
       max: Number(process.env.DATABASE_POOL_MAX ?? 3),
+      // Cloudflare Workers can't reuse a socket across requests: a pooled
+      // connection opened in one request hangs the next. maxUses 1 closes each
+      // connection after one query so none outlives its request. Only
+      // wrangler.jsonc sets it; on Node, connections are reused as usual.
+      ...(process.env.DATABASE_POOL_MAX_USES && {
+        maxUses: Number(process.env.DATABASE_POOL_MAX_USES),
+      }),
     },
     // Row Level Security on every table, with no policies: the Supabase Data API
     // (anon/authenticated roles) gets nothing. Payload connects as `postgres`

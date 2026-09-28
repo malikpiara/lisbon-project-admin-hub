@@ -68,4 +68,29 @@ const nextConfig = {
 };
 
 // withPayload injects the @payload-config alias and Payload's build tweaks.
-export default withPayload(nextConfig);
+const payloadConfig = withPayload(nextConfig);
+
+// Cloudflare Workers build (scripts/cf.sh sets NEXT_BUILD_TARGET=cloudflare).
+// drizzle-kit: Payload requires it only to push/migrate (dev, CLI), and
+// withPayload keeps it out of the build, so on Workers the external `require`
+// cannot resolve. Point it at a throwing stub instead. (pg-cloudflare, the
+// other gap, is added to the trace after the build: scripts/cf-trace-extra.mjs.)
+function forCloudflare(config) {
+  return {
+    ...config,
+    serverExternalPackages: config.serverExternalPackages.filter(
+      (name) => !name.startsWith("drizzle-kit"),
+    ),
+    turbopack: {
+      ...config.turbopack,
+      resolveAlias: {
+        ...config.turbopack?.resolveAlias,
+        "drizzle-kit/api": "./lib/cloudflare/drizzle-kit-stub.cjs",
+      },
+    },
+  };
+}
+
+export default process.env.NEXT_BUILD_TARGET === "cloudflare"
+  ? forCloudflare(payloadConfig)
+  : payloadConfig;
