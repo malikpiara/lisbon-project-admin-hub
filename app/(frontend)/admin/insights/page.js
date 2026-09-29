@@ -1,3 +1,5 @@
+import { FlaskConical } from "lucide-react";
+
 import { authedPayload } from "@/lib/admin-auth";
 import { TopicsViewedChart } from "@/components/analytics/topics-viewed-chart";
 import { ContactsSearchesTable } from "@/components/analytics/contacts-searches-table";
@@ -21,8 +23,8 @@ export const metadata = {
 //
 // Data is read server-side from PostHog's Query API (see lib/posthog-insights).
 // Until POSTHOG_PERSONAL_API_KEY is set, every query returns null and the two
-// demo panels fall back to their built-in sample data — so the page is never
-// broken, just not yet live.
+// demo panels show their built-in sample data — flagged by a page banner and a
+// "Sample data" badge on each panel, so demo numbers are never read as real.
 export default async function InsightsPage() {
   await authedPayload(); // auth gate (redirects to /login when unauthenticated)
 
@@ -34,12 +36,20 @@ export default async function InsightsPage() {
     getChatbotStats(),
   ]);
 
-  // Live counts when configured (a failed call → [] → honest empty state, never
-  // fake numbers on a real dashboard). Pre-config → undefined → the component's
-  // sample data, a labelled demo. The content-gaps panel never shows samples:
-  // a made-up "gap" would send the team chasing something no one searched for.
-  const live = (rows) => (configured ? (rows ?? []) : undefined);
-  const gapsData = configured ? (gaps ?? []) : [];
+  // Three honest states per panel:
+  //   • live — PostHog answered; an empty result gets the panel's "none yet" copy
+  //   • failed — configured, but the call errored (null): say so, never show an
+  //     empty "all good" (or fake numbers) on a real dashboard
+  //   • not connected — the two demo panels opt into their labelled sample data.
+  //     The content-gaps panel never shows samples: a made-up "gap" would send
+  //     the team chasing something no one searched for.
+  const unavailable = "Couldn't load this from PostHog. Reload to try again.";
+  const gapsData = gaps ?? [];
+  const gapsEmptyLabel = !configured
+    ? "PostHog isn't connected, so there are no real content gaps to show yet."
+    : gaps === null
+      ? unavailable
+      : "Nice — every search found a match this period.";
 
   return (
     <main className="mx-auto max-w-5xl px-8 pt-12 pb-28">
@@ -50,6 +60,26 @@ export default async function InsightsPage() {
         <p className="mt-2 max-w-2xl text-ds-s leading-relaxed text-muted-foreground">
           What people are looking for — and what we couldn&rsquo;t answer yet.
         </p>
+
+        {!configured ? (
+          <div
+            role="note"
+            className="mt-6 flex gap-3 rounded-lg border-2 border-amber-300 bg-amber-50 px-5 py-4 text-amber-900"
+          >
+            <FlaskConical aria-hidden className="mt-0.5 size-5 shrink-0" />
+            <div>
+              <p className="text-ds-s font-bold">
+                Sample data — PostHog not connected
+              </p>
+              <p className="mt-1 max-w-2xl text-ds-xs leading-relaxed">
+                The search and topic panels below show made-up example numbers so
+                you can see the layout. They are not real visitor activity. Set{" "}
+                <code>POSTHOG_PERSONAL_API_KEY</code> on the server to show live
+                data.
+              </p>
+            </div>
+          </div>
+        ) : null}
       </header>
 
       {/* HERO — the one panel to act on: searches that found nothing. Each row
@@ -68,11 +98,7 @@ export default async function InsightsPage() {
             <code>contacts_searched</code> where <code>results_count = 0</code>.
           </>
         }
-        emptyLabel={
-          configured
-            ? "Nice — every search found a match this period."
-            : "Set POSTHOG_PERSONAL_API_KEY to surface real content gaps here."
-        }
+        emptyLabel={gapsEmptyLabel}
       />
 
       {/* Supporting layer — everything below the hero is context. Grouped under
@@ -86,8 +112,10 @@ export default async function InsightsPage() {
         {/* Demand — what people are looking for and asking. */}
         <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-2">
           <ContactsSearchesTable
-            data={live(searches)}
+            data={searches ?? []}
+            sample={!configured}
             caption="Live from the contacts_searched PostHog event · last 30 days."
+            emptyLabel={searches === null ? unavailable : "No searches yet."}
           />
           <ChatbotSummaryCard
             conversations={chatbot ? chatbot.conversations : null}
@@ -97,7 +125,11 @@ export default async function InsightsPage() {
 
         {/* Supply — what people actually read. */}
         <div className="mt-8">
-          <TopicsViewedChart data={live(topics)} />
+          <TopicsViewedChart
+            data={topics ?? []}
+            sample={!configured}
+            emptyLabel={topics === null ? unavailable : "No topic views yet."}
+          />
         </div>
       </section>
     </main>

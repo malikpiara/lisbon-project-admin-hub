@@ -64,7 +64,7 @@ canonical URLs, the sitemap, and JSON-LD.
 |---|---|---|---|
 | `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID` | 🔒 / — | The public `/calendar` feed | Calendar is empty |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | — | Product analytics (client `$pageview`, events) | SDK is a no-op, no tracking |
-| `POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID` | 🔒 / — | Server reads for `/admin/insights` **and** `/admin/conversations` | Dashboards show sample/empty data |
+| `POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID` | 🔒 / — | Server reads for `/admin/insights` **and** `/admin/conversations` | `/admin/insights` shows sample data under a "Sample data — PostHog not connected" banner + per-panel badges; `/admin/conversations` is empty |
 | `CHATBOT_LOG_SECRET` | 🔒 | The Zapier → PostHog transcript webhook (`/webhooks/chatbot-log`) | Webhook refuses all requests (503) |
 | `MAILERLITE_API_KEY`, `MAILERLITE_GROUP_ID` | 🔒 / — | Newsletter signups → MailerLite | Signups saved to the Supabase `subscribers` table instead (nothing lost) |
 | `CONVERSATION_SYNTHESIS`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_AI_MODEL` | — / — / 🔒 / — | AI synthesis on `/admin/conversations` (need + status + summary per chat) | Page uses the no-network heuristic (simpler titles, no "assistant fell short" judgement) |

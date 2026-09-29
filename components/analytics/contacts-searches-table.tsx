@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SampleDataBadge } from "@/components/analytics/sample-data-badge";
 import {
   Table,
   TableBody,
@@ -20,8 +21,10 @@ import {
 
 export type ContactsSearch = { query: string; searches: number };
 
-// Sample data (real-domain queries). Swap for live counts from the
-// `contacts_searched` PostHog insight — pass them via the `data` prop.
+// Made-up example queries, shown only when a caller opts in with `sample` (e.g.
+// /admin/insights before PostHog is connected) — and then always labelled as
+// sample data. Live counts come in via `data`; missing data is never silently
+// replaced with these.
 const SAMPLE_DATA: ContactsSearch[] = [
   { query: "housing", searches: 142 },
   { query: "legal aid", searches: 118 },
@@ -34,7 +37,8 @@ const SAMPLE_DATA: ContactsSearch[] = [
 ];
 
 export function ContactsSearchesTable({
-  data = SAMPLE_DATA,
+  data = [],
+  sample = false,
   title = "What are people searching for in All Contacts?",
   description = "Most-searched queries · last 30 days",
   caption = "Wire to the contacts_searched PostHog insight for live counts.",
@@ -42,6 +46,8 @@ export function ContactsSearchesTable({
   headerAction,
 }: {
   data?: ContactsSearch[];
+  /** Show the built-in example rows instead of `data`, clearly labelled. */
+  sample?: boolean;
   title?: string;
   description?: string;
   caption?: ReactNode;
@@ -49,14 +55,15 @@ export function ContactsSearchesTable({
   headerAction?: ReactNode;
 }) {
   // Ordered by most searched (immutable sort — Vercel best practice: js-tosorted-immutable).
-  const ranked = data.toSorted((a, b) => b.searches - a.searches);
+  const ranked = (sample ? SAMPLE_DATA : data).toSorted((a, b) => b.searches - a.searches);
+  const action = sample ? <SampleDataBadge /> : headerAction;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
-        {headerAction ? <CardAction>{headerAction}</CardAction> : null}
+        {action ? <CardAction>{action}</CardAction> : null}
       </CardHeader>
       <CardContent>
         <Table>
@@ -70,7 +77,7 @@ export function ContactsSearchesTable({
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className={sample ? "opacity-60" : undefined}>
             {ranked.map((row) => (
               <TableRow key={row.query}>
                 <TableCell className="font-bold text-foreground">
@@ -92,7 +99,11 @@ export function ContactsSearchesTable({
               </TableRow>
             ) : null}
           </TableBody>
-          <TableCaption>{caption}</TableCaption>
+          <TableCaption>
+            {sample
+              ? "Example numbers to preview the layout, not real searches. Connect PostHog to see live counts."
+              : caption}
+          </TableCaption>
         </Table>
       </CardContent>
     </Card>

@@ -52,7 +52,9 @@ cloud). Two questions drive it:
   from the **Query API** server-side (`lib/posthog-insights.js`) — topics, top
   searches, and a **"Searches we couldn't answer"** content-gaps panel. Needs a
   Personal API Key (`POSTHOG_PERSONAL_API_KEY`, scoped `query:read`); without it
-  the two demo panels fall back to sample data and the gaps panel stays empty.
+  the two demo panels show sample data (flagged by a "Sample data — PostHog not
+  connected" banner and a badge on each panel) and the gaps panel stays empty. A
+  failed query shows "Couldn't load this from PostHog", never an empty all-clear.
 - **Chatbot data surfaced (2026-07-03):** a dedicated **`/admin/conversations`**
   route + a summary tile on `/admin/insights` read `chatbot_conversation_logged`
   from the Query API, and a PostHog dashboard tile ("Assistant — opens vs
