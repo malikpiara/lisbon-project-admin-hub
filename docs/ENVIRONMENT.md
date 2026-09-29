@@ -101,8 +101,16 @@ newest subsystem, so here's the shape of it:
   `pnpm tsx scripts/purge-conversation-insights.ts --confirm` (dry-runs without
   `--confirm`). It hits the **production** database — run it deliberately.
 - **Caveat — model choice.** Use an instruction-tuned model that emits JSON
-  directly (Llama 4 Scout). "Reasoning" models (e.g. Gemma) burn the token budget
-  thinking and return no JSON, so synthesis silently falls back to the heuristic.
+  directly (Llama 4 Scout, `@cf/meta/llama-4-scout-17b-16e-instruct` — also the
+  code's fallback when `CLOUDFLARE_AI_MODEL` is unset). "Reasoning" models (e.g.
+  Gemma) burn the token budget thinking and return no JSON, so synthesis falls
+  back to the heuristic.
+- **Provenance is on the page.** Each conversation card says whether its
+  analysis came from **AI · _model_** (the model is stored with each cached
+  insight) or the **Keyword heuristic** (and why: no question asked, AI off, or
+  AI failed). A "How these were analysed" panel totals them and warns when AI is
+  off or a call failed — so a bad model shows up as warnings, not as quietly
+  worse analysis.
 - **No migration needed on deploy.** Because dev pushes schema to the same
   Supabase prod DB, the `conversation-insights` table already exists in
   production.

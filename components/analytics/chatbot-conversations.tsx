@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { ChevronDown, MessagesSquare } from "lucide-react";
+import { ChevronDown, MessagesSquare, ScanText, Sparkles, TriangleAlert } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import type {
   ConversationsView,
   ConversationStatus,
   EnrichedConversation,
+  InsightSource,
 } from "@/lib/conversation-insights";
 
 // Status turns "read logs" into "understand needs": amber = a real need the
@@ -86,6 +87,8 @@ export function ChatbotConversations({
 
   return (
     <div className="space-y-6">
+      <AnalysisSource view={view} />
+
       {/* ── Top needs: the thesis. What people needed, at a glance. ── */}
       <div className="rounded-lg border-2 border-border bg-card px-5 py-5">
         <div className="flex items-baseline justify-between gap-3">
@@ -192,6 +195,157 @@ export function ChatbotConversations({
           </p>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+// ── provenance: AI (which model) vs the keyword heuristic ──────────────────
+// The two read alike on a card but aren't equally trustworthy, so the page says
+// which produced what — and says loudly when the AI is off or failing (an AI
+// model that returns no JSON otherwise degrades silently to the heuristic).
+
+const HEURISTIC_REASON: Record<
+  Extract<InsightSource, { kind: "heuristic" }>["reason"],
+  { short: string; long: string }
+> = {
+  no_question: {
+    short: "no question asked",
+    long: "No question was asked, so this was not sent to the AI.",
+  },
+  ai_off: {
+    short: "AI off",
+    long: "AI analysis is not enabled on this server.",
+  },
+  ai_failed: {
+    short: "AI failed",
+    long: "The AI returned no usable answer. It will be retried on the next load.",
+  },
+};
+
+// "@cf/meta/llama-4-scout-17b-16e-instruct" → "llama-4-scout-17b-16e-instruct"
+function shortModel(model: string): string {
+  return model.split("/").pop() || model;
+}
+
+function SourceChip({
+  ai,
+  warn,
+  title,
+  children,
+}: {
+  ai?: boolean;
+  warn?: boolean;
+  title: string;
+  children: ReactNode;
+}) {
+  const Icon = ai ? Sparkles : ScanText;
+  return (
+    <span
+      title={title}
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-ds-xxs font-bold",
+        ai
+          ? "bg-brand-100 text-primary"
+          : warn
+            ? "bg-amber-50 text-amber-700"
+            : "bg-secondary text-muted-foreground"
+      )}
+    >
+      <Icon aria-hidden className="size-3" />
+      {children}
+    </span>
+  );
+}
+
+function SourceBadge({ source }: { source: InsightSource }) {
+  if (source.kind === "ai") {
+    const model = source.model ?? "model not recorded";
+    return (
+      <SourceChip ai title={`Analysed by AI: ${model}`}>
+        AI · {shortModel(model)}
+      </SourceChip>
+    );
+  }
+  const failed = source.reason === "ai_failed";
+  return (
+    <SourceChip warn={failed} title={`Keyword heuristic. ${HEURISTIC_REASON[source.reason].long}`}>
+      Keyword heuristic{failed ? " · AI failed" : null}
+    </SourceChip>
+  );
+}
+
+function AnalysisSource({ view }: { view: ConversationsView }) {
+  const { synthesis } = view;
+  const reasons = new Map<string, number>();
+  for (const c of view.conversations) {
+    if (c.source.kind !== "heuristic") continue;
+    const label = HEURISTIC_REASON[c.source.reason].short;
+    reasons.set(label, (reasons.get(label) ?? 0) + 1);
+  }
+  // Conversations with a real question that got a keyword guess, not AI judgement.
+  const guessed = view.conversations.filter(
+    (c) => c.source.kind === "heuristic" && c.source.reason !== "no_question"
+  ).length;
+
+  return (
+    <div className="rounded-lg border-2 border-border bg-card px-5 py-4">
+      <p className="text-ds-xxs font-bold uppercase tracking-wide text-muted-foreground">
+        How these were analysed
+      </p>
+      <ul className="mt-3 space-y-2 text-ds-xs text-foreground">
+        {synthesis.models.map((m) => (
+          <li key={m.name} className="flex flex-wrap items-center gap-2">
+            <SourceChip ai title={`Analysed by AI: ${m.name}`}>
+              AI · {shortModel(m.name)}
+            </SourceChip>
+            <span>
+              <span className="font-bold tabular-nums">{m.count}</span> analysed by{" "}
+              <code className="text-ds-xxs">{m.name}</code>
+            </span>
+          </li>
+        ))}
+        {synthesis.heuristicCount > 0 ? (
+          <li className="flex flex-wrap items-center gap-2">
+            <SourceChip title="Keyword heuristic: rules over the transcript, no AI">
+              Keyword heuristic
+            </SourceChip>
+            <span>
+              <span className="font-bold tabular-nums">{synthesis.heuristicCount}</span> guessed
+              from keywords, not AI
+              <span className="text-muted-foreground">
+                {" ("}
+                {[...reasons].map(([label, n]) => `${n} ${label}`).join(", ")}
+                {")"}
+              </span>
+            </span>
+          </li>
+        ) : null}
+      </ul>
+
+      {!synthesis.aiEnabled && guessed > 0 ? (
+        <p className="mt-3 flex gap-2 rounded-md bg-amber-50 px-3 py-2 text-ds-xs text-amber-800">
+          <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+          <span>
+            <span className="font-bold">AI analysis is off.</span> Needs, themes and
+            statuses marked &ldquo;Keyword heuristic&rdquo; are guesses from keywords
+            in the transcript, not an AI reading of it.
+          </span>
+        </p>
+      ) : null}
+      {synthesis.aiFailedCount > 0 ? (
+        <p className="mt-3 flex gap-2 rounded-md bg-amber-50 px-3 py-2 text-ds-xs text-amber-800">
+          <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+          <span>
+            <span className="font-bold">
+              The AI failed on {synthesis.aiFailedCount} conversation
+              {synthesis.aiFailedCount === 1 ? "" : "s"}
+            </span>{" "}
+            ({synthesis.model ? <code>{synthesis.model}</code> : "no model"} returned no
+            usable answer), so {synthesis.aiFailedCount === 1 ? "it shows" : "they show"} a
+            keyword guess instead. Retried automatically on the next load.
+          </span>
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -308,7 +462,7 @@ function RichMessage({ text }: { text: string }) {
 }
 
 function ConversationCard({ c }: { c: EnrichedConversation }) {
-  const { insight, turns, questionCount, at } = c;
+  const { insight, turns, questionCount, at, source } = c;
   const s = STATUS_META[insight.status];
 
   return (
@@ -334,13 +488,14 @@ function ConversationCard({ c }: { c: EnrichedConversation }) {
             {insight.summary}
           </p>
 
-          <div className="mt-0.5 flex items-center gap-2 text-ds-xxs text-muted-foreground">
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-ds-xxs text-muted-foreground">
             {insight.language ? <Tag>{insight.language}</Tag> : null}
             <span>{formatWhen(at)}</span>
             <span className="text-border">·</span>
             <span>
               {questionCount} question{questionCount === 1 ? "" : "s"}
             </span>
+            <SourceBadge source={source} />
             <span className="ml-auto inline-flex items-center gap-1 font-bold text-primary">
               <span className="group-open/conv:hidden">Show transcript</span>
               <span className="hidden group-open/conv:inline">Hide transcript</span>

@@ -54,6 +54,7 @@ expect. They render statically and revalidate on demand.
   cached in the `conversation-insights` Payload table (content-addressed by
   transcript hash), so reloads are free. Env-gated and defensive — with the
   Cloudflare vars unset it falls back to a no-network heuristic and never breaks.
+  The page labels every analysis as AI (with the model) or keyword heuristic.
   Full setup + caveats in [ENVIRONMENT.md](./ENVIRONMENT.md).
 
 ### Seed source — for `pnpm seed:payload` only

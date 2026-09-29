@@ -14,8 +14,9 @@ export const metadata = {
 // docs/ANALYTICS.md → chatbot logging). Inherits the /admin Payload-auth gate.
 // The page is framed around the team's real job — understanding what migrants
 // need — so buildConversationsView synthesises a need/theme/status per transcript
-// (heuristic today; AI when CONVERSATION_SYNTHESIS=ai + a key are set) and rolls
-// them up into the "top needs" overview.
+// (AI when CONVERSATION_SYNTHESIS=ai + provider credentials are set, else the
+// keyword heuristic) and rolls them up into the "top needs" overview. The page
+// shows which source produced each analysis (and which AI model).
 export default async function AdminConversationsPage() {
   const { payload } = await authedPayload(); // auth gate (redirects when unauthenticated)
 
@@ -44,9 +45,6 @@ export default async function AdminConversationsPage() {
             Personal details are hidden and shown as{" "}
             <span className="font-bold">[email]</span> or{" "}
             <span className="font-bold">[phone]</span>. Visible to the team only.
-            {view.synthesizedBy === "heuristic"
-              ? " Needs and status are inferred from each transcript."
-              : null}
           </p>
         ) : null}
       </header>

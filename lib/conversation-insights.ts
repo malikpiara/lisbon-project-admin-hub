@@ -4,11 +4,13 @@
 // languages) that answer "what do migrants actually need?" at a glance.
 //
 // Synthesis has two providers behind one interface:
-//   • heuristic (default, no network) — parses the transcript; ships working today
-//   • AI (Claude, env-gated) — richer + reliable status/theme; drop-in when a key
-//     is present and CONVERSATION_SYNTHESIS=ai
+//   • heuristic (default, no network) — keyword rules over the transcript
+//   • AI (env-gated, CONVERSATION_SYNTHESIS=ai) — Cloudflare Workers AI (Llama 4
+//     Scout by default) or Claude direct; richer + reliable status/theme
 // buildConversationsView() tries AI when enabled and always falls back to the
 // heuristic on any error, so the page can never break on the synthesis step.
+// Every conversation carries its `source` (AI + model, or heuristic + why) so
+// the page can say which one produced what the team is reading.
 //
 // AI results are cached once per conversation in the `conversation-insights`
 // collection (keyed by conversationId + a transcript hash), so an already
@@ -38,12 +40,33 @@ export type ConversationInsight = {
   language: string | null;
 };
 
+// Provenance of one conversation's insight, shown on its card.
+export type InsightSource =
+  | { kind: "ai"; model: string | null } // null = cached before the model was recorded
+  | {
+      kind: "heuristic";
+      reason:
+        | "no_question" // nothing was asked, so it is never sent to the AI
+        | "ai_off" // AI synthesis is not enabled on this server
+        | "ai_failed"; // AI was tried but returned nothing usable (retried next load)
+    };
+
 export type EnrichedConversation = {
   conversationId: string;
   at: string;
   turns: Turn[];
   questionCount: number;
   insight: ConversationInsight;
+  source: InsightSource;
+};
+
+export type SynthesisSummary = {
+  aiEnabled: boolean;
+  model: string | null; // where new conversations are sent (null when AI is off)
+  aiCount: number;
+  heuristicCount: number;
+  aiFailedCount: number; // heuristic fallbacks caused by a failed AI call
+  models: { name: string; count: number }[]; // models behind the AI analyses shown
 };
 
 export type ConversationsView = {
@@ -54,7 +77,7 @@ export type ConversationsView = {
   botGapCount: number;
   incompleteCount: number; // conversations where no real question was asked
   total: number;
-  synthesizedBy: "ai" | "heuristic";
+  synthesis: SynthesisSummary;
 };
 
 type RawConversation = { conversationId: string; transcript: string; at: string };
@@ -341,8 +364,11 @@ export function synthesizeHeuristic(
 // Enable with CONVERSATION_SYNTHESIS=ai. The provider is auto-detected so no
 // credential is ever read here — set them in the environment:
 //   • Cloudflare — CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN, plus
-//     CLOUDFLARE_AI_MODEL: a Workers AI model ("@cf/meta/llama-3.1-8b-instruct")
-//     OR, via Unified Billing, a third-party one ("anthropic/claude-haiku-4-5").
+//     CLOUDFLARE_AI_MODEL: a Workers AI model (default
+//     DEFAULT_CLOUDFLARE_MODEL, Llama 4 Scout) OR, via Unified Billing, a
+//     third-party one ("anthropic/claude-haiku-4-5"). Use an instruction-tuned
+//     model: reasoning models (e.g. Gemma 4) spend the token budget thinking and
+//     return no JSON, so every call silently falls back to the heuristic.
 //     No provider key — Cloudflare bills your account.
 //   • Anthropic direct — ANTHROPIC_API_KEY (optional ANTHROPIC_MODEL, or
 //     ANTHROPIC_BASE_URL to proxy a BYOK key through your own AI Gateway).
@@ -357,6 +383,20 @@ const AI_PROVIDER: "cloudflare" | "anthropic" | null =
       : null;
 
 const AI_ENABLED = process.env.CONVERSATION_SYNTHESIS === "ai" && AI_PROVIDER !== null;
+
+const DEFAULT_CLOUDFLARE_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
+const DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
+
+/** The model new conversations are sent to (also stored as cache provenance). */
+function currentModel(): string {
+  if (AI_PROVIDER === "cloudflare") {
+    return process.env.CLOUDFLARE_AI_MODEL || DEFAULT_CLOUDFLARE_MODEL;
+  }
+  if (AI_PROVIDER === "anthropic") {
+    return process.env.ANTHROPIC_MODEL || DEFAULT_ANTHROPIC_MODEL;
+  }
+  return "heuristic";
+}
 
 // Cap each AI round-trip so one slow/hung provider call can't block the whole
 // page — on timeout the fetch aborts, we catch, and that conversation falls
@@ -398,7 +438,7 @@ async function callCloudflare(prompt: string): Promise<string | null> {
   //     provider key.
   const account = process.env.CLOUDFLARE_ACCOUNT_ID as string;
   const token = process.env.CLOUDFLARE_API_TOKEN as string;
-  const model = process.env.CLOUDFLARE_AI_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+  const model = currentModel();
   const headers = {
     "content-type": "application/json",
     authorization: `Bearer ${token}`,
@@ -467,7 +507,7 @@ async function callAnthropic(prompt: string): Promise<string | null> {
     method: "POST",
     headers,
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
+      model: currentModel(),
       max_tokens: 300,
       messages: [{ role: "user", content: prompt }],
     }),
@@ -530,28 +570,19 @@ function transcriptHash(transcript: string): string {
   return createHash("sha1").update(transcript).digest("hex");
 }
 
-/** The model string stored as provenance on a freshly synthesised insight. */
-function currentModel(): string {
-  if (AI_PROVIDER === "cloudflare") {
-    return process.env.CLOUDFLARE_AI_MODEL || "@cf/google/gemma-4-26b-a4b-it";
-  }
-  if (AI_PROVIDER === "anthropic") {
-    return process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
-  }
-  return "heuristic";
-}
+type CachedInsight = { insight: ConversationInsight; model: string | null };
 
 /**
  * Load cached insights for these transcript hashes in a single query, returning
- * a hash→insight map. Content-addressed: the transcript is the key, so a
- * conversation with no conversation_id still caches, and identical transcripts
+ * a hash→{insight, model} map. Content-addressed: the transcript is the key, so
+ * a conversation with no conversation_id still caches, and identical transcripts
  * share one entry.
  */
 async function loadCachedInsights(
   payload: Payload,
   hashes: string[]
-): Promise<Map<string, ConversationInsight>> {
-  const map = new Map<string, ConversationInsight>();
+): Promise<Map<string, CachedInsight>> {
+  const map = new Map<string, CachedInsight>();
   const keys = [...new Set(hashes)];
   if (keys.length === 0) return map;
   try {
@@ -564,11 +595,14 @@ async function loadCachedInsights(
     });
     for (const d of docs) {
       map.set(String(d.transcriptHash), {
-        need: String(d.need),
-        theme: String(d.theme),
-        status: d.status as ConversationStatus,
-        summary: String(d.summary),
-        language: (d.language as string | null) ?? null,
+        insight: {
+          need: String(d.need),
+          theme: String(d.theme),
+          status: d.status as ConversationStatus,
+          summary: String(d.summary),
+          language: (d.language as string | null) ?? null,
+        },
+        model: d.model ? String(d.model) : null,
       });
     }
   } catch {
@@ -615,9 +649,7 @@ export async function buildConversationsView(
   const hashes = raw.map((c) => transcriptHash(c.transcript));
   const cached = payload
     ? await loadCachedInsights(payload, hashes)
-    : new Map<string, ConversationInsight>();
-
-  let anyAI = false;
+    : new Map<string, CachedInsight>();
 
   // Synthesise the cache misses in parallel — one AI round-trip each, so the page
   // waits ~1 request, not N. Each falls back to the heuristic on its own.
@@ -629,22 +661,27 @@ export async function buildConversationsView(
       const hit = cached.get(hash);
 
       let insight: ConversationInsight;
+      let source: InsightSource;
       if (questionCount === 0) {
         // Nothing was actually asked (greeting, test, or drop-off). Skip the AI
         // entirely: there's no need to interpret, and it stops these from being
         // mislabelled as "bot_gap". The heuristic marks them "incomplete".
         insight = synthesizeHeuristic(turns, c.transcript);
+        source = { kind: "heuristic", reason: "no_question" };
       } else if (hit) {
-        insight = hit; // already analysed — no AI call
-        anyAI = true; // only AI results are ever cached
+        // Already analysed — no AI call. Only AI results are ever cached.
+        insight = hit.insight;
+        source = { kind: "ai", model: hit.model };
       } else {
         const ai = await synthesizeAI(turns, c.transcript);
         insight = ai ?? synthesizeHeuristic(turns, c.transcript);
         // Persist only AI results: the heuristic is cheap and deterministic, and
         // caching it would pin the team to it once the AI comes online.
         if (ai) {
-          anyAI = true;
+          source = { kind: "ai", model: currentModel() };
           if (payload) await saveInsight(payload, hash, c.conversationId, ai);
+        } else {
+          source = { kind: "heuristic", reason: AI_ENABLED ? "ai_failed" : "ai_off" };
         }
       }
 
@@ -654,20 +691,28 @@ export async function buildConversationsView(
         turns,
         questionCount,
         insight,
+        source,
       };
     })
   );
-  const usedAI = anyAI;
 
   // Aggregates: rank themes and languages by frequency; count the actionable ones.
   // "incomplete" conversations expressed no need, so they're kept out of the Top
   // needs ranking (they'd otherwise inflate "Other / general") and counted apart.
   const themeCounts = new Map<string, number>();
   const langCounts = new Map<string, number>();
+  const modelCounts = new Map<string, number>();
   let followUpCount = 0;
   let botGapCount = 0;
   let incompleteCount = 0;
+  let aiFailedCount = 0;
   for (const c of conversations) {
+    if (c.source.kind === "ai") {
+      const name = c.source.model ?? "model not recorded"; // cached before provenance
+      modelCounts.set(name, (modelCounts.get(name) ?? 0) + 1);
+    } else if (c.source.reason === "ai_failed") {
+      aiFailedCount++;
+    }
     const { theme, status, language } = c.insight;
     if (language) langCounts.set(language, (langCounts.get(language) ?? 0) + 1);
     if (status === "incomplete") {
@@ -680,6 +725,7 @@ export async function buildConversationsView(
   }
   const rank = (m: Map<string, number>) =>
     [...m.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+  const aiCount = [...modelCounts.values()].reduce((sum, n) => sum + n, 0);
 
   return {
     conversations,
@@ -689,6 +735,13 @@ export async function buildConversationsView(
     botGapCount,
     incompleteCount,
     total: conversations.length,
-    synthesizedBy: usedAI ? "ai" : "heuristic",
+    synthesis: {
+      aiEnabled: AI_ENABLED,
+      model: AI_ENABLED ? currentModel() : null,
+      aiCount,
+      heuristicCount: conversations.length - aiCount,
+      aiFailedCount,
+      models: rank(modelCounts),
+    },
   };
 }
