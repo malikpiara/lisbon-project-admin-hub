@@ -37,13 +37,17 @@ const TYPE_LABEL = {
   topics: "article",
   "quick-access": "quick access card",
   users: "team member",
+  contacts: "contact",
 };
 
+// null → the row isn't linked (better than a link to an unrelated page).
 function docHref(slug, id) {
   if (slug === "services") return `/admin/services/${id}`;
   if (slug === "topics") return `/admin/articles/${id}`;
+  if (slug === "contacts") return `/admin/contacts/${id}`;
   if (slug === "users") return "/admin/users";
-  return "/admin/quick-access";
+  if (slug === "quick-access") return "/admin/quick-access";
+  return null;
 }
 
 export function HistoryFeed({ entries }) {
@@ -137,11 +141,15 @@ export function HistoryFeed({ entries }) {
               </div>
             );
 
+            const href =
+              e.action !== "deleted" && e.docId
+                ? docHref(e.collectionSlug, e.docId)
+                : null;
             items.push(
-              e.action !== "deleted" && e.docId ? (
+              href ? (
                 <Link
                   key={e.id}
-                  href={docHref(e.collectionSlug, e.docId)}
+                  href={href}
                   className="block rounded-lg outline-none focus-visible:bg-secondary/40"
                 >
                   {row}
