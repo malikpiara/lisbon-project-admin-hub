@@ -9,6 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test 'lib/**/*.test.js'",
     "parity": "node scripts/ds-parity.mjs",
     "payload": "payload",
     "seed:payload": "tsx scripts/seed-payload.ts",
