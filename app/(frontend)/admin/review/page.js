@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
+import { STUB_TITLE } from "@/lib/article-completeness";
 import { diffWords } from "@/lib/diff-text";
 import { flattenTopic } from "@/lib/flatten-topic";
 import { ReviewQueue } from "./review-queue";
@@ -21,6 +22,9 @@ export default async function AdminReviewPage() {
     where: {
       latest: { equals: true },
       "version._status": { equals: "draft" },
+      // PROTOTYPE (team feedback): fresh stubs are drafts too; an untouched one
+      // (still titled "New article") is not something to review.
+      "version.title": { not_equals: STUB_TITLE },
     },
     sort: "-updatedAt",
     limit: 50,

@@ -206,8 +206,24 @@ function IconBtn({ label, onClick, disabled, danger, children }) {
 
 // Textarea with a friendly "Add link" helper: highlight text, click Add link,
 // the selection pre-fills "Text to show", and inserting replaces it with a link.
-// No markdown syntax is ever shown to the editor; the address is validated.
-function LinkableField({ value, onChange, rows = 3, placeholder, hint }) {
+// The address is validated. PROTOTYPE (team feedback, 2026-10): "Bold" wraps
+// the selection in **…**, and the public renderer (rich-text.tsx) now honours
+// single Enters, "- " bullets and "1. " steps typed straight into the box —
+// the hint says so. The markers are the only syntax an editor ever sees, and
+// they are the ones people already type by hand.
+export const FORMAT_HINT =
+  "Enter for a new line, blank line for a new paragraph. Start a line with “- ” for a bullet or “1. ” for a step.";
+
+export function LinkableField({
+  value,
+  onChange,
+  rows = 3,
+  placeholder,
+  hint,
+  // Which helpers to show. Lists and table cells are one-item-per-line, so
+  // they get links + bold only.
+  tools = ["link", "bold"],
+}) {
   const wrapRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState({ start: 0, end: 0 });
@@ -226,6 +242,30 @@ function LinkableField({ value, onChange, rows = 3, placeholder, hint }) {
     setUrl("");
     setErr("");
     setOpen(true);
+  };
+  // Wrap the current selection in **…** (or drop a **bold** placeholder and
+  // select it when nothing is highlighted). Toggles off when the selection is
+  // already wrapped.
+  const bold = () => {
+    const el = ta();
+    const v = value || "";
+    const start = el ? (el.selectionStart ?? v.length) : v.length;
+    const end = el ? (el.selectionEnd ?? start) : start;
+    const picked = v.slice(start, end);
+    const wrapped = /^\*\*[^*]+\*\*$/.test(picked);
+    const next = wrapped
+      ? picked.slice(2, -2)
+      : `**${picked || "bold text"}**`;
+    onChange(v.slice(0, start) + next + v.slice(end));
+    // Keep the caret on the edited run so a second click toggles it back.
+    requestAnimationFrame(() => {
+      const t = ta();
+      if (!t) return;
+      t.focus();
+      const s0 = wrapped ? start : start + 2;
+      const e0 = wrapped ? start + next.length : start + next.length - 2;
+      t.setSelectionRange(s0, e0);
+    });
   };
   const insert = () => {
     const u = normUrl(url);
@@ -255,15 +295,33 @@ function LinkableField({ value, onChange, rows = 3, placeholder, hint }) {
       {hint ? (
         <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">{hint}</p>
       ) : null}
-      <div className="mt-2">
-        <button
-          type="button"
-          onClick={openForm}
-          className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
-        >
-          <Link2 className="size-3.5" strokeWidth={2} />
-          Add link
-        </button>
+      <div className="mt-2 flex items-center gap-4">
+        {tools.includes("bold") ? (
+          <button
+            type="button"
+            onClick={bold}
+            title="Bold the highlighted text"
+            className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
+          >
+            <span
+              aria-hidden
+              className="grid size-3.5 place-items-center font-heading text-[11px] font-bold leading-none"
+            >
+              B
+            </span>
+            Bold
+          </button>
+        ) : null}
+        {tools.includes("link") ? (
+          <button
+            type="button"
+            onClick={openForm}
+            className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
+          >
+            <Link2 className="size-3.5" strokeWidth={2} />
+            Add link
+          </button>
+        ) : null}
       </div>
       {open ? (
         <div className="mt-2 rounded-lg border-2 border-border bg-muted/40 p-3">
@@ -313,9 +371,9 @@ function BlockFields({ block, onPatch }) {
       <LinkableField
         value={block.body}
         onChange={(v) => onPatch({ body: v })}
-        rows={3}
+        rows={5}
         placeholder="Write a paragraph…"
-        hint="Separate paragraphs with a blank line."
+        hint={FORMAT_HINT}
       />
     );
   }

@@ -1,8 +1,12 @@
 "use client";
 
 import { IconArrowRight } from "@/components/icons/ds-icons";
-import { splitLines, splitParagraphs } from "@/lib/article-defaults";
-import { renderInline } from "@/components/services/inline-links";
+import { splitLines } from "@/lib/article-defaults";
+import {
+  listClass,
+  renderInlineRich,
+  renderRichText,
+} from "@/components/services/rich-text";
 import { cn } from "@/lib/utils";
 
 // Live preview of the article, rendered from the editor draft. A scaled-down but
@@ -56,7 +60,7 @@ export function ArticlePreview({ draft, topicTitle }) {
             </h3>
             {s.lead ? (
               <p className="mt-1.5 text-ds-xs font-bold text-primary">
-                {renderInline(s.lead, `pv-lead-${i}`)}
+                {renderInlineRich(s.lead, `pv-lead-${i}`)}
               </p>
             ) : null}
             {/* Render every block, even before it's filled, so a block appears
@@ -67,16 +71,14 @@ export function ArticlePreview({ draft, topicTitle }) {
                 {s.blocks.map((b, j) => {
                   const bk = `${i}-${j}`;
                   if (b.type === "text") {
-                    const ps = splitParagraphs(b.body);
+                    const nodes = renderRichText(b.body, `pv-x-${bk}`);
                     return (
                       <div
                         key={b._k ?? j}
                         className="space-y-2 text-ds-xxs font-medium leading-relaxed text-brand-deep"
                       >
-                        {ps.length ? (
-                          ps.map((p, k) => (
-                            <p key={k}>{renderInline(p, `pv-x-${bk}-${k}`)}</p>
-                          ))
+                        {nodes.length ? (
+                          nodes
                         ) : (
                           <p className="text-muted-foreground/60 italic">
                             Empty paragraph…
@@ -88,17 +90,16 @@ export function ArticlePreview({ draft, topicTitle }) {
                   if (b.type === "list") {
                     const items = splitLines(b.items);
                     const ListTag = b.ordered ? "ol" : "ul";
-                    const listClass = b.ordered ? "list-decimal" : "list-disc";
                     return items.length ? (
                       <ListTag
                         key={b._k ?? j}
                         className={cn(
-                          listClass,
-                          "space-y-0.5 pl-5 text-ds-xxs font-medium leading-relaxed text-brand-deep"
+                          listClass(b.ordered),
+                          "text-ds-xxs font-medium leading-relaxed text-brand-deep"
                         )}
                       >
                         {items.map((it, k) => (
-                          <li key={k}>{renderInline(it, `pv-l-${bk}-${k}`)}</li>
+                          <li key={k}>{renderInlineRich(it, `pv-l-${bk}-${k}`)}</li>
                         ))}
                       </ListTag>
                     ) : (
@@ -143,7 +144,7 @@ export function ArticlePreview({ draft, topicTitle }) {
                                   <ul className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep">
                                     {items.map((it, m) => (
                                       <li key={m}>
-                                        {renderInline(it, `pv-tb-${bk}-${k}-${m}`)}
+                                        {renderInlineRich(it, `pv-tb-${bk}-${k}-${m}`)}
                                       </li>
                                     ))}
                                   </ul>
@@ -197,9 +198,9 @@ export function ArticlePreview({ draft, topicTitle }) {
                     {f.question || "Untitled question"}
                   </p>
                   {f.answer ? (
-                    <p className="mt-0.5 text-ds-xxs font-medium text-muted-foreground">
-                      {renderInline(f.answer, `pv-faq-${i}`)}
-                    </p>
+                    <div className="mt-0.5 space-y-2 text-ds-xxs font-medium text-muted-foreground">
+                      {renderRichText(f.answer, `pv-faq-${i}`)}
+                    </div>
                   ) : null}
                 </div>
               ))}

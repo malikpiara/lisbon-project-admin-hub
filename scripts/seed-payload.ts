@@ -125,6 +125,10 @@ for (const [si, s] of defaultAdminData.services.entries()) {
         tone: t.tone,
         order: ti,
         article: toArticle(t),
+        // Topics have drafts enabled; without this the seed produces 140
+        // never-published drafts (invisible to the public adapter, which reads
+        // published only).
+        _status: "published",
       },
     });
   }

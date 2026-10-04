@@ -8,6 +8,7 @@ import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
 import { DEFAULT_FAQ_SUBHEADING } from "@/lib/article-defaults";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { articleCompleteness, STUB_TITLE } from "@/lib/article-completeness";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs) and the `service` relationship. `data` is already mapped to Payload's
@@ -57,12 +58,17 @@ export async function saveTopic(id, data) {
     patch.order = dest.totalDocs;
   }
 
-  patch._status = isAdmin ? "published" : "draft";
+  // PROTOTYPE (team feedback): an admin's save only publishes a *complete*
+  // article. An incomplete one is kept as a draft — same as an editor's save —
+  // and the caller is told why, so nothing half-written reaches the live site.
+  const { complete, missing } = articleCompleteness(patch);
+  const publish = isAdmin && complete;
+  patch._status = publish ? "published" : "draft";
   await payload.update({
     collection: "topics",
     id,
     data: patch,
-    draft: !isAdmin,
+    draft: !publish,
   });
   await logAudit(payload, {
     action: isAdmin ? "updated" : "submitted",
@@ -79,6 +85,7 @@ export async function saveTopic(id, data) {
     revalidatePath(`/admin/services/${nextServiceId}`);
   }
   revalidatePublicContent(); // the article page + its parent category page
+  return { status: patch._status, missing };
 }
 
 export async function createTopic(serviceId) {
@@ -87,22 +94,28 @@ export async function createTopic(serviceId) {
     collection: "topics",
     where: { service: { equals: serviceId } },
   });
-  // The stub publishes for every role — an empty shell is harmless, and it
-  // guarantees a published baseline exists for the review flow to diff and
-  // fall back to. Content edits are what go through review.
+  // PROTOTYPE (team feedback): the stub starts as a DRAFT. It used to publish
+  // immediately "as a baseline for review", which put an empty "New article"
+  // card on the live category page every time anyone clicked Add — 9 of them
+  // were deleted by hand on 2026-10-02 alone. The public adapter now filters
+  // on _status, the review queue tolerates a never-published doc, and the
+  // slug is made unique so two stubs can't shadow each other.
   const created = await payload.create({
     collection: "topics",
     data: {
-      title: "New article",
-      slug: `new-topic-${existing.totalDocs + 1}`,
+      title: STUB_TITLE,
+      slug: await uniqueSlug(payload, "topics", "new-article", null, {
+        service: { equals: serviceId },
+      }),
       service: serviceId,
       order: existing.totalDocs,
       // Prewrite the FAQ subheading so editors start from a sensible line.
       article: { faqLead: DEFAULT_FAQ_SUBHEADING },
       createdBy: user.id,
       updatedBy: user.id,
-      _status: "published",
+      _status: "draft",
     },
+    draft: true,
   });
   await logAudit(payload, {
     action: "created",

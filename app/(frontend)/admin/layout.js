@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authedPayload } from "@/lib/admin-auth";
+import { STUB_TITLE } from "@/lib/article-completeness";
 
 // A passthrough title template ("%s") stops the root layout's public brand
 // suffix from leaking into staff-facing tab titles, and robots keeps the whole
@@ -34,6 +35,8 @@ export default async function AdminLayout({ children }) {
         where: {
           latest: { equals: true },
           "version._status": { equals: "draft" },
+          // Untouched "New article" stubs are drafts too; not reviewable.
+          "version.title": { not_equals: STUB_TITLE },
         },
       })
       .catch(() => null);

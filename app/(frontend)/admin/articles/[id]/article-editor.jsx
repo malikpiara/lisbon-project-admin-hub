@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 // DS lacks these — flagged for Rafael. ExternalLink signals "opens the live site
 // in a new tab"; LayoutTemplate marks the standard-sections template shortcut.
 import { ExternalLink, LayoutTemplate } from "lucide-react";
@@ -30,10 +31,13 @@ import {
   SECTION_HEADING_PRESETS,
 } from "@/lib/article-section-templates";
 import {
+  FORMAT_HINT,
+  LinkableField,
   SectionBlocks,
   blocksFromPayload,
   blocksToPayload,
 } from "@/components/admin/block-editor";
+import { articleCompleteness } from "@/lib/article-completeness";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EditorRow, EmptyState, Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -113,6 +117,8 @@ export function ArticleEditor({
   audit,
   isAdmin = true,
   pendingReview = false,
+  // Never published yet (a fresh stub, or a first draft awaiting review).
+  unpublished = false,
 }) {
   const [draft, setDraft] = useState(() => ({
     ...fromPayload(topic),
@@ -122,6 +128,12 @@ export function ArticleEditor({
   // fromPayload calls would assign different keys and read as dirty on load).
   const [saved, setSaved] = useState(() => draft);
   const [phase, setPhase] = useState("idle"); // idle | saving | error
+  // PROTOTYPE (team feedback): what the last save actually did. Editors were
+  // re-submitting the same article several times (5× in 10 s on 2026-09-29)
+  // because nothing on screen confirmed the submission; admins now also need
+  // to know when a save was kept as a draft for being incomplete.
+  const [outcome, setOutcome] = useState(null); // { status, missing } | null
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const sectionFlip = useFlip();
   const keyLinkFlip = useFlip();
@@ -375,9 +387,13 @@ export function ArticleEditor({
     startTransition(async () => {
       setPhase("saving");
       try {
-        await saveTopic(topic.id, toPayload(snapshot));
+        const result = await saveTopic(topic.id, toPayload(snapshot));
         setSaved(snapshot); // advance the baseline so dirty clears
+        setOutcome(result ?? null);
         setPhase("idle");
+        // Re-fetch the server props (pendingReview chip, audit meta) so the
+        // page reflects the new state without a manual reload.
+        router.refresh();
       } catch {
         setPhase("error");
       }
@@ -388,6 +404,9 @@ export function ArticleEditor({
     setDraft(saved);
     setPhase("idle");
   };
+
+  // Live "ready to publish" checklist, from the same rule the server enforces.
+  const completeness = articleCompleteness(toPayload(draft));
 
   const serviceSlug = service?.slug ?? "";
   const publicHref = serviceSlug
@@ -459,6 +478,14 @@ export function ArticleEditor({
                       Pending review
                     </span>
                   ) : null}
+                  {unpublished ? (
+                    <span
+                      className="ml-2 inline-block rounded-full border-2 border-border px-2 py-0.5 align-middle text-ds-xxs font-bold text-muted-foreground"
+                      title="This article is not on the live site yet"
+                    >
+                      Draft · not live
+                    </span>
+                  ) : null}
                 </h1>
                 <p className="truncate font-mono text-ds-xxs text-muted-foreground">
                   /services/{serviceSlug}/{topic.slug}
@@ -467,7 +494,7 @@ export function ArticleEditor({
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              {publicHref ? (
+              {publicHref && !unpublished ? (
                 <Link
                   href={publicHref}
                   target="_blank"
@@ -494,6 +521,47 @@ export function ArticleEditor({
         <div className="border-b-2 border-border bg-card">
           <div className="mx-auto max-w-6xl px-8 py-4">
             <AuditMeta audit={audit} />
+          </div>
+        </div>
+      ) : null}
+
+      {/* PROTOTYPE (team feedback): publish-readiness + save outcome. One
+          strip, three states — incomplete (what's missing), submitted (what
+          happens next), published. Hidden only when there is nothing to say. */}
+      {outcome || !completeness.complete ? (
+        <div className="border-b-2 border-border bg-muted/40">
+          <div className="mx-auto max-w-6xl px-8 py-3 text-ds-xxs font-medium text-foreground">
+            {outcome?.status === "draft" && !isAdmin ? (
+              <p>
+                <span className="font-bold text-primary">Submitted for review.</span>{" "}
+                An admin will check it and publish it; the live page stays as it
+                was until then.
+              </p>
+            ) : null}
+            {outcome?.status === "draft" && isAdmin ? (
+              <p>
+                <span className="font-bold text-primary">Saved as a draft, not published.</span>{" "}
+                {completeness.complete
+                  ? "Save again to publish it."
+                  : "It will go live on the next save once the items below are filled in."}
+              </p>
+            ) : null}
+            {outcome?.status === "published" ? (
+              <p>
+                <span className="font-bold text-primary">Published.</span> The
+                live page is being refreshed.
+              </p>
+            ) : null}
+            {!completeness.complete ? (
+              <div className={outcome ? "mt-2" : ""}>
+                <p className="font-bold">Before this article can go live:</p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                  {completeness.missing.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -759,14 +827,17 @@ export function ArticleEditor({
                           onChange={(v) => setFaq(i, { question: v })}
                           dirty={fieldDirty(f.question, fc?.question)}
                         />
-                        <Field
-                          label="Answer"
-                          value={f.answer}
-                          onChange={(v) => setFaq(i, { answer: v })}
-                          dirty={fieldDirty(f.answer, fc?.answer)}
-                          textarea
-                          rows={3}
-                        />
+                        <div>
+                          <span className="mb-1.5 block text-ds-xs font-medium text-foreground">
+                            Answer
+                          </span>
+                          <LinkableField
+                            value={f.answer}
+                            onChange={(v) => setFaq(i, { answer: v })}
+                            rows={4}
+                            hint={FORMAT_HINT}
+                          />
+                        </div>
                       </div>
                     </EditorRow>
                   </div>

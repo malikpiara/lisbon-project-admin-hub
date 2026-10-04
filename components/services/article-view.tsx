@@ -11,7 +11,11 @@ import {
   ReferenceTable,
   type ReferenceTableData,
 } from "@/components/services/reference-table";
-import { renderInline } from "@/components/services/inline-links";
+import {
+  listClass,
+  renderInlineRich,
+  renderRichText,
+} from "@/components/services/rich-text";
 import { MapVisit } from "@/components/home/map-visit";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -28,7 +32,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { splitParagraphs } from "@/lib/article-defaults";
 import { cn } from "@/lib/utils";
 
 const EMPTY_ARTICLE: Article = {
@@ -131,7 +134,7 @@ export function ArticleView({
             </h1>
             {article.heroLead ? (
               <p className="mt-6 max-w-2xl text-ds-l font-bold text-foreground">
-                {article.heroLead}
+                {renderInlineRich(article.heroLead, "hero")}
               </p>
             ) : null}
           </div>
@@ -167,7 +170,7 @@ export function ArticleView({
 
                   {s.lead ? (
                     <p className="max-w-3xl text-ds-m font-bold text-primary">
-                      {renderInline(s.lead, `lead-${index}`)}
+                      {renderInlineRich(s.lead, `lead-${index}`)}
                     </p>
                   ) : null}
                   {s.blocks.length ? (
@@ -175,33 +178,30 @@ export function ArticleView({
                       {s.blocks.map((b, i) => {
                         const k = `${index}-${i}`;
                         if (b.type === "text") {
-                          const ps = splitParagraphs(b.body);
-                          return ps.length ? (
+                          // Paragraphs, line breaks, inline bullets/steps and
+                          // **bold** all come from the text itself (rich-text.tsx).
+                          const nodes = renderRichText(b.body, `t-${k}`);
+                          return nodes.length ? (
                             <div
                               key={i}
                               className="space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep"
                             >
-                              {ps.map((p, j) => (
-                                <p key={j}>{renderInline(p, `t-${k}-${j}`)}</p>
-                              ))}
+                              {nodes}
                             </div>
                           ) : null;
                         }
                         if (b.type === "list") {
                           const ListTag = b.ordered ? "ol" : "ul";
-                          const listClass = b.ordered
-                            ? "list-decimal"
-                            : "list-disc";
                           return b.items.length ? (
                             <ListTag
                               key={i}
                               className={cn(
-                                listClass,
-                                "space-y-1 pl-6 text-ds-xs font-medium leading-relaxed text-brand-deep"
+                                listClass(b.ordered),
+                                "text-ds-xs font-medium leading-relaxed text-brand-deep"
                               )}
                             >
                               {b.items.map((it, j) => (
-                                <li key={j}>{renderInline(it, `l-${k}-${j}`)}</li>
+                                <li key={j}>{renderInlineRich(it, `l-${k}-${j}`)}</li>
                               ))}
                             </ListTag>
                           ) : null;
@@ -263,7 +263,7 @@ export function ArticleView({
                 </header>
                 {article.faqLead ? (
                   <p className="text-ds-m font-bold text-primary">
-                    {article.faqLead}
+                    {renderInlineRich(article.faqLead, "faq-lead")}
                   </p>
                 ) : null}
                 <Accordion
@@ -274,7 +274,9 @@ export function ArticleView({
                     <AccordionItem key={`${faq.question}-${i}`} value={faq.question}>
                       <AccordionTrigger>{faq.question}</AccordionTrigger>
                       <AccordionContent>
-                        {renderInline(faq.answer, `faq-${i}`)}
+                        <div className="space-y-3">
+                          {renderRichText(faq.answer, `faq-${i}`)}
+                        </div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}

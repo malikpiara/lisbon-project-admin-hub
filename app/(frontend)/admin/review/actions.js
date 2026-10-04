@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
+import { articleCompleteness } from "@/lib/article-completeness";
 
 const notAllowed = { ok: false, error: "Only admins can review changes." };
 
@@ -25,6 +26,21 @@ export async function approveDraft(id) {
   const { payload, user } = await authedPayload();
   if (user.role !== "admin") return notAllowed;
   try {
+    // PROTOTYPE (team feedback): approving publishes, so the same completeness
+    // gate as an admin save applies to the submitted draft.
+    const latest = await payload.findByID({
+      collection: "topics",
+      id,
+      depth: 0,
+      draft: true,
+    });
+    const { complete, missing } = articleCompleteness(latest);
+    if (!complete) {
+      return {
+        ok: false,
+        error: `Not ready to publish — still missing: ${missing.join("; ")}.`,
+      };
+    }
     const updated = await payload.update({
       collection: "topics",
       id,
@@ -58,6 +74,17 @@ export async function declineDraft(id) {
       depth: 0,
       draft: false,
     });
+    // PROTOTYPE (team feedback): articles now start life as drafts, so a
+    // submission can be the FIRST version. There is nothing published to fall
+    // back to — re-publishing `pub` here would publish the empty stub. Leave
+    // the draft where it is and tell the admin what the options are.
+    if (pub?._status !== "published") {
+      return {
+        ok: false,
+        error:
+          "This article has never been published, so there is no earlier version to keep. Edit it, ask the editor to revise it, or delete it from Articles.",
+      };
+    }
     const {
       id: _id,
       createdAt: _c,

@@ -39,6 +39,18 @@ export default async function AdminTopicEditPage({ params }) {
     : null;
   const { service: _service, ...topicForClient } = topic;
 
+  // PROTOTYPE (team feedback): articles now start as drafts, so "latest is a
+  // draft" splits into two very different states for the chip — a pending
+  // edit to something live, or an article that has never been published.
+  let publishState = "published";
+  if (topic._status === "draft") {
+    const published = await payload
+      .findByID({ collection: "topics", id, depth: 0, draft: false })
+      .catch(() => null);
+    publishState =
+      published?._status === "published" ? "pending" : "unpublished";
+  }
+
   // All services, for the reassignment dropdown (id + title, in page order).
   const { docs: allServices } = await payload.find({
     collection: "services",
@@ -60,7 +72,8 @@ export default async function AdminTopicEditPage({ params }) {
       services={services}
       audit={auditLabels(topic)}
       isAdmin={user.role === "admin"}
-      pendingReview={topic._status === "draft"}
+      pendingReview={publishState === "pending"}
+      unpublished={publishState === "unpublished"}
     />
   );
 }
