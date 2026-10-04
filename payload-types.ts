@@ -283,6 +283,11 @@ export interface Topic {
   slug: string;
   service: number | Service;
   description?: string | null;
+  authorOrg?: string | null;
+  /**
+   * Set automatically on first publish; editable.
+   */
+  publishedOn?: string | null;
   tone?: ('rose' | 'teal' | 'violet' | 'pink' | 'emerald' | 'cyan' | 'orange' | 'blue') | null;
   /**
    * Order within the parent service
@@ -298,6 +303,32 @@ export interface Topic {
           label: string;
           /**
            * /path internal or https://… external
+           */
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * People or desks to reach: a phone, an email or a page
+     */
+    keyContacts?:
+      | {
+          label: string;
+          /**
+           * tel:…, mailto:…, /path or https://…
+           */
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Places to go: a maps link or an address page
+     */
+    keyLocations?:
+      | {
+          label: string;
+          /**
+           * https://maps.… or /path
            */
           href: string;
           id?: string | null;
@@ -435,7 +466,57 @@ export interface Contact {
    * What the organization does — the “Service Provided” column. This is free text, distinct from the Categories below.
    */
   service?: string | null;
+  phones?:
+    | {
+        number: string;
+        /**
+         * Optional, e.g. “Helpline” or “WhatsApp”
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  emails?:
+    | {
+        address: string;
+        id?: string | null;
+      }[]
+    | null;
+  websites?:
+    | {
+        url: string;
+        /**
+         * Shown instead of the address, e.g. “Book online”
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  socials?:
+    | {
+        network: 'instagram' | 'facebook' | 'linkedin' | 'whatsapp' | 'other';
+        /**
+         * @handle, a number (WhatsApp) or a full URL
+         */
+        handle: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Street address; also drives the Directions button
+   */
+  address?: string | null;
+  /**
+   * One line per rule, e.g. “Mon, Tue, Thu: 10:00–13:00 / 14:00–18:00”
+   */
+  openingHours?: string | null;
+  /**
+   * Deprecated — use Phones
+   */
   phone?: string | null;
+  /**
+   * Deprecated — use Emails
+   */
   email?: string | null;
   /**
    * The service categories this contact belongs to. It appears on each of these category pages, and once in the home “All Contacts” table.
@@ -455,6 +536,11 @@ export interface QuickAccess {
   title: string;
   description?: string | null;
   href: string;
+  /**
+   * A DS icon name (same set as service icons)
+   */
+  iconKey?: string | null;
+  cta?: string | null;
   external?: boolean | null;
   order?: number | null;
   createdBy?: (number | null) | User;
@@ -654,6 +740,8 @@ export interface TopicsSelect<T extends boolean = true> {
   slug?: T;
   service?: T;
   description?: T;
+  authorOrg?: T;
+  publishedOn?: T;
   tone?: T;
   order?: T;
   article?:
@@ -661,6 +749,20 @@ export interface TopicsSelect<T extends boolean = true> {
     | {
         heroLead?: T;
         keyLinks?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        keyContacts?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        keyLocations?:
           | T
           | {
               label?: T;
@@ -774,6 +876,35 @@ export interface TopicsSelect<T extends boolean = true> {
 export interface ContactsSelect<T extends boolean = true> {
   organization?: T;
   service?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        label?: T;
+        id?: T;
+      };
+  emails?:
+    | T
+    | {
+        address?: T;
+        id?: T;
+      };
+  websites?:
+    | T
+    | {
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  socials?:
+    | T
+    | {
+        network?: T;
+        handle?: T;
+        id?: T;
+      };
+  address?: T;
+  openingHours?: T;
   phone?: T;
   email?: T;
   categories?: T;
@@ -790,6 +921,8 @@ export interface QuickAccessSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   href?: T;
+  iconKey?: T;
+  cta?: T;
   external?: T;
   order?: T;
   createdBy?: T;
