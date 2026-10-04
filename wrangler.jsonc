@@ -2,8 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // Cloudflare Workers through the OpenNext adapter, modelled on Cherrydock's
   // setup (moved from Vercel 2026-09-24). Lives in Malik's account (Workers
-  // Paid). R2 bucket and D1 database created 2026-09-28; the Worker serves
-  // only its workers.dev URL until the domain is cut over from Vercel.
+  // Paid). R2 bucket and D1 database created 2026-09-28; lp.lisboaux.com
+  // cut over from Vercel 2026-10-04 (routes, below).
   "name": "lisbon-project",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-24",
@@ -68,6 +68,11 @@
     // Vercel (app/(payload)/cms-admin/[[...segments]]/page.tsx).
     "DEPLOY_ENV": "production",
   },
+  // lp.lisboaux.com is a CNAME in the lisboaux.com zone (this account). A route
+  // only acts on a Proxied record: while the record is DNS only it points at
+  // Vercel and this route is inert, so the cutover (and its rollback) is the
+  // record's proxy toggle, with no DNS gap. Same as Cherrydock's jobs.lisboaux.com.
+  "routes": [{ "pattern": "lp.lisboaux.com/*", "zone_name": "lisboaux.com" }],
   "observability": {
     "enabled": true,
   },

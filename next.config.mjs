@@ -6,8 +6,10 @@ import { withPayload } from "@payloadcms/next/withPayload";
 //     allowlist can be tuned against real prod traffic before we switch to
 //     enforcing. Flip the header key to "Content-Security-Policy" to enforce
 //     once the reports are clean.
-//   • No Strict-Transport-Security — the hosting platform sets HSTS; forcing it
-//     here risks an HTTP lockout in non-prod. See docs/SECURITY-AUDIT.md.
+//   • Strict-Transport-Security only on the Cloudflare build: Vercel sets HSTS
+//     itself, Workers sends nothing unless we do (same value Vercel used;
+//     public/_headers carries it for static files). Browsers ignore HSTS over
+//     plain http, so local dev can't be locked out. See docs/SECURITY-AUDIT.md.
 // X-Frame-Options: SAMEORIGIN blocks click-jacking while still allowing Payload's
 // same-origin admin/live-preview framing (CSP frame-ancestors 'self' mirrors it).
 
@@ -42,6 +44,9 @@ const securityHeaders = [
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "Content-Security-Policy-Report-Only", value: csp },
+  ...(process.env.NEXT_BUILD_TARGET === "cloudflare"
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000" }]
+    : []),
 ];
 
 /** @type {import('next').NextConfig} */
