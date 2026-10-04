@@ -6,8 +6,10 @@ import { withPayload } from "@payloadcms/next/withPayload";
 //     allowlist can be tuned against real prod traffic before we switch to
 //     enforcing. Flip the header key to "Content-Security-Policy" to enforce
 //     once the reports are clean.
-//   • No Strict-Transport-Security — the hosting platform sets HSTS; forcing it
-//     here risks an HTTP lockout in non-prod. See docs/SECURITY-AUDIT.md.
+//   • Strict-Transport-Security only on the Cloudflare build: Vercel sets HSTS
+//     itself, Workers sends nothing unless we do (same value Vercel used;
+//     public/_headers carries it for static files). Browsers ignore HSTS over
+//     plain http, so local dev can't be locked out. See docs/SECURITY-AUDIT.md.
 // X-Frame-Options: SAMEORIGIN blocks click-jacking while still allowing Payload's
 // same-origin admin/live-preview framing (CSP frame-ancestors 'self' mirrors it).
 
@@ -42,6 +44,9 @@ const securityHeaders = [
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "Content-Security-Policy-Report-Only", value: csp },
+  ...(process.env.NEXT_BUILD_TARGET === "cloudflare"
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000" }]
+    : []),
 ];
 
 /** @type {import('next').NextConfig} */
@@ -63,9 +68,44 @@ const nextConfig = {
     viewTransition: true,
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The Worker's own *.workers.dev URL is a copy of the site, not the
+      // site: keep it out of search so it never competes with the real
+      // domain (as Cherrydock does).
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ".*\\.workers\\.dev" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+    ];
   },
 };
 
 // withPayload injects the @payload-config alias and Payload's build tweaks.
-export default withPayload(nextConfig);
+const payloadConfig = withPayload(nextConfig);
+
+// Cloudflare Workers build (scripts/cf.sh sets NEXT_BUILD_TARGET=cloudflare).
+// drizzle-kit: Payload requires it only to push/migrate (dev, CLI), and
+// withPayload keeps it out of the build, so on Workers the external `require`
+// cannot resolve. Point it at a throwing stub instead. (pg-cloudflare, the
+// other gap, is added to the trace after the build: scripts/cf-trace-extra.mjs.)
+function forCloudflare(config) {
+  return {
+    ...config,
+    serverExternalPackages: config.serverExternalPackages.filter(
+      (name) => !name.startsWith("drizzle-kit"),
+    ),
+    turbopack: {
+      ...config.turbopack,
+      resolveAlias: {
+        ...config.turbopack?.resolveAlias,
+        "drizzle-kit/api": "./lib/cloudflare/drizzle-kit-stub.cjs",
+      },
+    },
+  };
+}
+
+export default process.env.NEXT_BUILD_TARGET === "cloudflare"
+  ? forCloudflare(payloadConfig)
+  : payloadConfig;

@@ -17,8 +17,11 @@ type Args = {
 // be used for debugging/migrations), and can be re-enabled in production
 // temporarily by setting ALLOW_CMS_ADMIN=1 and redeploying. Gating on VERCEL_ENV
 // (not NODE_ENV) keeps a local `next start` production build usable.
+// On Cloudflare Workers there is no VERCEL_ENV, so the Worker declares
+// DEPLOY_ENV=production (wrangler.jsonc) and gets the same block.
 const blockedInProd =
-  process.env.VERCEL_ENV === "production" &&
+  (process.env.VERCEL_ENV === "production" ||
+    process.env.DEPLOY_ENV === "production") &&
   process.env.ALLOW_CMS_ADMIN !== "1";
 
 export const generateMetadata = ({

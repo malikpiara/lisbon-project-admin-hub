@@ -14,8 +14,8 @@ subsystem, and losing one only disables that subsystem.
   and `DATABASE_URI`. Everything else is a **feature flag that degrades
   gracefully** — leave it unset and that one feature turns off (or falls back),
   nothing crashes.
-- **Secrets are clearly marked** below and in Vercel (the padlock / "Sensitive"
-  tag). Only those must be protected; the rest are safe to read.
+- **Secrets are clearly marked** below. In production they are Worker secrets
+  (see [deployment.md](deployment.md#configuration-and-secrets)). Only those must be protected; the rest are safe to read.
 - **You can turn features on one at a time.** The app is designed so a half-
   configured environment still runs — useful for local dev and staged rollout.
 
@@ -41,9 +41,10 @@ whether it's required, and whether it's a secret.
   feature silently rather than erroring. That's good for resilience but means a
   feature can be "off" simply because a var wasn't set in that environment — check
   here first before debugging code.
-- **Set vars per environment.** In Vercel, add each to **Production** (and
-  **Preview** if you want PR previews to exercise it). A var set only locally does
-  nothing in prod.
+- **Set vars in production too.** Runtime values are Worker secrets; the few
+  the build needs are Workers Builds build variables
+  ([deployment.md](deployment.md#configuration-and-secrets)). A var set only
+  locally does nothing in prod.
 
 ---
 
@@ -52,7 +53,7 @@ whether it's required, and whether it's a secret.
 | Variable | Secret | What it is |
 |---|---|---|
 | `PAYLOAD_SECRET` | 🔒 | Signs Payload sessions/tokens. Generate with `openssl rand -hex 32`. Without it the CMS and every `/admin` page fail to start. |
-| `DATABASE_URI` | 🔒 | Supabase Postgres connection string. **Prod on Vercel uses the transaction pooler (`:6543`); local/migrations use session/direct.** See `.env.example` for the full rationale — the wrong endpoint has bitten deploys. |
+| `DATABASE_URI` | 🔒 | Supabase Postgres connection string. **Prod (Workers) uses the transaction pooler (`:6543`); local/migrations use session/direct.** See `.env.example` for the full rationale — the wrong endpoint has bitten deploys. |
 
 `NEXT_PUBLIC_SITE_URL` isn't strictly required (it falls back to
 `https://lp.lisboaux.com`) but should be set per environment — it drives

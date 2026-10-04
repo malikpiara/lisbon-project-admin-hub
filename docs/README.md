@@ -16,6 +16,7 @@ Everything in `docs/`, grouped by why you'd reach for it. New here? Read
 | Doc | What it covers |
 | --- | --- |
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | Every environment variable, grouped by subsystem — which are required vs optional feature-flags, which are secrets, and where to get each. Reframes the surface (only two vars are truly required) and documents the conversation-AI synthesis setup + caveats. **Read before deploying, or when a feature seems "off."** |
+| [deployment.md](./deployment.md) | Cloudflare Workers runbook: how a request is served, the platform rules, Workers Builds settings, secrets, verifying a deploy, rollback. **Read before deploying or touching `wrangler.jsonc`, `open-next.config.ts` or `scripts/cf.sh`.** |
 | [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) | The full design-system reference, reverse-engineered from the code: color / type / radius tokens, per-component specs, the icon system, and usage gotchas. The `/components` styleguide is the living version; this is the prose companion. |
 | [DS-ICON-GAPS.md](./DS-ICON-GAPS.md) | Admin/editor glyphs still on lucide because the Figma DS icon set lacks them — the hand-off list for Rafael. |
 
