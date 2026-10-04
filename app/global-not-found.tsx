@@ -1,4 +1,4 @@
-import { JetBrains_Mono, Quicksand } from "next/font/google";
+import { jetBrainsMono, quicksand } from "@/app/_fonts";
 
 import "./globals.css";
 import { StatusScreen } from "@/components/status-screen";
@@ -10,16 +10,6 @@ import { buttonVariants } from "@/components/ui/button";
 // (Enabled via experimental.globalNotFound in next.config.mjs — see the Next 16
 // not-found.js docs.) It bypasses layouts entirely, so it must ship its own
 // <html>/<body>, global styles, and fonts.
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
-  subsets: ["latin"],
-});
 
 export const metadata = {
   title: "Page not found · Lisbon Project",

@@ -1,7 +1,7 @@
 "use client"; // Error boundaries must be Client Components.
 
 import { useEffect } from "react";
-import { JetBrains_Mono, Quicksand } from "next/font/google";
+import { jetBrainsMono, quicksand } from "@/app/_fonts";
 
 import "./globals.css";
 import { StatusScreen } from "@/components/status-screen";
@@ -12,16 +12,6 @@ import { IconInfo } from "@/components/icons/ds-icons";
 // error.tsx cannot. It REPLACES the root layout, so it must ship its own
 // <html>/<body>, global styles, and fonts. metadata exports aren't supported
 // here (client component) — use a plain <title>.
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
-  subsets: ["latin"],
-});
 
 export default function GlobalError({
   error,
