@@ -48,7 +48,7 @@ export function renderInlineRich(text: string, keyBase = "r"): ReactNode[] {
 
 type Block =
   | { kind: "p"; lines: string[] }
-  | { kind: "list"; ordered: boolean; items: string[] };
+  | { kind: "list"; ordered: boolean; items: string[]; raw: string[] };
 
 // Group lines into paragraphs and lists. A list item line opens (or extends) a
 // list; a blank line ends whatever is open; any other line extends the current
@@ -69,8 +69,9 @@ export function parseRichText(text: string): Block[] {
       const item = (bullet ?? number)![1].trim();
       if (cur && cur.kind === "list" && cur.ordered === ordered) {
         cur.items.push(item);
+        cur.raw.push(line.trim());
       } else {
-        cur = { kind: "list", ordered, items: [item] };
+        cur = { kind: "list", ordered, items: [item], raw: [line.trim()] };
         blocks.push(cur);
       }
       continue;
@@ -82,7 +83,14 @@ export function parseRichText(text: string): Block[] {
       blocks.push(cur);
     }
   }
-  return blocks;
+  // A lone numbered line is far more likely to be prose that happens to start
+  // with "2. andar" or "1. ciclo" than a one-step list, so it stays text. Two
+  // or more consecutive numbered lines are a list.
+  return blocks.map((b) =>
+    b.kind === "list" && b.ordered && b.items.length === 1
+      ? { kind: "p" as const, lines: b.raw }
+      : b
+  );
 }
 
 export const listClass = (ordered: boolean) =>
