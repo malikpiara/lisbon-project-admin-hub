@@ -15,7 +15,8 @@ from the tech industry.
 
 This repository is the **Admin Hub** for the Lisbon Project site rebuild:
 Next.js 16 + React 19 + Tailwind v4 + shadcn (base-nova), on a **Payload CMS
-(Supabase Postgres)** backend. It's deployed on Vercel — the public site renders
+(Supabase Postgres)** backend. It runs on Cloudflare Workers (moved from Vercel
+2026-10-04, see [docs/deployment.md](docs/deployment.md)) — the public site renders
 server-side from Payload, and the team edits content through a custom admin at
 `/admin`.
 
@@ -44,7 +45,7 @@ setting is on.
 2. APIs & Services → Credentials → **Create Credentials → API key**.
 3. Restrict the key: **API restrictions** → Google Calendar API only.
    Application restrictions can stay as **None** for local dev; in production
-   restrict to the host's egress IPs (Vercel publishes theirs).
+   restrict by referrer or leave as None: the key only reads a public calendar.
 4. In Google Calendar, open the calendar's **Settings and sharing** →
    **Access permissions for events** → check "Make available to public".
    Copy the **Calendar ID** from **Integrate calendar**.
@@ -137,9 +138,11 @@ the design system. For environment variables and deployment, see
 **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)**. A full index of everything in
 `docs/` is in **[docs/README.md](docs/README.md)**.
 
-## Deploy on Vercel
+## Deploy
 
-Deploy via the [Vercel Platform](https://vercel.com/new). The full environment
+Every push to `main` builds and deploys to Cloudflare Workers through Workers
+Builds; `pnpm run cf:deploy` deploys by hand. The runbook (setup, secrets,
+verifying a deploy, rollback) is **[docs/deployment.md](docs/deployment.md)**. The full environment
 variable list — which are required, which are optional feature flags, which are
 secrets, and where to get each — is in **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)**.
 At minimum the app needs `PAYLOAD_SECRET` and `DATABASE_URI`; everything else
