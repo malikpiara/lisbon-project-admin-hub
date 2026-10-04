@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
@@ -51,7 +52,17 @@ export default buildConfig({
   globals: [SiteText],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
-  db: postgresAdapter({
+  db:
+    // SANDBOX (exploration): `DATABASE_ADAPTER=sqlite` swaps Supabase for a
+    // local libsql file so schema prototypes can be pushed, seeded and exercised
+    // without touching production (.env.local's DATABASE_URI is the live DB —
+    // dev push mutates prod). See docs/shaping/2026-10-team-feedback.md.
+    //   DATABASE_ADAPTER=sqlite DATABASE_URI=file:./payload.sandbox.db pnpm seed:payload
+    process.env.DATABASE_ADAPTER === "sqlite"
+      ? sqliteAdapter({
+          client: { url: process.env.DATABASE_URI || "file:./payload.sandbox.db" },
+        })
+      : postgresAdapter({
     // Supabase's session-mode pooler (port 5432) caps ALL clients at 15, and
     // pg's default is 10 connections per process — one dev server plus a few
     // Vercel lambdas exhausts the pool and takes /admin down (EMAXCONNSESSION,

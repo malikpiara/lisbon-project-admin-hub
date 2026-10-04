@@ -4,20 +4,38 @@
     {
       "name": "next-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": [
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "verify-3100",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev", "--port", "3100"],
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "3100"
+      ],
       "port": 3100
     },
     {
       "name": "cf-preview",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["scripts/cf.sh", "preview"],
+      "runtimeArgs": [
+        "scripts/cf.sh",
+        "preview"
+      ],
       "port": 8787
+    },
+    {
+      "name": "sandbox-3200",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "DATABASE_ADAPTER=sqlite DATABASE_URI=file:./payload.sandbox.db pnpm dev --port 3200"
+      ],
+      "port": 3200
     }
   ]
 }
