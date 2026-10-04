@@ -171,10 +171,12 @@ export function SelectField({
     : undefined;
   return (
     <div className={`block ${className}`}>
-      <span className={labelClass}>
-        {label}
-        {dirty ? <DirtyDot className="ml-1.5" /> : null}
-      </span>
+      {label ? (
+        <span className={labelClass}>
+          {label}
+          {dirty ? <DirtyDot className="ml-1.5" /> : null}
+        </span>
+      ) : null}
       <Select items={items} value={value ?? ""} onValueChange={onChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={placeholder} />

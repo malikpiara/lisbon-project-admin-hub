@@ -21,10 +21,15 @@ import {
 } from "@/components/ui/select";
 import {
   IconArrowRight,
+  IconFacebook,
+  IconGlobe,
   IconInfo,
+  IconInstagram,
+  IconLinkedin,
   IconMail,
   IconPhone,
   IconSearch,
+  IconWhatsapp,
 } from "@/components/icons/ds-icons";
 import {
   Table,
@@ -35,12 +40,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+export type Social = {
+  network: "instagram" | "facebook" | "linkedin" | "whatsapp" | "other";
+  handle: string;
+};
 export type Contact = {
   id: string;
   organization: string;
   service: string;
-  phone: string;
-  email: string;
+  // PROTOTYPE (team feedback · Rafael's contacts layout): repeatable channels.
+  // Every list may be empty — a row renders only the channels it has.
+  phones: { number: string; label?: string }[];
+  emails: string[];
+  websites: { url: string; label?: string }[];
+  socials: Social[];
+  address: string;
+  openingHours: string;
   // Service slugs this contact belongs to — the single taxonomy. A contact can
   // sit in several categories and surfaces on each of their pages.
   categories: string[];
@@ -48,10 +63,68 @@ export type Contact = {
 
 export type CategoryOption = { value: string; label: string };
 
-function mapsHref(org: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${org}, Lisbon`
-  )}`;
+// Directions: the real address when the team has entered one, else the old
+// "<organisation>, Lisbon" search.
+function mapsHref(c: Contact) {
+  const q = c.address.trim() ? c.address.trim() : `${c.organization}, Lisbon`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
+const SOCIAL_ICON = {
+  instagram: IconInstagram,
+  facebook: IconFacebook,
+  linkedin: IconLinkedin,
+  whatsapp: IconWhatsapp,
+  other: IconGlobe,
+} as const;
+
+// Turn a stored handle into a link + label. "@name" → the network's profile
+// URL; a full URL stays as is; a WhatsApp number → wa.me.
+function socialLink(s: Social): { href: string; label: string } {
+  const h = s.handle.trim();
+  if (/^https?:\/\//i.test(h)) {
+    const label = h.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+    return { href: h, label };
+  }
+  const bare = h.replace(/^@/, "");
+  switch (s.network) {
+    case "instagram":
+      return { href: `https://instagram.com/${bare}`, label: `@${bare}` };
+    case "facebook":
+      return { href: `https://facebook.com/${bare}`, label: bare };
+    case "linkedin":
+      return { href: `https://linkedin.com/company/${bare}`, label: bare };
+    case "whatsapp":
+      return { href: `https://wa.me/${bare.replace(/[^\d]/g, "")}`, label: h };
+    default:
+      return { href: `https://${bare}`, label: bare };
+  }
+}
+
+const channelClass =
+  "flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline";
+
+function ChannelLink({
+  href,
+  icon: Icon,
+  children,
+  external = false,
+}: {
+  href: string;
+  icon: (p: { className?: string }) => React.ReactNode;
+  children: React.ReactNode;
+  external?: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      className={channelClass}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      <Icon className="size-4 shrink-0" />
+      <span className="min-w-0 break-words">{children}</span>
+    </a>
+  );
 }
 
 export function ContactsSection({
@@ -101,7 +174,8 @@ export function ContactsSection({
       return (
         c.organization.toLowerCase().includes(q) ||
         c.service.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q)
+        c.emails.some((e) => e.toLowerCase().includes(q)) ||
+        c.address.toLowerCase().includes(q)
       );
     });
   }, [contacts, deferredQuery, category]);
@@ -130,7 +204,7 @@ export function ContactsSection({
   // without it the trigger shows the raw value ("all").
   const categoryItems = useMemo(
     () => ({
-      all: "All Contacts",
+      all: "All Categories",
       ...Object.fromEntries(categories.map((c) => [c.value, c.label])),
     }),
     [categories]
@@ -177,7 +251,7 @@ export function ContactsSection({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Contacts</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
                   {c.label}
@@ -195,14 +269,13 @@ export function ContactsSection({
           <Table className="min-w-[920px] table-fixed">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="w-[16%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
-                <TableHead className="w-[21%] text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
-                <TableHead className="w-[33%] text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
-                <TableHead className="w-[30%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
-                {/* Link is a fixed-width column: the "Get Directions" button has a
-                    fixed intrinsic width, so a percentage column would starve it on
-                    narrower tables. The other four columns share the rest. */}
-                <TableHead className="w-[188px] text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
+                {/* Column names + the icon-only Directions button follow
+                    Rafael's layout (Figma 3393:7225). */}
+                <TableHead className="w-[22%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
+                <TableHead className="w-[26%] text-ds-xxs font-medium text-muted-foreground">Service</TableHead>
+                <TableHead className="w-[26%] text-ds-xxs font-medium text-muted-foreground">Contact</TableHead>
+                <TableHead className="w-[20%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
+                <TableHead className="w-[96px] text-right text-ds-xxs font-medium text-muted-foreground">Directions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,25 +286,58 @@ export function ContactsSection({
                   </TableCell>
                   <TableCell className="max-w-56 py-5 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
+                    {c.openingHours.trim() ? (
+                      <div className="mt-3">
+                        <p className="font-bold">Opening hours:</p>
+                        {c.openingHours
+                          .split("\n")
+                          .map((l) => l.trim())
+                          .filter(Boolean)
+                          .map((l, i) => (
+                            <p key={i}>{l}</p>
+                          ))}
+                      </div>
+                    ) : null}
                   </TableCell>
                   <TableCell className="py-5 align-top">
+                    {/* One row per channel, nothing for a missing one — the old
+                        single email/phone drew a bare icon when blank. */}
                     <div className="space-y-2">
-                      <a
-                        href={`mailto:${c.email}`}
-                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                      >
-                        <IconMail className="size-4" />
-                        {c.email}
-                      </a>
+                      {c.emails.map((e) => (
+                        <ChannelLink key={e} href={`mailto:${e}`} icon={IconMail}>
+                          {e}
+                        </ChannelLink>
+                      ))}
                       {/* tel: href strips spaces/punctuation (keep digits + leading
                           +) so it dials correctly; the label stays formatted. */}
-                      <a
-                        href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}
-                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                      >
-                        <IconPhone className="size-4" />
-                        {c.phone}
-                      </a>
+                      {c.phones.map((p) => (
+                        <ChannelLink
+                          key={p.number}
+                          href={`tel:${p.number.replace(/[^\d+]/g, "")}`}
+                          icon={IconPhone}
+                        >
+                          {p.number}
+                          {p.label ? (
+                            <span className="font-medium text-muted-foreground"> · {p.label}</span>
+                          ) : null}
+                        </ChannelLink>
+                      ))}
+                      {c.socials.map((s, i) => {
+                        const { href, label } = socialLink(s);
+                        return (
+                          <ChannelLink key={`${s.network}-${i}`} href={href} icon={SOCIAL_ICON[s.network] ?? IconGlobe} external>
+                            {label}
+                          </ChannelLink>
+                        );
+                      })}
+                      {c.websites.map((w) => (
+                        <ChannelLink key={w.url} href={w.url} icon={IconGlobe} external>
+                          {w.label || w.url.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "")}
+                        </ChannelLink>
+                      ))}
+                      {!c.emails.length && !c.phones.length && !c.socials.length && !c.websites.length ? (
+                        <span className="text-ds-xxs font-medium text-muted-foreground">—</span>
+                      ) : null}
                     </div>
                   </TableCell>
                   <TableCell className="py-5 align-top">
@@ -255,14 +361,15 @@ export function ContactsSection({
                       })}
                     </div>
                   </TableCell>
-                  <TableCell className="py-5 align-top">
+                  <TableCell className="py-5 text-right align-top">
                     <a
-                      href={mapsHref(c.organization)}
+                      href={mapsHref(c)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={buttonVariants()}
+                      aria-label={`Directions to ${c.organization}`}
+                      title={c.address.trim() ? c.address.trim() : "Search on Google Maps"}
+                      className={buttonVariants({ size: "icon" })}
                     >
-                      Get Directions
                       <IconArrowRight className="size-4" />
                     </a>
                   </TableCell>
