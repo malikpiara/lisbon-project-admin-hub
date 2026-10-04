@@ -8,6 +8,7 @@ import {
   IconUserPlus,
 } from "@/components/icons/ds-icons";
 import { DONATE_URL } from "@/lib/site";
+import { getServiceIcon } from "@/lib/service-icons";
 
 // Per-card icon + call-to-action, keyed by the card's href (stable across the
 // seed and Payload, whose auto-increment ids differ from the seed's string ids).
@@ -31,7 +32,11 @@ export function QuickAccess({ items = [], embedded = false }) {
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
       {items.map((item) => {
         const meta = cardMeta[item.href] ?? { icon: IconArrowRight, cta: "Learn more" };
-        const Icon = meta.icon;
+        // PROTOTYPE (team feedback): the stored icon + button label win; the
+        // href-keyed map above is the fallback for cards saved before they
+        // existed.
+        const Icon = item.iconKey ? getServiceIcon(item.iconKey) : meta.icon;
+        const cta = item.cta?.trim() || meta.cta;
         // A card's meta may pin its destination (e.g. Donate → charity site);
         // otherwise use the stored href/external flag.
         const href = meta.href ?? item.href;
@@ -51,7 +56,7 @@ export function QuickAccess({ items = [], embedded = false }) {
                   : {})}
                 className={buttonVariants({ className: "w-fit" })}
               >
-                {meta.cta}
+                {cta}
                 <IconArrowRight className="size-4" />
               </Link>
             }

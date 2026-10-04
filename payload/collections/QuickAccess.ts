@@ -17,6 +17,19 @@ export const QuickAccess: CollectionConfig = {
     { name: "title", type: "text", required: true },
     { name: "description", type: "textarea" },
     { name: "href", type: "text", required: true, label: "Link (href)" },
+    // ── PROTOTYPE (team feedback): the icon and the button label used to be
+    // hardcoded per href in components/home/quick-access.jsx, so editing a
+    // card's link silently swapped its glyph for an arrow and its button for
+    // "Learn more" — the "logos nos box dos Quick Access" complaint. Both are
+    // now fields; the hardcoded map remains only as the fallback for cards
+    // saved before this. ──
+    {
+      name: "iconKey",
+      type: "text",
+      label: "Icon",
+      admin: { description: "A DS icon name (same set as service icons)" },
+    },
+    { name: "cta", type: "text", label: "Button label" },
     {
       name: "external",
       type: "checkbox",

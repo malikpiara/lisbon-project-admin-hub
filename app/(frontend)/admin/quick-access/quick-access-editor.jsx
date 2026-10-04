@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, DirtyDot } from "@/components/admin/field";
+import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { MoveControls } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -178,15 +179,9 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
             Link cards shown in the home-page hero.
           </p>
         </div>
-        {/* Disabled until cards support an icon + button label (the public hero
-            renders both, hardcoded by id today). Re-enable by removing `disabled`
-            once the icon picker + cta field land. addCard stays wired for then. */}
-        <Button
-          size="sm"
-          disabled
-          title="Adding cards is paused until they support an icon and button label"
-          onClick={addCard}
-        >
+        {/* PROTOTYPE (team feedback): cards now carry their own icon + button
+            label, so adding one no longer yields an arrow + "Learn more". */}
+        <Button size="sm" onClick={addCard}>
           <IconPlus />
           Add card
         </Button>
@@ -240,12 +235,16 @@ function QuickAccessCardEditor({
     href: item.href ?? "",
     description: item.description ?? "",
     external: item.external ?? false,
+    iconKey: item.iconKey ?? "",
+    cta: item.cta ?? "",
   }));
   const [saved, setSaved] = useState(() => ({
     title: item.title ?? "",
     href: item.href ?? "",
     description: item.description ?? "",
     external: item.external ?? false,
+    iconKey: item.iconKey ?? "",
+    cta: item.cta ?? "",
   }));
   const [isPending, startTransition] = useTransition();
 
@@ -309,6 +308,25 @@ function QuickAccessCardEditor({
             textarea
             rows={2}
             hint="One line under the title. Optional."
+          />
+          <Field
+            label="Button label"
+            value={draft.cta}
+            onChange={(v) => patch({ cta: v })}
+            dirty={fieldDirty(draft.cta, saved.cta)}
+            placeholder="Visit website"
+            hint="The green button on the card."
+          />
+          <IconPicker
+            className="sm:col-span-2"
+            label={
+              <>
+                Icon
+                {fieldDirty(draft.iconKey, saved.iconKey) ? <DirtyDot className="ml-1.5" /> : null}
+              </>
+            }
+            value={draft.iconKey}
+            onChange={(key) => patch({ iconKey: key })}
           />
         </div>
         <div className="flex items-center justify-between border-t-2 border-border pt-3">

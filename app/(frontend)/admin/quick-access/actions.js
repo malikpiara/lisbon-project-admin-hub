@@ -44,6 +44,8 @@ export async function createQuickAccessItem() {
       href: "/",
       description: "",
       external: false,
+      iconKey: "internal-link",
+      cta: "Learn more",
       order: existing.totalDocs,
       createdBy: user.id,
       updatedBy: user.id,
