@@ -57,6 +57,8 @@ type Article = {
   heroLead: string;
   sections: ArticleSection[];
   keyLinks?: KeyLink[];
+  keyContacts?: KeyLink[];
+  keyLocations?: KeyLink[];
   faqLead: string;
   faqs: Faq[];
 };
@@ -64,8 +66,18 @@ type Topic = {
   slug: string;
   title: string;
   description: string;
+  // PROTOTYPE (team feedback): byline — who wrote it, when first published.
+  authorOrg?: string;
+  publishedOn?: string | null;
   article?: Article | null;
 };
+
+function formatDate(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
 type ServiceMeta = {
   slug: string;
   title: string;
@@ -137,6 +149,18 @@ export function ArticleView({
                 {renderInlineRich(article.heroLead, "hero")}
               </p>
             ) : null}
+            {/* Byline (Figma 3393:7345): "By <organisation> · <first published>".
+                Either half may be missing; nothing renders with neither. */}
+            {topic.authorOrg || topic.publishedOn ? (
+              <p className="mt-6 text-ds-xxs font-medium text-foreground">
+                {[
+                  topic.authorOrg ? `By ${topic.authorOrg}` : null,
+                  formatDate(topic.publishedOn) || null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
@@ -146,7 +170,11 @@ export function ArticleView({
         <div className="mx-auto max-w-[1680px] space-y-8 px-4 pb-16 sm:px-6 lg:px-14">
           {/* Key links lead the article ("I just need the portal link") —
               decided 2026-07-04, matching the old site's hierarchy. */}
-          <KeyLinks links={article.keyLinks ?? []} />
+          <KeyLinks
+            links={article.keyLinks ?? []}
+            contacts={article.keyContacts ?? []}
+            locations={article.keyLocations ?? []}
+          />
 
           {article.sections.map((s, index) => {
             const panel = index % 2 === 0;

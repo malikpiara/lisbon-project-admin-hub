@@ -16,6 +16,19 @@ export const Topics: CollectionConfig = {
   // /admin/review. Published content is what non-draft reads return.
   versions: { drafts: true, maxPerDoc: 25 },
   labels: { singular: "Article", plural: "Articles" },
+  hooks: {
+    beforeChange: [
+      // PROTOTYPE (team feedback): stamp the first publish date — the article
+      // hero shows "By <org> · <date>" (Figma 3393:7330). Re-publishing keeps
+      // the original date; clear the field to reset it.
+      ({ data, originalDoc }) => {
+        if (data?._status === "published" && !data.publishedOn && !originalDoc?.publishedOn) {
+          data.publishedOn = new Date().toISOString();
+        }
+        return data;
+      },
+    ],
+  },
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "slug", "service", "order"],
@@ -37,6 +50,21 @@ export const Topics: CollectionConfig = {
       required: true,
     },
     { name: "description", type: "textarea" },
+    // ── PROTOTYPE (team feedback): byline. The organisation that wrote the
+    // article (Lisbon Project by default; partners can be named), shown with
+    // the first-publish date under the hero subheading. ──
+    {
+      name: "authorOrg",
+      type: "text",
+      label: "Written by (organisation)",
+      defaultValue: "Lisbon Project",
+    },
+    {
+      name: "publishedOn",
+      type: "date",
+      label: "First published",
+      admin: { description: "Set automatically on first publish; editable." },
+    },
     {
       name: "tone",
       type: "select",
@@ -68,6 +96,40 @@ export const Topics: CollectionConfig = {
               type: "text",
               required: true,
               admin: { description: "/path internal or https://… external" },
+            },
+          ],
+        },
+        // ── PROTOTYPE (team feedback): "Key links" becomes three optional
+        // cards — Websites / Contacts / Locations (Figma 3805:13877). Any card
+        // with no entries is not rendered; with none at all the whole block
+        // disappears. ──
+        {
+          name: "keyContacts",
+          type: "array",
+          labels: { singular: "Key contact", plural: "Key contacts" },
+          admin: { description: "People or desks to reach: a phone, an email or a page" },
+          fields: [
+            { name: "label", type: "text", required: true },
+            {
+              name: "href",
+              type: "text",
+              required: true,
+              admin: { description: "tel:…, mailto:…, /path or https://…" },
+            },
+          ],
+        },
+        {
+          name: "keyLocations",
+          type: "array",
+          labels: { singular: "Key location", plural: "Key locations" },
+          admin: { description: "Places to go: a maps link or an address page" },
+          fields: [
+            { name: "label", type: "text", required: true },
+            {
+              name: "href",
+              type: "text",
+              required: true,
+              admin: { description: "https://maps.… or /path" },
             },
           ],
         },

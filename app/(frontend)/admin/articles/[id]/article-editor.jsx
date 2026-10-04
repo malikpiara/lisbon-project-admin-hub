@@ -63,6 +63,7 @@ function fromPayload(topic) {
   return {
     title: topic.title ?? "",
     description: topic.description ?? "",
+    authorOrg: topic.authorOrg ?? "",
     heroLead: a.heroLead ?? "",
     sections: (a.sections ?? []).map((s) => ({
       _k: nextRowKey(),
@@ -77,6 +78,9 @@ function fromPayload(topic) {
       label: l.label ?? "",
       href: l.href ?? "",
     })),
+    // PROTOTYPE (team feedback): two more shortcut lists beside Key links.
+    keyContacts: (a.keyContacts ?? []).map((l) => ({ label: l.label ?? "", href: l.href ?? "" })),
+    keyLocations: (a.keyLocations ?? []).map((l) => ({ label: l.label ?? "", href: l.href ?? "" })),
     faqLead: a.faqLead ?? "",
     faqs: (a.faqs ?? []).map((f) => ({
       _k: nextRowKey(),
@@ -90,6 +94,7 @@ function toPayload(d) {
   return {
     title: d.title,
     description: d.description,
+    authorOrg: d.authorOrg,
     article: {
       heroLead: d.heroLead,
       // Only heading/lead/blocks are written; the deprecated body/bullets/table/
@@ -101,6 +106,8 @@ function toPayload(d) {
         blocks: blocksToPayload(s.blocks),
       })),
       keyLinks: d.keyLinks.map((l) => ({ label: l.label, href: l.href })),
+      keyContacts: d.keyContacts.filter((l) => l.label.trim() && l.href.trim()),
+      keyLocations: d.keyLocations.filter((l) => l.label.trim() && l.href.trim()),
       faqLead: d.faqLead,
       faqs: d.faqs.map((f) => ({ question: f.question, answer: f.answer })),
     },
@@ -621,6 +628,14 @@ export function ArticleEditor({
               onChange={(v) => set({ heroLead: v })}
               dirty={fieldDirty(draft.heroLead, saved.heroLead)}
             />
+            <Field
+              label="Written by"
+              hint="Organisation credited in the byline (“By … · date”). The date is stamped on first publish."
+              value={draft.authorOrg}
+              onChange={(v) => set({ authorOrg: v })}
+              dirty={fieldDirty(draft.authorOrg, saved.authorOrg)}
+              placeholder="Lisbon Project"
+            />
           </div>
         </Section>
 
@@ -687,6 +702,70 @@ export function ArticleEditor({
             </div>
           )}
         </Section>
+
+        {/* PROTOTYPE (team feedback): the Key links block is three cards —
+            Websites (the list above), Contacts and Locations. Plain rows here;
+            the reorder/flash polish of Key links can follow if the shape sticks. */}
+        {[
+          { key: "keyContacts", title: "Key contacts", hint: "People or desks to reach — tel:…, mailto:… or a page.", placeholder: "tel:+351… / mailto:… / https://…" },
+          { key: "keyLocations", title: "Key locations", hint: "Places to go — a Google Maps link or an address page.", placeholder: "https://maps.google.com/…" },
+        ].map(({ key, title, hint, placeholder }) => (
+          <Section
+            key={key}
+            title={title}
+            description={hint}
+            count={draft[key].length}
+            action={
+              <Button
+                size="sm"
+                onClick={() =>
+                  set({ [key]: [...draft[key], { label: "", href: "" }] })
+                }
+              >
+                <IconPlus className="size-3.5" />
+                Add
+              </Button>
+            }
+          >
+            {draft[key].length === 0 ? (
+              <EmptyState
+                icon={IconArrowRight}
+                label={`No ${title.toLowerCase()}`}
+                hint="Leave this empty and the card is simply not shown."
+              />
+            ) : (
+              <div className="space-y-3">
+                {draft[key].map((l, i) => (
+                  <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <Field
+                      label="Label"
+                      value={l.label}
+                      onChange={(v) =>
+                        set({ [key]: draft[key].map((r, idx) => (idx === i ? { ...r, label: v } : r)) })
+                      }
+                    />
+                    <Field
+                      label="Link"
+                      value={l.href}
+                      onChange={(v) =>
+                        set({ [key]: draft[key].map((r, idx) => (idx === i ? { ...r, href: v } : r)) })
+                      }
+                      placeholder={placeholder}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="self-end"
+                      onClick={() => set({ [key]: draft[key].filter((_, idx) => idx !== i) })}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+        ))}
 
         <Section
           title="Article sections"
