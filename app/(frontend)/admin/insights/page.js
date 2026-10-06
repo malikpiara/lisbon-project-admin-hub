@@ -58,7 +58,7 @@ export default async function InsightsPage() {
       <ContactsSearchesTable
         data={gapsData}
         title="Searches we couldn't answer"
-        description="People searched All Contacts and found nothing · last 30 days"
+        description="People searched External Contacts and found nothing · last 30 days"
         headerAction={
           gapsData.length > 0 ? <Tag>{gapsData.length} to close</Tag> : null
         }

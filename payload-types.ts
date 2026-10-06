@@ -438,7 +438,7 @@ export interface Contact {
   phone?: string | null;
   email?: string | null;
   /**
-   * The service categories this contact belongs to. It appears on each of these category pages, and once in the home “All Contacts” table.
+   * The service categories this contact belongs to. It appears on each of these category pages, and once in the home “External Contacts” table.
    */
   categories: (number | Service)[];
   createdBy?: (number | null) | User;

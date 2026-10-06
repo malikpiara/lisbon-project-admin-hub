@@ -5,7 +5,7 @@ import { auditFields } from "../fields/audit";
 // The global contacts directory. Replaces the old per-service embedded
 // `contacts` array + `categoryFilters`: a contact lives here once and is tagged
 // with the service categories it belongs to (`categories`, many-to-many). It
-// surfaces on the home "All Contacts" table and on each tagged category page —
+// surfaces on the home "External Contacts" table and on each tagged category page —
 // the single taxonomy where category == service.
 export const Contacts: CollectionConfig = {
   slug: "contacts",
@@ -38,7 +38,7 @@ export const Contacts: CollectionConfig = {
       required: true,
       admin: {
         description:
-          "The service categories this contact belongs to. It appears on each of these category pages, and once in the home “All Contacts” table.",
+          "The service categories this contact belongs to. It appears on each of these category pages, and once in the home “External Contacts” table.",
       },
     },
     ...auditFields,

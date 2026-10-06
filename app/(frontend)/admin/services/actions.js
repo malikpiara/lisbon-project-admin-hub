@@ -35,7 +35,7 @@ export async function saveService(id, data) {
   });
   revalidatePath("/admin/services");
   revalidatePath(`/admin/services/${id}`);
-  revalidatePublicContent(); // home grid, All Contacts categories, service page
+  revalidatePublicContent(); // home grid, External Contacts categories, service page
 }
 
 export async function createService() {

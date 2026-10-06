@@ -35,7 +35,7 @@ const SAMPLE_DATA: ContactsSearch[] = [
 
 export function ContactsSearchesTable({
   data = SAMPLE_DATA,
-  title = "What are people searching for in All Contacts?",
+  title = "What are people searching for in External Contacts?",
   description = "Most-searched queries · last 30 days",
   caption = "Wire to the contacts_searched PostHog insight for live counts.",
   emptyLabel = "No searches yet.",

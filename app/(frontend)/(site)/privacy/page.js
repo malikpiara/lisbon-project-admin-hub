@@ -17,7 +17,7 @@ export const metadata = {
 };
 
 // Plain-language privacy notice covering what this site actually does: PostHog
-// analytics, All Contacts search, the newsletter form, and — most sensitively —
+// analytics, External Contacts search, the newsletter form, and — most sensitively —
 // the help chatbot, whose conversations are logged for the team. DRAFT SCAFFOLD:
 // the contact address must be confirmed and the whole notice reviewed by someone
 // qualified before it's relied on. A Portuguese translation is strongly advised
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
         <p>
           <strong>Usage analytics.</strong> We use PostHog (hosted in the EU) to
           understand which services and information pages people visit most, and
-          what people search for in “All Contacts”. This helps us fix gaps in the
+          what people search for in “External Contacts”. This helps us fix gaps in the
           information we provide. Where you type a search, that search text is
           recorded so we can learn what people need that we may not yet list —
           please avoid typing personal details into the search box.

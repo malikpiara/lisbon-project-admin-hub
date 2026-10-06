@@ -33,7 +33,7 @@ export default async function AdminContactsPage() {
             Contacts
           </h1>
           <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
-            The directory behind the “All Contacts” table and every category
+            The directory behind the “External Contacts” table and every category
             page. Each contact is tagged with the services it belongs to.
           </p>
         </div>

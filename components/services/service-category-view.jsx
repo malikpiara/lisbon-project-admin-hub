@@ -34,7 +34,7 @@ export function ServiceCategoryView({ service, contacts = [], categories = [] })
       />
       <TopicsGrid topics={service.topics} categorySlug={service.slug} />
       {/* Same global contacts directory as the home page — only the pre-selected
-          filter differs (this category, switchable to any other or All Contacts). */}
+          filter differs (this category, switchable to any other or All Categories). */}
       <ContactsSection
         title={service.contactsTitle || `${service.title} Contacts`}
         subtitle={service.contactsSubtitle}

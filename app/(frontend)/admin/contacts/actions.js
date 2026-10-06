@@ -28,7 +28,7 @@ export async function saveContact(id, data) {
   });
   revalidatePath("/admin/contacts");
   revalidatePath(`/admin/contacts/${id}`);
-  revalidatePublicContent(); // home "All Contacts" + every category page's table
+  revalidatePublicContent(); // home "External Contacts" + every category page's table
 }
 
 export async function createContact() {

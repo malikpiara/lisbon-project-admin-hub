@@ -179,7 +179,7 @@ export function ContactEditor({ contact, services, audit }) {
             </span>
           }
           count={draft.categories.length}
-          description="The services this contact belongs to. It appears on each of these category pages, and once in “All Contacts”."
+          description="The services this contact belongs to. It appears on each of these category pages, and once in “External Contacts”."
         >
           <div className="flex flex-wrap gap-2">
             {services.map((s) => {

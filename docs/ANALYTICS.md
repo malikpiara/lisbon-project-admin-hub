@@ -4,7 +4,7 @@ Product analytics for the Lisbon Project site, instrumented with PostHog (EU
 cloud). Two questions drive it:
 
 1. **Which services / information do unique users visit the most?**
-2. **What do people search for in "All Contacts"?** — so we can learn what people
+2. **What do people search for in "External Contacts"?** — so we can learn what people
    need that we may not yet list.
 
 ## Ownership & key constraints (read before touching analytics)
@@ -78,7 +78,7 @@ built-ins — don't rename them.
 | `$pageview` | every App Router navigation | `$current_url` (str), `$pathname` (str) — PostHog built-in; manual capture (App Router doesn't auto-fire SPA pageviews) |
 | `service_viewed` | a service category page renders (`/services/[slug]`) | `service_slug` (str), `service_name` (str) |
 | `topic_viewed` | a topic/article page renders (`/services/[slug]/[topic]`) | `service_slug`, `service_name`, `topic_slug`, `topic_name` (all str) |
-| `contacts_searched` | user searches the All Contacts table (debounced 800ms) | `search_query` (str, lowercased), **`results_count`** (int), `category_filter` (str), `list_name` (str) |
+| `contacts_searched` | user searches the External Contacts table (debounced 800ms) | `search_query` (str, lowercased), **`results_count`** (int), `category_filter` (str), `list_name` (str — the section heading; home sends "External Contacts" from 2026-10-06, "All Contacts" before) |
 | `chatbot_opened` | user opens the help chatbot via our launcher | — (engagement only; no message content) |
 | `chatbot_closed` | user closes the chatbot panel (X or Esc) | — |
 | `chatbot_conversation_logged` | a chatbot conversation ends → Zapier POSTs the transcript to `/webhooks/chatbot-log` | `conversation_id` (str), `transcript` (str, redacted), `$process_person_profile: false` |
@@ -95,7 +95,7 @@ someone looking for something we don't list — the highest-signal "learn from i
 
 1. **[Most-visited services](https://eu.posthog.com/project/208396/insights/sAnOzn1L)** — `service_viewed`, unique users, breakdown `service_name`.
 2. **[Most-viewed information / topics](https://eu.posthog.com/project/208396/insights/GhLOtOmh)** — `topic_viewed`, unique users, breakdown `topic_name`.
-3. **[Top All Contacts searches](https://eu.posthog.com/project/208396/insights/XDjqtSrd)** — `contacts_searched`, breakdown `search_query`.
+3. **[Top External Contacts searches](https://eu.posthog.com/project/208396/insights/XDjqtSrd)** — `contacts_searched`, breakdown `search_query`.
 4. **[Searches with no results (content gaps)](https://eu.posthog.com/project/208396/insights/NVAgKLDu)** — `contacts_searched` where `results_count = 0`, breakdown `search_query`.
 
 ## Team alerts (PostHog → Zapier)

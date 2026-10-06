@@ -130,7 +130,7 @@ export function ContactsSection({
   // without it the trigger shows the raw value ("all").
   const categoryItems = useMemo(
     () => ({
-      all: "All Contacts",
+      all: "All Categories",
       ...Object.fromEntries(categories.map((c) => [c.value, c.label])),
     }),
     [categories]
@@ -177,7 +177,7 @@ export function ContactsSection({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Contacts</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
                   {c.label}
