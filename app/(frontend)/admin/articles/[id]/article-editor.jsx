@@ -243,9 +243,10 @@ export function ArticleEditor({
     }));
     revealRow(k, setFlashSectionKey);
   };
-  // Scaffold the five standard sections most articles follow. Idempotent:
-  // only appends templates whose heading isn't already present. Step-by-Step
-  // starts with an empty numbered list; "Documents Required" with a starter table.
+  // Scaffold the six standard sections most articles follow. Idempotent:
+  // only appends templates whose heading isn't already present. Who Can Apply
+  // starts with an empty bulleted list, Step-by-Step with an empty numbered
+  // list, "Documents Required" with a starter table.
   const insertStandardSections = () => {
     const existing = new Set(draft.sections.map((s) => s.heading.trim()));
     const additions = ARTICLE_SECTION_TEMPLATES.filter(
@@ -634,7 +635,7 @@ export function ArticleEditor({
             <EmptyState
               icon={IconNotes}
               label="No sections yet"
-              hint="Most articles follow the same five sections. Start from the standard set, then edit each one."
+              hint="Most articles follow the same six sections. Start from the standard set, then edit each one."
               action={
                 <Button variant="secondary" size="sm" onClick={insertStandardSections}>
                   <LayoutTemplate className="size-3.5" />
