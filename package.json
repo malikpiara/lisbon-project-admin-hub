@@ -17,7 +17,8 @@
     "cf:build": "bash scripts/cf.sh build",
     "cf:preview": "bash scripts/cf.sh build && bash scripts/cf.sh preview",
     "cf:deploy": "bash scripts/cf.sh build && bash scripts/cf.sh deploy",
-    "cf:upload": "bash scripts/cf.sh build && bash scripts/cf.sh upload"
+    "cf:upload": "bash scripts/cf.sh build && bash scripts/cf.sh upload",
+    "cf:deploy:preview": "bash scripts/cf.sh build preview && bash scripts/cf.sh deploy preview"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

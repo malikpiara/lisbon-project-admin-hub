@@ -8,6 +8,11 @@
 #   scripts/cf.sh deploy    fill the R2 cache + D1 table, deploy to production
 #   scripts/cf.sh upload    same, as a new version without promoting it
 #
+#   A second argument names a Wrangler environment (2026-10-07): `build preview`
+#   builds for the preview Worker (DEPLOY_ENV=preview, its workers.dev URL as
+#   NEXT_PUBLIC_SITE_URL unless set) and `deploy preview` fills THAT Worker's
+#   cache bucket and tag table before deploying it. See wrangler.jsonc's env.
+#
 # 1. OpenNext compiles every value in .env, .env.local, … into the Worker
 #    bundle (.open-next/cloudflare/next-env.mjs), server secrets included.
 #    Unlike Cherrydock, this app's build must reach the database (the public
@@ -27,10 +32,18 @@
 set -euo pipefail
 
 cmd="${1:-}"
+env="${2:-}"
 case "$cmd" in
   build | preview | deploy | upload) ;;
   *)
-    echo "usage: scripts/cf.sh build|preview|deploy|upload" >&2
+    echo "usage: scripts/cf.sh build|preview|deploy|upload [preview]" >&2
+    exit 2
+    ;;
+esac
+case "$env" in
+  "" | preview) ;;
+  *)
+    echo "cf.sh: unknown environment '$env' (only 'preview' is defined in wrangler.jsonc)" >&2
     exit 2
     ;;
 esac
@@ -130,6 +143,12 @@ require_recent_build() {
 
 case "$cmd" in
   build)
+    if [ "$env" = preview ]; then
+      # Build-time code (robots, metadata, next.config headers) sees the same
+      # DEPLOY_ENV the Worker gets from its vars at runtime.
+      export DEPLOY_ENV=preview
+      export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://lisbon-project-preview.upfra-me.workers.dev}"
+    fi
     if [ -f .env.local ]; then
       export_build_env
       mv .env.local "$HOLD"
@@ -151,7 +170,7 @@ case "$cmd" in
       ln -s .env.local .dev.vars
       linked_dev_vars=yes
     fi
-    pnpm exec opennextjs-cloudflare preview
+    pnpm exec opennextjs-cloudflare preview ${env:+--env "$env"}
     ;;
   deploy | upload)
     check_bundle
@@ -160,6 +179,6 @@ case "$cmd" in
       mv .env.local "$HOLD"
       moved_env=yes
     fi
-    pnpm exec opennextjs-cloudflare "$cmd"
+    pnpm exec opennextjs-cloudflare "$cmd" ${env:+--env "$env"}
     ;;
 esac

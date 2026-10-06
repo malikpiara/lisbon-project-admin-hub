@@ -78,4 +78,49 @@
   },
   "workers_dev": true,
   "preview_urls": false,
+  // PREVIEW WORKER (2026-10-07, Margin pilot): `--env preview` deploys a second
+  // Worker, lisbon-project-preview, from a branch, for client review at
+  // https://lisbon-project-preview.upfra-me.workers.dev. A Wrangler environment
+  // rather than a Worker Preview: both OpenNext revalidation queues call the
+  // site back through the WORKER_SELF_REFERENCE service binding, and a Worker
+  // Preview's service bindings resolve to production, so a Preview would
+  // refresh production's cache and leave its own stale. An environment is a
+  // full deploy with its own cache bucket, tag database and Durable Object.
+  // Bindings and vars are not inherited by environments, so they are restated.
+  // Deploy with `pnpm run cf:deploy:preview` (scripts/cf.sh). No route: the
+  // workers.dev URL is enough, and next.config.mjs marks it noindex.
+  "env": {
+    "preview": {
+      "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "lisbon-project-preview" }],
+      "r2_buckets": [
+        { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "lisbon-project-opennext-cache-preview" },
+      ],
+      "d1_databases": [
+        {
+          "binding": "NEXT_TAG_CACHE_D1",
+          "database_name": "lisbon-project-tag-cache-preview",
+          "database_id": "98fe7a70-7447-4094-a685-cd87a7813432",
+        },
+      ],
+      "durable_objects": {
+        "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }],
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+      "images": { "binding": "IMAGES" },
+      "placement": { "region": "aws:eu-west-3" },
+      "vars": {
+        "DATABASE_POOL_MAX_USES": "1",
+        "DATABASE_POOL_MAX": "50",
+        "DEPLOY_ENV": "preview",
+      },
+      "observability": { "enabled": true },
+      "workers_dev": true,
+      "preview_urls": false,
+      // Explicit: `routes` is one of the keys an environment INHERITS. Without
+      // this, the first preview deploy (2026-10-07) tried to take production's
+      // lp.lisboaux.com/* route; Cloudflare refused it as already in use.
+      "routes": [],
+    },
+  },
 }

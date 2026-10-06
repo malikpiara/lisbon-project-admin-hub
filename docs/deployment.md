@@ -105,7 +105,7 @@ Settings → Build:
 | Repository / production branch | `malikpiara/lisbon-project-admin-hub` / `main` |
 | Build command | `pnpm run cf:build` |
 | Deploy command | `bash scripts/cf.sh deploy` (fills the R2 cache and D1 table, then deploys) |
-| Non-production branch builds | **Off.** A Worker with a Durable Object gets no version URLs. Preview locally with `pnpm run cf:preview`. |
+| Non-production branch builds | **Off.** Branch previews are a second Worker, `lisbon-project-preview` (see below), not Worker versions or Worker Previews. Preview locally with `pnpm run cf:preview`. |
 | API token | A user token with **D1 Edit** (plus Workers Scripts Edit, R2 Edit). `opennextjs-cloudflare deploy` writes the D1 tag table before `wrangler deploy`; Cherrydock's first token needed D1 added by hand. Check it first if a deploy fails at the D1 step. |
 | Build variables | `NEXT_PUBLIC_SITE_URL` = `https://lp.lisboaux.com`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` (rule 4), and as **secrets**: `DATABASE_URI`, `PAYLOAD_SECRET` (the build prerenders from Payload), `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID` (`/calendar` is prerendered; without them it ships empty until its 5-minute revalidate). Not `CLOUDFLARE_API_TOKEN` (rule 3). |
 
@@ -122,6 +122,53 @@ NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com pnpm run cf:deploy
 ```
 
 Use `pnpm run cf:deploy`, not `pnpm deploy` (pnpm's own built-in command).
+
+### The preview Worker (2026-10-07)
+
+`lisbon-project-preview` serves a branch for client review at
+**https://lisbon-project-preview.upfra-me.workers.dev** (workers.dev only, no
+route; `next.config.mjs` marks every `*.workers.dev` host `noindex`). It is the
+`preview` *environment* in `wrangler.jsonc`: a separately named Worker with its
+own cache bucket (`lisbon-project-opennext-cache-preview`), tag database
+(`lisbon-project-tag-cache-preview`, both WEUR) and Durable Object, deployed
+through the same OpenNext flow as production:
+
+```bash
+pnpm run cf:deploy:preview   # = cf.sh build preview && cf.sh deploy preview
+```
+
+`build preview` sets `DEPLOY_ENV=preview` for the build and defaults
+`NEXT_PUBLIC_SITE_URL` to the workers.dev URL; `deploy preview` fills the
+preview Worker's bucket and tag table, then deploys it. Secrets are the
+production set, uploaded with `--env preview`; `DATABASE_URI` must point at the
+**transaction pooler (port 6543)**, as production does, so two Workers never
+share the session pooler's 15-client cap (the 2026-07-04 outage).
+
+Why not Cloudflare's Worker Previews (Sept 2026)? They do support Durable
+Objects now, so the earlier note here was out of date, but a Preview's service
+bindings resolve to the *production* Worker, and both OpenNext revalidation
+queues call the site back through `WORKER_SELF_REFERENCE`. A Preview would
+refresh production's cache and leave its own stale.
+
+Two things to know:
+
+- **Environments inherit `routes`.** The first preview deploy tried to attach
+  production's `lp.lisboaux.com/*` route to the preview Worker; Cloudflare
+  refused it as already in use (code 10020), so nothing moved. The environment
+  now sets `routes: []` explicitly. Keep it that way for any new environment.
+- **It is production's database.** Public pages, editor drafts and "submit for
+  review" are fine. Anything the branch adds to the schema (for example the
+  Site text global on `limoncello`) must be pushed to production before that
+  admin page can save on the preview; the public site falls back to defaults.
+- Production's deploy prints a warning that environments are defined and none
+  was selected; it still deploys the top-level (production) Worker.
+
+Verified on 2026-10-07: pages 200, `/cms-admin` and `/api/users/me` answer
+(database reachable), `x-robots-tag: noindex`, articles served from the
+preview's own cache, production's tag table unchanged before and after. To
+automate it for a review round, connect a second Workers Builds project to the
+same repository with the branch as its production branch and
+`bash scripts/cf.sh deploy preview` as the deploy command.
 
 ## Configuration and secrets
 
@@ -142,6 +189,10 @@ Secrets set on 2026-09-28: `DATABASE_URI`, `PAYLOAD_SECRET`,
 
 `pnpm run cf:preview` runs the built Worker locally with `.dev.vars` pointed at
 `.env.local`, so, like `pnpm dev`, **it talks to the production database**.
+
+The preview Worker's secrets are set the same way with `--env preview`, from a
+copy of `.env.local` whose `DATABASE_URI` uses port 6543 (never upload the
+session-pooler URL to a second Worker).
 
 ## Integrations that call the site
 
