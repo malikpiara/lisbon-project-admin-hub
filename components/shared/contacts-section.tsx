@@ -214,25 +214,34 @@ export function ContactsSection({
                   <TableCell className="max-w-56 py-5 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
                   </TableCell>
+                  {/* Each channel renders only when it has a value — no bare icon or
+                      dead mailto:/tel: link. With neither, the cell stays empty (the
+                      <td> itself stays so the row's columns keep lining up). */}
                   <TableCell className="py-5 align-top">
-                    <div className="space-y-2">
-                      <a
-                        href={`mailto:${c.email}`}
-                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                      >
-                        <IconMail className="size-4" />
-                        {c.email}
-                      </a>
-                      {/* tel: href strips spaces/punctuation (keep digits + leading
-                          +) so it dials correctly; the label stays formatted. */}
-                      <a
-                        href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}
-                        className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                      >
-                        <IconPhone className="size-4" />
-                        {c.phone}
-                      </a>
-                    </div>
+                    {c.email.trim() || c.phone.trim() ? (
+                      <div className="space-y-2">
+                        {c.email.trim() ? (
+                          <a
+                            href={`mailto:${c.email.trim()}`}
+                            className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
+                          >
+                            <IconMail className="size-4" />
+                            {c.email}
+                          </a>
+                        ) : null}
+                        {/* tel: href strips spaces/punctuation (keep digits + leading
+                            +) so it dials correctly; the label stays formatted. */}
+                        {c.phone.trim() ? (
+                          <a
+                            href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}
+                            className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
+                          >
+                            <IconPhone className="size-4" />
+                            {c.phone}
+                          </a>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </TableCell>
                   <TableCell className="py-5 align-top">
                     <div className="flex flex-wrap gap-1.5">
