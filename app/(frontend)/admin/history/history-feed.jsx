@@ -36,6 +36,8 @@ const TYPE_LABEL = {
   services: "category",
   topics: "article",
   "quick-access": "quick access card",
+  // Renders "edited the text of the **Home page**" (docTitle is "Home page").
+  "home-page": "text of the",
   users: "team member",
 };
 
@@ -43,6 +45,7 @@ function docHref(slug, id) {
   if (slug === "services") return `/admin/services/${id}`;
   if (slug === "topics") return `/admin/articles/${id}`;
   if (slug === "users") return "/admin/users";
+  if (slug === "home-page") return "/admin/home-page";
   return "/admin/quick-access";
 }
 

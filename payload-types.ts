@@ -99,8 +99,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'home-page': HomePage;
+  };
+  globalsSelect: {
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -470,7 +474,7 @@ export interface AuditLog {
   id: number;
   action: 'created' | 'updated' | 'deleted' | 'submitted' | 'approved' | 'declined';
   /**
-   * services | topics | quick-access
+   * services | topics | quick-access | home-page | users
    */
   collectionSlug: string;
   docId?: string | null;
@@ -901,6 +905,42 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  heroTitle?: string | null;
+  heroLead?: string | null;
+  heroDescription?: string | null;
+  servicesTitle?: string | null;
+  contactsTitle?: string | null;
+  contactsSubtitle?: string | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  heroTitle?: T;
+  heroLead?: T;
+  heroDescription?: T;
+  servicesTitle?: T;
+  contactsTitle?: T;
+  contactsSubtitle?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

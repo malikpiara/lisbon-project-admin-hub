@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { HOME_PAGE_FIELDS, withHomePageDefaults } from "@/lib/home-page-defaults";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 const notAllowed = { ok: false, error: "Only admins can review changes." };
@@ -80,6 +81,71 @@ export async function declineDraft(id) {
       userId: user.id,
     });
     revalidateTopic(id);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err?.message || "Could not decline this change." };
+  }
+}
+
+// ---- Home page (the `home-page` global) ----------------------------------
+
+function revalidateHomePage() {
+  revalidatePath("/admin/review");
+  revalidatePath("/admin/home-page");
+  revalidatePublicContent();
+}
+
+// Publish the pending draft. Like approveDraft: updateGlobal merges onto the
+// LATEST version (getLatestGlobalVersion in payload's globals/operations/
+// update.js), so flipping _status publishes the submitted copy.
+export async function approveHomePage() {
+  const { payload, user } = await authedPayload();
+  if (user.role !== "admin") return notAllowed;
+  try {
+    await payload.updateGlobal({
+      slug: "home-page",
+      data: { _status: "published", updatedBy: user.id },
+      draft: false,
+    });
+    await logAudit(payload, {
+      action: "approved",
+      collectionSlug: "home-page",
+      docId: "home-page",
+      docTitle: "Home page",
+      userId: user.id,
+    });
+    revalidateHomePage();
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err?.message || "Could not approve this change." };
+  }
+}
+
+// Keep the live copy: re-publish what's currently published so it becomes the
+// newest version and supersedes the draft (which stays in version history).
+// Never published yet → the live page shows the defaults, so publish those.
+export async function declineHomePage() {
+  const { payload, user } = await authedPayload();
+  if (user.role !== "admin") return notAllowed;
+  try {
+    const pub = await payload
+      .findGlobal({ slug: "home-page", depth: 0, draft: false })
+      .catch(() => null);
+    const copy = withHomePageDefaults(pub);
+    const data = Object.fromEntries(HOME_PAGE_FIELDS.map((k) => [k, copy[k]]));
+    await payload.updateGlobal({
+      slug: "home-page",
+      data: { ...data, _status: "published", updatedBy: user.id },
+      draft: false,
+    });
+    await logAudit(payload, {
+      action: "declined",
+      collectionSlug: "home-page",
+      docId: "home-page",
+      docTitle: "Home page",
+      userId: user.id,
+    });
+    revalidateHomePage();
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err?.message || "Could not decline this change." };

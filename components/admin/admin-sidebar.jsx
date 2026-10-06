@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { IconChatBot, IconMail, IconNotes, IconUsers } from "@/components/icons/ds-icons";
+import { IconChatBot, IconHome, IconMail, IconNotes, IconUsers } from "@/components/icons/ds-icons";
 import {
   Sidebar,
   SidebarContent,
@@ -41,7 +41,7 @@ import {
 import { logout } from "@/app/(frontend)/login/actions";
 
 // The unified team-workspace sidebar for the /admin group — content editor
-// (Quick Access / Services / Articles), analytics (Insights / History) and team
+// (Home page / Quick Access / Services / Articles), analytics (Insights / History) and team
 // management (admins only). Built on the shadcn Sidebar: collapses to an icon
 // rail (⌘B or the rail), and the mobile drawer is the primitive's own Sheet.
 const navGroups = [
@@ -49,6 +49,7 @@ const navGroups = [
     title: "Content",
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { href: "/admin/home-page", label: "Home page", icon: IconHome },
       { href: "/admin/quick-access", label: "Quick Access", icon: Sparkles },
       { href: "/admin/services", label: "Services & Information", icon: ListChecks },
       { href: "/admin/articles", label: "Articles", icon: IconNotes },

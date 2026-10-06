@@ -37,7 +37,18 @@ export default async function AdminLayout({ children }) {
         },
       })
       .catch(() => null);
-    pendingReviews = counted?.totalDocs ?? 0;
+    // + the home-page global's pending draft (0 or 1). `.catch` keeps the admin
+    // usable in a database where the global's tables don't exist yet.
+    const home = await payload
+      .countGlobalVersions({
+        global: "home-page",
+        where: {
+          latest: { equals: true },
+          "version._status": { equals: "draft" },
+        },
+      })
+      .catch(() => null);
+    pendingReviews = (counted?.totalDocs ?? 0) + (home?.totalDocs ?? 0);
   }
 
   // Persist the collapsed/expanded choice across reloads: the Sidebar writes a

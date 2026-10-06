@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
+import { HOME_PAGE_DEFAULTS } from "@/lib/home-page-defaults";
 
-export function ServicesGrid({ services = [] }) {
+export function ServicesGrid({
+  services = [],
+  title = HOME_PAGE_DEFAULTS.servicesTitle, // editable: home-page global
+}) {
   return (
     <section id="services" className="scroll-mt-24 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
@@ -12,7 +16,7 @@ export function ServicesGrid({ services = [] }) {
               <IconInfo className="size-5" />
             </div>
             <h2 className="min-w-0 font-heading text-ds-xxxl font-bold text-brand-dark">
-              Services and Information
+              {title}
             </h2>
           </header>
 

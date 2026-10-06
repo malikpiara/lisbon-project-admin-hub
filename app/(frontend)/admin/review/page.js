@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
 import { diffWords } from "@/lib/diff-text";
+import { flattenHomePage } from "@/lib/flatten-home-page";
 import { flattenTopic } from "@/lib/flatten-topic";
 import { ReviewQueue } from "./review-queue";
 
@@ -37,6 +38,7 @@ export default async function AdminReviewPage() {
         .catch(() => null);
       const by = v.version?.updatedBy;
       return {
+        kind: "topic",
         id: String(topicId),
         title: v.version?.title || published?.title || "Untitled",
         who:
@@ -55,6 +57,44 @@ export default async function AdminReviewPage() {
       };
     })
   );
+
+  // The home-page global goes through the same flow. At most one pending
+  // entry: the latest version, when it's a draft. `.catch` keeps the queue
+  // working in a database where the global's tables don't exist yet.
+  const { docs: homeDrafts } = await payload
+    .findGlobalVersions({
+      slug: "home-page",
+      where: {
+        latest: { equals: true },
+        "version._status": { equals: "draft" },
+      },
+      limit: 1,
+      depth: 1,
+    })
+    .catch(() => ({ docs: [] }));
+  for (const v of homeDrafts) {
+    const published = await payload
+      .findGlobal({ slug: "home-page", depth: 0, draft: false })
+      .catch(() => null);
+    const by = v.version?.updatedBy;
+    entries.push({
+      kind: "home-page",
+      id: "home-page",
+      title: "Home page text",
+      who:
+        (by && typeof by === "object" ? by.name || by.email : null) ||
+        "Unknown",
+      at: v.updatedAt
+        ? new Date(v.updatedAt).toLocaleString("en-GB", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })
+        : "",
+      // Before the first publish there's no stored copy — the live page shows
+      // the shipped defaults, which flattenHomePage(null) reproduces.
+      ops: diffWords(flattenHomePage(published), flattenHomePage(v.version)),
+    });
+  }
 
   return <ReviewQueue entries={entries} />;
 }

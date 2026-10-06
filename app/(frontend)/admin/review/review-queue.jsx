@@ -8,7 +8,26 @@ import { IconCheck, IconNotes } from "@/components/icons/ds-icons";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DiffStatsLine, SplitDiff } from "@/components/admin/diff-text";
-import { approveDraft, declineDraft } from "./actions";
+import {
+  approveDraft,
+  approveHomePage,
+  declineDraft,
+  declineHomePage,
+} from "./actions";
+
+// Per kind of reviewable content: its approve/decline actions and editor URL.
+const KINDS = {
+  topic: {
+    approve: approveDraft,
+    decline: declineDraft,
+    href: (id) => `/admin/articles/${id}`,
+  },
+  "home-page": {
+    approve: approveHomePage,
+    decline: declineHomePage,
+    href: () => "/admin/home-page",
+  },
+};
 
 export function ReviewQueue({ entries }) {
   const router = useRouter();
@@ -21,7 +40,7 @@ export function ReviewQueue({ entries }) {
         </h1>
         <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
           Changes editors submitted. Approving publishes them; declining keeps
-          the article as it is — nothing is lost either way.
+          the live version as it is — nothing is lost either way.
         </p>
       </header>
 
@@ -32,13 +51,14 @@ export function ReviewQueue({ entries }) {
             Nothing waiting for review
           </p>
           <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-            When an editor submits changes to an article, they show up here.
+            When an editor submits changes to an article or the home page,
+            they show up here.
           </p>
         </div>
       ) : (
         <div className="mt-8 space-y-4">
           {entries.map((e) => (
-            <ReviewCard key={e.id} entry={e} onDone={() => router.refresh()} />
+            <ReviewCard key={`${e.kind}:${e.id}`} entry={e} onDone={() => router.refresh()} />
           ))}
         </div>
       )}
@@ -49,6 +69,7 @@ export function ReviewQueue({ entries }) {
 function ReviewCard({ entry, onDone }) {
   const [error, setError] = useState(null);
   const [isPending, startTransition] = useTransition();
+  const kind = KINDS[entry.kind] ?? KINDS.topic;
 
   const act = (fn) =>
     startTransition(async () => {
@@ -85,7 +106,7 @@ function ReviewCard({ entry, onDone }) {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            onClick={() => act(approveDraft)}
+            onClick={() => act(kind.approve)}
             disabled={isPending}
           >
             <IconCheck className="size-3.5" />
@@ -94,7 +115,7 @@ function ReviewCard({ entry, onDone }) {
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => act(declineDraft)}
+            onClick={() => act(kind.decline)}
             disabled={isPending}
           >
             Decline
@@ -103,7 +124,7 @@ function ReviewCard({ entry, onDone }) {
             size="sm"
             variant="ghost"
             nativeButton={false}
-            render={<Link href={`/admin/articles/${entry.id}`} />}
+            render={<Link href={kind.href(entry.id)} />}
           >
             Open in editor
           </Button>

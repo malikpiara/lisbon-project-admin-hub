@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { QuickAccess } from "@/components/home/quick-access";
+import { HOME_PAGE_DEFAULTS } from "@/lib/home-page-defaults";
 
 function HeroIllustration() {
   // Faint DS hero decoration (document + search), exported from Figma.
@@ -15,7 +16,14 @@ function HeroIllustration() {
   );
 }
 
-export function Hero({ quickAccess = [] }) {
+// Copy comes from the `home-page` global (editable at /admin/home-page); the
+// defaults keep bare renders (styleguide) identical to the shipped page.
+export function Hero({
+  quickAccess = [],
+  title = HOME_PAGE_DEFAULTS.heroTitle,
+  lead = HOME_PAGE_DEFAULTS.heroLead,
+  description = HOME_PAGE_DEFAULTS.heroDescription,
+}) {
   return (
     <section className="bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
@@ -36,16 +44,14 @@ export function Hero({ quickAccess = [] }) {
                 />
               </div>
               <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
-                Admin Hub
+                {title}
               </h1>
             </div>
             <p className="mt-8 max-w-2xl text-ds-l font-bold text-foreground">
-              Connecting community members to external services and internal
-              resources.
+              {lead}
             </p>
             <p className="mt-4 max-w-2xl text-ds-s font-medium text-foreground">
-              Information platform summarizing the most common administrative
-              processes, sharing tips and mapping external services.
+              {description}
             </p>
           </div>
           <QuickAccess embedded items={quickAccess} />
