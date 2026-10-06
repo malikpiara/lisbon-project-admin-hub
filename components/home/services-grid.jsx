@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { IconArrowRight, IconInfo } from "@/components/icons/ds-icons";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
-import { HOME_PAGE_DEFAULTS } from "@/lib/home-page-defaults";
+import { SITE_TEXT_DEFAULTS } from "@/lib/site-text-defaults";
 
 export function ServicesGrid({
   services = [],
-  title = HOME_PAGE_DEFAULTS.servicesTitle, // editable: home-page global
+  title = SITE_TEXT_DEFAULTS.servicesTitle, // editable: site-text global
 }) {
   return (
     <section id="services" className="scroll-mt-24 bg-bg-page">

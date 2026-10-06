@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { ArticleView } from "@/components/services/article-view";
-import { getPublicTopic } from "@/lib/content";
+import { getPublicSiteText, getPublicTopic } from "@/lib/content";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
 
@@ -24,7 +24,10 @@ export async function generateMetadata({ params }) {
 
 export default async function ArticlePage({ params }) {
   const { slug, topic } = await params;
-  const data = await getPublicTopic(slug, topic);
+  const [data, siteText] = await Promise.all([
+    getPublicTopic(slug, topic),
+    getPublicSiteText(),
+  ]);
   if (!data) notFound();
 
   return (
@@ -37,7 +40,7 @@ export default async function ArticlePage({ params }) {
           { name: data.topic.title, path: `/services/${slug}/${topic}` },
         ])}
       />
-      <ArticleView service={data.service} topic={data.topic} />
+      <ArticleView service={data.service} topic={data.topic} siteText={siteText} />
     </>
   );
 }

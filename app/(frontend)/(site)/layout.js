@@ -4,14 +4,19 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteChatShell } from "@/components/site/zapier-chatbot";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getPublicSiteText } from "@/lib/content";
 import { organizationSchema, webSiteSchema } from "@/lib/site";
 
-export default function SiteLayout({ children }) {
+export default async function SiteLayout({ children }) {
+  // Footer text + organisation facts (site-text global). Falls back to the
+  // shipped values if unreadable, so the layout can't break on it.
+  const siteText = await getPublicSiteText();
+
   return (
     <>
       {/* Site-wide structured data: the org (anchor entity for search + AI) and
           the website, rendered on every public page's initial HTML. */}
-      <JsonLd data={[organizationSchema(), webSiteSchema()]} />
+      <JsonLd data={[organizationSchema(siteText), webSiteSchema()]} />
       {/* SiteChatShell wraps the whole body so the chat panel can *push* the
           content left on desktop when open (it owns the open/close state). It
           also renders the launcher + panel itself. */}
@@ -34,7 +39,7 @@ export default function SiteLayout({ children }) {
           <div>{children}</div>
         </ViewTransition>
       </main>
-      <SiteFooter />
+      <SiteFooter copy={siteText} />
       </SiteChatShell>
     </>
   );

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
 import { diffWords } from "@/lib/diff-text";
-import { flattenHomePage } from "@/lib/flatten-home-page";
+import { flattenSiteText } from "@/lib/flatten-site-text";
 import { flattenTopic } from "@/lib/flatten-topic";
 import { ReviewQueue } from "./review-queue";
 
@@ -58,12 +58,12 @@ export default async function AdminReviewPage() {
     })
   );
 
-  // The home-page global goes through the same flow. At most one pending
+  // The site-text global goes through the same flow. At most one pending
   // entry: the latest version, when it's a draft. `.catch` keeps the queue
   // working in a database where the global's tables don't exist yet.
-  const { docs: homeDrafts } = await payload
+  const { docs: siteTextDrafts } = await payload
     .findGlobalVersions({
-      slug: "home-page",
+      slug: "site-text",
       where: {
         latest: { equals: true },
         "version._status": { equals: "draft" },
@@ -72,15 +72,15 @@ export default async function AdminReviewPage() {
       depth: 1,
     })
     .catch(() => ({ docs: [] }));
-  for (const v of homeDrafts) {
+  for (const v of siteTextDrafts) {
     const published = await payload
-      .findGlobal({ slug: "home-page", depth: 0, draft: false })
+      .findGlobal({ slug: "site-text", depth: 0, draft: false })
       .catch(() => null);
     const by = v.version?.updatedBy;
     entries.push({
-      kind: "home-page",
-      id: "home-page",
-      title: "Home page text",
+      kind: "site-text",
+      id: "site-text",
+      title: "Site text",
       who:
         (by && typeof by === "object" ? by.name || by.email : null) ||
         "Unknown",
@@ -91,8 +91,8 @@ export default async function AdminReviewPage() {
           })
         : "",
       // Before the first publish there's no stored copy — the live page shows
-      // the shipped defaults, which flattenHomePage(null) reproduces.
-      ops: diffWords(flattenHomePage(published), flattenHomePage(v.version)),
+      // the shipped defaults, which flattenSiteText(null) reproduces.
+      ops: diffWords(flattenSiteText(published), flattenSiteText(v.version)),
     });
   }
 

@@ -36,8 +36,8 @@ const TYPE_LABEL = {
   services: "category",
   topics: "article",
   "quick-access": "quick access card",
-  // Renders "edited the text of the **Home page**" (docTitle is "Home page").
-  "home-page": "text of the",
+  // Empty: renders "edited the **Site text**" (docTitle is "Site text").
+  "site-text": "",
   users: "team member",
 };
 
@@ -45,7 +45,7 @@ function docHref(slug, id) {
   if (slug === "services") return `/admin/services/${id}`;
   if (slug === "topics") return `/admin/articles/${id}`;
   if (slug === "users") return "/admin/users";
-  if (slug === "home-page") return "/admin/home-page";
+  if (slug === "site-text") return "/admin/site-text";
   return "/admin/quick-access";
 }
 
@@ -99,7 +99,7 @@ export function HistoryFeed({ entries }) {
           for (const e of filtered) {
             const a = ACTION[e.action] ?? ACTION.updated;
             const Icon = a.icon;
-            const type = TYPE_LABEL[e.collectionSlug] || e.collectionSlug;
+            const type = TYPE_LABEL[e.collectionSlug] ?? e.collectionSlug;
 
             if (e.dayLabel && e.dayLabel !== lastDay) {
               lastDay = e.dayLabel;
@@ -125,7 +125,7 @@ export function HistoryFeed({ entries }) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-ds-xs font-medium text-foreground">
-                    <span className="font-bold">{e.who}</span> {a.verb} the {type}{" "}
+                    <span className="font-bold">{e.who}</span> {a.verb} the {type ? `${type} ` : ""}
                     <span className="font-bold">{e.docTitle}</span>
                   </p>
                   {e.timeLabel ? (

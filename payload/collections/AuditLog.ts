@@ -27,7 +27,7 @@ export const AuditLog: CollectionConfig = {
         "created",
         "updated",
         "deleted",
-        // Review flow (Articles, Home page): editors submit; admins approve/decline.
+        // Review flow (Articles, Site text): editors submit; admins approve/decline.
         "submitted",
         "approved",
         "declined",
@@ -37,7 +37,7 @@ export const AuditLog: CollectionConfig = {
       name: "collectionSlug",
       type: "text",
       required: true,
-      admin: { description: "services | topics | quick-access | home-page | users" },
+      admin: { description: "services | topics | quick-access | site-text | users" },
     },
     { name: "docId", type: "text" },
     {

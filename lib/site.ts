@@ -40,14 +40,37 @@ export function absoluteUrl(path = "/"): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** The editable org facts (site-text global) that override the shipped ones. */
+type OrgFacts = Partial<
+  Record<
+    | "phone"
+    | "addressStreet"
+    | "addressPostalCode"
+    | "addressLocality"
+    | "charityNumber"
+    | "facebookUrl"
+    | "instagramUrl"
+    | "linkedinUrl"
+    | "whatsappUrl",
+    string
+  >
+>;
+
 /**
  * The org as an NGO node. This is the anchor entity for search + AI answer
  * engines — it's what lets them attribute pages to "The Lisbon Project" and
- * surface the charity in results. `sameAs` is intentionally omitted: the footer
- * socials are still "#" placeholders, and pointing at fake profiles would hurt,
- * not help. Add real profile URLs here once they exist.
+ * surface the charity in results. `facts` (the site-text global) override the
+ * shipped address/phone/charity number, so the page and the structured data
+ * can't drift. `sameAs` lists only the social profiles the team has filled in
+ * — never placeholders, which would hurt rather than help.
  */
-export function organizationSchema() {
+export function organizationSchema(facts: OrgFacts = {}) {
+  const sameAs = [
+    facts.facebookUrl,
+    facts.instagramUrl,
+    facts.linkedinUrl,
+    facts.whatsappUrl,
+  ].filter((u): u is string => Boolean(u?.trim()));
   return {
     "@context": "https://schema.org",
     "@type": "NGO",
@@ -57,17 +80,18 @@ export function organizationSchema() {
     url: SITE_URL,
     logo: absoluteUrl("/lisbon-project-logo.svg"),
     description: SITE.description,
-    telephone: SITE.telephone,
+    telephone: facts.phone || SITE.telephone,
     address: {
       "@type": "PostalAddress",
-      streetAddress: SITE.address.street,
-      postalCode: SITE.address.postalCode,
-      addressLocality: SITE.address.locality,
+      streetAddress: facts.addressStreet || SITE.address.street,
+      postalCode: facts.addressPostalCode || SITE.address.postalCode,
+      addressLocality: facts.addressLocality || SITE.address.locality,
       addressCountry: SITE.address.country,
     },
     areaServed: { "@type": "City", name: "Lisbon" },
     knowsLanguage: ["en", "pt"],
-    identifier: SITE.charityNumber,
+    identifier: facts.charityNumber || SITE.charityNumber,
+    ...(sameAs.length ? { sameAs } : {}),
   };
 }
 

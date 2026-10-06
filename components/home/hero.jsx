@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { QuickAccess } from "@/components/home/quick-access";
-import { HOME_PAGE_DEFAULTS } from "@/lib/home-page-defaults";
+import { SITE_TEXT_DEFAULTS } from "@/lib/site-text-defaults";
 
 function HeroIllustration() {
   // Faint DS hero decoration (document + search), exported from Figma.
@@ -16,13 +16,13 @@ function HeroIllustration() {
   );
 }
 
-// Copy comes from the `home-page` global (editable at /admin/home-page); the
+// Copy comes from the `site-text` global (editable at /admin/site-text); the
 // defaults keep bare renders (styleguide) identical to the shipped page.
 export function Hero({
   quickAccess = [],
-  title = HOME_PAGE_DEFAULTS.heroTitle,
-  lead = HOME_PAGE_DEFAULTS.heroLead,
-  description = HOME_PAGE_DEFAULTS.heroDescription,
+  title = SITE_TEXT_DEFAULTS.heroTitle,
+  lead = SITE_TEXT_DEFAULTS.heroLead,
+  description = SITE_TEXT_DEFAULTS.heroDescription,
 }) {
   return (
     <section className="bg-bg-page">

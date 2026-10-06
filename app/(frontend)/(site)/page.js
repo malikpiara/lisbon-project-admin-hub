@@ -6,7 +6,7 @@ import {
   getPublicServices,
   getPublicContacts,
   getPublicQuickAccess,
-  getPublicHomeCopy,
+  getPublicSiteText,
 } from "@/lib/content";
 
 // Title + description inherit the public defaults from the root layout; just
@@ -22,7 +22,7 @@ export default async function Home() {
     getPublicServices(),
     getPublicContacts(),
     getPublicQuickAccess(),
-    getPublicHomeCopy(),
+    getPublicSiteText(),
   ]);
 
   return (
@@ -40,7 +40,7 @@ export default async function Home() {
         title={copy.contactsTitle}
         subtitle={copy.contactsSubtitle}
       />
-      <MapVisit />
+      <MapVisit copy={copy} />
     </>
   );
 }

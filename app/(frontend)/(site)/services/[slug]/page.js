@@ -5,6 +5,7 @@ import {
   getPublicService,
   getPublicContacts,
   getPublicServices,
+  getPublicSiteText,
 } from "@/lib/content";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
@@ -33,10 +34,11 @@ export async function generateMetadata({ params }) {
 
 export default async function ServiceCategoryPage({ params }) {
   const { slug } = await params;
-  const [service, contacts, services] = await Promise.all([
+  const [service, contacts, services, siteText] = await Promise.all([
     getPublicService(slug),
     getPublicContacts(),
     getPublicServices(),
+    getPublicSiteText(),
   ]);
 
   if (!service) notFound();
@@ -57,6 +59,7 @@ export default async function ServiceCategoryPage({ params }) {
         service={service}
         contacts={contacts}
         categories={categories}
+        siteText={siteText}
       />
     </>
   );

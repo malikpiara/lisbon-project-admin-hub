@@ -4,40 +4,38 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
-import { HOME_PAGE_FIELDS } from "@/lib/home-page-defaults";
+import { validateSiteText } from "@/lib/site-text-defaults";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 // Same review flow as articles (see articles/actions.js saveTopic): admins
 // publish directly; editors save a DRAFT ("submit for review") that leaves the
-// live home page untouched until an admin approves it at /admin/review.
-export async function saveHomePage(data) {
+// live site untouched until an admin approves it at /admin/review.
+export async function saveSiteText(data) {
   const { payload, user } = await authedPayload();
   const isAdmin = user.role === "admin";
 
-  // Only the copy fields — never let the client set _status or audit fields.
-  const patch = { updatedBy: user.id };
-  for (const key of HOME_PAGE_FIELDS) {
-    const v = data?.[key];
-    if (typeof v !== "string" || !v.trim()) {
-      return { ok: false, error: "Every field needs some text." };
-    }
-    patch[key] = v.trim();
-  }
+  // Only the declared fields, validated — never let the client set _status or
+  // audit fields.
+  const checked = validateSiteText(data);
+  if (!checked.ok) return checked;
 
-  patch._status = isAdmin ? "published" : "draft";
   await payload.updateGlobal({
-    slug: "home-page",
-    data: patch,
+    slug: "site-text",
+    data: {
+      ...checked.data,
+      updatedBy: user.id,
+      _status: isAdmin ? "published" : "draft",
+    },
     draft: !isAdmin,
   });
   await logAudit(payload, {
     action: isAdmin ? "updated" : "submitted",
-    collectionSlug: "home-page",
-    docId: "home-page",
-    docTitle: "Home page",
+    collectionSlug: "site-text",
+    docId: "site-text",
+    docTitle: "Site text",
     userId: user.id,
   });
-  revalidatePath("/admin/home-page");
+  revalidatePath("/admin/site-text");
   revalidatePath("/admin/review");
   if (isAdmin) revalidatePublicContent(); // a draft changes nothing public
   return { ok: true };

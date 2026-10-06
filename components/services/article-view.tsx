@@ -13,6 +13,7 @@ import {
 } from "@/components/services/reference-table";
 import { renderInline } from "@/components/services/inline-links";
 import { MapVisit } from "@/components/home/map-visit";
+import type { SiteText } from "@/lib/site-text-defaults";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -75,9 +76,12 @@ type ServiceMeta = {
 export function ArticleView({
   service,
   topic,
+  siteText,
 }: {
   service: ServiceMeta;
   topic: Topic;
+  /** Site-text global (read by the route) — feeds the Visit us block. */
+  siteText?: SiteText;
 }) {
   // Analytics: `topic_viewed` (object-action, past tense) — the "information"
   // half of "services & information people visit most". See docs/ANALYTICS.md.
@@ -285,7 +289,7 @@ export function ArticleView({
         </div>
       </section>
 
-      <MapVisit />
+      <MapVisit copy={siteText} />
     </>
   );
 }

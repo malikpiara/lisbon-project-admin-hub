@@ -13,7 +13,7 @@ import { Users } from "./payload/collections/Users";
 import { AuditLog } from "./payload/collections/AuditLog";
 import { Subscribers } from "./payload/collections/Subscribers";
 import { ConversationInsights } from "./payload/collections/ConversationInsights";
-import { HomePage } from "./payload/globals/HomePage";
+import { SiteText } from "./payload/globals/SiteText";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -48,7 +48,7 @@ export default buildConfig({
     },
   },
   collections: [Services, Topics, Contacts, QuickAccess, Users, AuditLog, Subscribers, ConversationInsights],
-  globals: [HomePage],
+  globals: [SiteText],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   db: postgresAdapter({

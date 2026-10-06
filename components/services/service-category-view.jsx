@@ -11,7 +11,8 @@ import { getServiceIconKey } from "@/lib/service-icons";
 // Presentational: the parent route fetches the service from Payload and passes
 // it in (a missing slug 404s server-side via notFound(), so `service` is always
 // valid here). Stays a client component only for the analytics capture.
-export function ServiceCategoryView({ service, contacts = [], categories = [] }) {
+// `siteText` (site-text global, read by the route) feeds the Visit us block.
+export function ServiceCategoryView({ service, contacts = [], categories = [], siteText }) {
   // Analytics: `service_viewed` (object-action, past tense) — the semantic event
   // for "which services people visit". No-op until PostHog is configured.
   const posthog = usePostHog();
@@ -42,7 +43,7 @@ export function ServiceCategoryView({ service, contacts = [], categories = [] })
         categories={categories}
         defaultCategory={service.slug}
       />
-      <MapVisit />
+      <MapVisit copy={siteText} />
     </>
   );
 }

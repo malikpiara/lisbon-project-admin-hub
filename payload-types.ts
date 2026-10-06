@@ -100,10 +100,10 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
-    'home-page': HomePage;
+    'site-text': SiteText;
   };
   globalsSelect: {
-    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'site-text': SiteTextSelect<false> | SiteTextSelect<true>;
   };
   locale: null;
   widgets: {
@@ -474,7 +474,7 @@ export interface AuditLog {
   id: number;
   action: 'created' | 'updated' | 'deleted' | 'submitted' | 'approved' | 'declined';
   /**
-   * services | topics | quick-access | home-page | users
+   * services | topics | quick-access | site-text | users
    */
   collectionSlug: string;
   docId?: string | null;
@@ -908,9 +908,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "home-page".
+ * via the `definition` "site-text".
  */
-export interface HomePage {
+export interface SiteText {
   id: number;
   heroTitle?: string | null;
   heroLead?: string | null;
@@ -918,6 +918,32 @@ export interface HomePage {
   servicesTitle?: string | null;
   contactsTitle?: string | null;
   contactsSubtitle?: string | null;
+  visitTitle?: string | null;
+  directionsTitle?: string | null;
+  metroLine?: string | null;
+  busLine?: string | null;
+  hoursTitle?: string | null;
+  openingHours?:
+    | {
+        day?: string | null;
+        hours?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  hoursNote?: string | null;
+  contactTitle?: string | null;
+  newsletterTitle?: string | null;
+  newsletterBlurb?: string | null;
+  footerTagline?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  linkedinUrl?: string | null;
+  whatsappUrl?: string | null;
+  addressStreet?: string | null;
+  addressPostalCode?: string | null;
+  addressLocality?: string | null;
+  phone?: string | null;
+  charityNumber?: string | null;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
   _status?: ('draft' | 'published') | null;
@@ -926,15 +952,41 @@ export interface HomePage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "home-page_select".
+ * via the `definition` "site-text_select".
  */
-export interface HomePageSelect<T extends boolean = true> {
+export interface SiteTextSelect<T extends boolean = true> {
   heroTitle?: T;
   heroLead?: T;
   heroDescription?: T;
   servicesTitle?: T;
   contactsTitle?: T;
   contactsSubtitle?: T;
+  visitTitle?: T;
+  directionsTitle?: T;
+  metroLine?: T;
+  busLine?: T;
+  hoursTitle?: T;
+  openingHours?:
+    | T
+    | {
+        day?: T;
+        hours?: T;
+        id?: T;
+      };
+  hoursNote?: T;
+  contactTitle?: T;
+  newsletterTitle?: T;
+  newsletterBlurb?: T;
+  footerTagline?: T;
+  facebookUrl?: T;
+  instagramUrl?: T;
+  linkedinUrl?: T;
+  whatsappUrl?: T;
+  addressStreet?: T;
+  addressPostalCode?: T;
+  addressLocality?: T;
+  phone?: T;
+  charityNumber?: T;
   createdBy?: T;
   updatedBy?: T;
   _status?: T;

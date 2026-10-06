@@ -3,16 +3,16 @@ import {
   type CategoryOption,
   type Contact,
 } from "@/components/shared/contacts-section";
-import { HOME_PAGE_DEFAULTS } from "@/lib/home-page-defaults";
+import { SITE_TEXT_DEFAULTS } from "@/lib/site-text-defaults";
 
 type ServiceOption = { slug: string; title: string };
 
 export function AllContacts({
   services = [],
   contacts = [],
-  // Heading + subtitle are editable (home-page global, /admin/home-page).
-  title = HOME_PAGE_DEFAULTS.contactsTitle,
-  subtitle = HOME_PAGE_DEFAULTS.contactsSubtitle,
+  // Heading + subtitle are editable (site-text global, /admin/site-text).
+  title = SITE_TEXT_DEFAULTS.contactsTitle,
+  subtitle = SITE_TEXT_DEFAULTS.contactsSubtitle,
 }: {
   services?: ServiceOption[];
   contacts?: Contact[];

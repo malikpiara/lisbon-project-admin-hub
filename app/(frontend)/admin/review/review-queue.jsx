@@ -10,9 +10,9 @@ import { Card } from "@/components/ui/card";
 import { DiffStatsLine, SplitDiff } from "@/components/admin/diff-text";
 import {
   approveDraft,
-  approveHomePage,
+  approveSiteText,
   declineDraft,
-  declineHomePage,
+  declineSiteText,
 } from "./actions";
 
 // Per kind of reviewable content: its approve/decline actions and editor URL.
@@ -22,10 +22,10 @@ const KINDS = {
     decline: declineDraft,
     href: (id) => `/admin/articles/${id}`,
   },
-  "home-page": {
-    approve: approveHomePage,
-    decline: declineHomePage,
-    href: () => "/admin/home-page",
+  "site-text": {
+    approve: approveSiteText,
+    decline: declineSiteText,
+    href: () => "/admin/site-text",
   },
 };
 
@@ -51,7 +51,7 @@ export function ReviewQueue({ entries }) {
             Nothing waiting for review
           </p>
           <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">
-            When an editor submits changes to an article or the home page,
+            When an editor submits changes to an article or the site text,
             they show up here.
           </p>
         </div>

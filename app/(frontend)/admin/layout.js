@@ -37,11 +37,11 @@ export default async function AdminLayout({ children }) {
         },
       })
       .catch(() => null);
-    // + the home-page global's pending draft (0 or 1). `.catch` keeps the admin
+    // + the site-text global's pending draft (0 or 1). `.catch` keeps the admin
     // usable in a database where the global's tables don't exist yet.
     const home = await payload
       .countGlobalVersions({
-        global: "home-page",
+        global: "site-text",
         where: {
           latest: { equals: true },
           "version._status": { equals: "draft" },
