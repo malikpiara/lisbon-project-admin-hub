@@ -6,7 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { renderInline } from "@/components/services/inline-links";
+import { renderInlineRich } from "@/components/services/rich-text";
+import { stripListMarker } from "@/lib/rich-text";
 
 export type ReferenceTableRow = { label: string; items: string[] };
 export type ReferenceTableData = { title: string; rows: ReferenceTableRow[] };
@@ -40,7 +41,7 @@ export function ReferenceTable({ title, rows }: ReferenceTableData) {
               {row.items.length ? (
                 <ul className="list-disc space-y-1.5 pl-5">
                   {row.items.map((item, j) => (
-                    <li key={j}>{renderInline(item, `${i}-${j}`)}</li>
+                    <li key={j}>{renderInlineRich(stripListMarker(item), `${i}-${j}`)}</li>
                   ))}
                 </ul>
               ) : null}

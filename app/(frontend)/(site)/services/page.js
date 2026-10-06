@@ -5,6 +5,7 @@ import { getPublicServices } from "@/lib/content";
 import { getServiceIcon, getServiceIconKey } from "@/lib/service-icons";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
+import { toPlainText } from "@/lib/rich-text";
 
 export const metadata = {
   title: "Services and information",
@@ -81,7 +82,7 @@ export default async function ServicesIndexPage() {
                         {service.title}
                       </h2>
                       <p className="mt-1 line-clamp-2 text-ds-xxs font-medium text-foreground">
-                        {service.shortDescription || service.intro?.[0]}
+                        {service.shortDescription || toPlainText(service.intro?.[0])}
                       </p>
                     </div>
                     <IconArrowRight className="mt-1 size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { serviceIconMap } from "@/lib/service-icons";
+import { renderRichText } from "@/components/services/rich-text";
 
 function HeroCircle() {
   // Faint DS service-hero decoration (people), exported from Figma.
@@ -58,16 +59,16 @@ export function ServiceHero({ title, intro = [], iconKey }) {
                 {title}
               </h1>
             </div>
+            {/* Intro paragraphs are editor-formatted text (lib/rich-text.ts):
+                line breaks, lists, bold, italic and links. */}
             {lead ? (
-              <p className="mt-8 max-w-2xl text-ds-l font-bold text-foreground">
-                {lead}
-              </p>
+              <div className="mt-8 max-w-2xl space-y-3 text-ds-l font-bold text-foreground">
+                {renderRichText(lead, "intro-lead")}
+              </div>
             ) : null}
             {rest.length ? (
               <div className="mt-4 max-w-2xl space-y-3 text-ds-s font-medium text-foreground">
-                {rest.map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
-                ))}
+                {rest.flatMap((paragraph, i) => renderRichText(paragraph, `intro-${i}`))}
               </div>
             ) : null}
           </div>

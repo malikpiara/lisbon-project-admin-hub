@@ -11,7 +11,8 @@ import {
   ReferenceTable,
   type ReferenceTableData,
 } from "@/components/services/reference-table";
-import { renderInline } from "@/components/services/inline-links";
+import { renderInlineRich, renderRichText } from "@/components/services/rich-text";
+import { stripListMarker } from "@/lib/rich-text";
 import { MapVisit } from "@/components/home/map-visit";
 import type { SiteText } from "@/lib/site-text-defaults";
 import { buttonVariants } from "@/components/ui/button";
@@ -29,7 +30,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { splitParagraphs } from "@/lib/article-defaults";
 import { cn } from "@/lib/utils";
 
 const EMPTY_ARTICLE: Article = {
@@ -171,7 +171,7 @@ export function ArticleView({
 
                   {s.lead ? (
                     <p className="max-w-3xl text-ds-m font-bold text-primary">
-                      {renderInline(s.lead, `lead-${index}`)}
+                      {renderInlineRich(s.lead, `lead-${index}`)}
                     </p>
                   ) : null}
                   {s.blocks.length ? (
@@ -179,15 +179,14 @@ export function ArticleView({
                       {s.blocks.map((b, i) => {
                         const k = `${index}-${i}`;
                         if (b.type === "text") {
-                          const ps = splitParagraphs(b.body);
-                          return ps.length ? (
+                          // Paragraphs, line breaks, lists, bold, italic and
+                          // links — the format lib/rich-text.ts parses.
+                          return b.body.trim() ? (
                             <div
                               key={i}
                               className="space-y-3 text-ds-xs font-medium leading-relaxed text-brand-deep"
                             >
-                              {ps.map((p, j) => (
-                                <p key={j}>{renderInline(p, `t-${k}-${j}`)}</p>
-                              ))}
+                              {renderRichText(b.body, `t-${k}`)}
                             </div>
                           ) : null;
                         }
@@ -205,7 +204,7 @@ export function ArticleView({
                               )}
                             >
                               {b.items.map((it, j) => (
-                                <li key={j}>{renderInline(it, `l-${k}-${j}`)}</li>
+                                <li key={j}>{renderInlineRich(stripListMarker(it), `l-${k}-${j}`)}</li>
                               ))}
                             </ListTag>
                           ) : null;
@@ -278,7 +277,11 @@ export function ArticleView({
                     <AccordionItem key={`${faq.question}-${i}`} value={faq.question}>
                       <AccordionTrigger>{faq.question}</AccordionTrigger>
                       <AccordionContent>
-                        {renderInline(faq.answer, `faq-${i}`)}
+                        {/* Answers used to render as one run of text; now
+                            paragraphs, lists, bold and links show as typed. */}
+                        <div className="space-y-3">
+                          {renderRichText(faq.answer, `faq-${i}`)}
+                        </div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}

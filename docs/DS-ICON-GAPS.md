@@ -17,7 +17,11 @@ component. Search the codebase for the lucide name to find every call site.
 |---|---|---|
 | **table** | Reference-table block chip (block editor) | Provisional outlined glyph in `block-editor.jsx` |
 | **trash / delete** | Delete button, block delete, history "deleted" | lucide `Trash2` |
-| **list-numbered** | List block "Numbered" toggle | Text label only (no icon) |
+| **list-numbered** | List block "Numbered" toggle; text editor toolbar | Text label only (block editor); lucide `ListOrdered` (`rich-text-editor.tsx`) |
+| **list-bulleted** | Text editor toolbar "Bulleted list" (DS `IconMenu` reads as a menu, not a list) | lucide `List` |
+| **link / chain** | Text editor toolbar "Add link" + link bar (DS `IconInternalLink` reads as *opens elsewhere*) | lucide `Link2` |
+| **unlink** | Text editor link bar "Remove link" | lucide `Unlink` |
+| **bold / italic** | Text editor toolbar | Typographic **B** / *I* letters — the universal convention; an icon may not be needed |
 | **spinner / loader** | `SubmitButton` pending state | CSS spinning ring |
 | **copy / duplicate** | Row duplicate (`editor-ui`), copy invite link (`users-manager`) | lucide `Copy` |
 | **download** | Subscribers CSV export | lucide `Download` |

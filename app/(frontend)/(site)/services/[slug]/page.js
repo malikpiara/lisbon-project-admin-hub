@@ -9,6 +9,7 @@ import {
 } from "@/lib/content";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema } from "@/lib/site";
+import { toPlainText } from "@/lib/rich-text";
 
 // Rendered on-demand (ISR), not prebuilt at `next build`: prerendering every
 // category + article page would open (build workers × DB pool) connections at
@@ -27,7 +28,8 @@ export async function generateMetadata({ params }) {
   // Title carries no brand — the root layout's title template appends it.
   return {
     title: service.title,
-    description: service.intro?.[0],
+    // Plain text: formatting markers must not leak into search results.
+    description: toPlainText(service.intro?.[0]) || undefined,
     alternates: { canonical: `/services/${slug}` },
   };
 }

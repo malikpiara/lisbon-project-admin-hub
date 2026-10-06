@@ -6,6 +6,7 @@ import { Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import {
   Tooltip,
   TooltipContent,
@@ -309,13 +310,14 @@ const inputLabel = "mb-1.5 block text-ds-xs font-medium text-foreground";
 
 function BlockFields({ block, onPatch }) {
   if (block.type === "text") {
+    // Visual editor: bold, italic, lists and links, saved as the plain text
+    // format the site renders (lib/rich-text.ts).
     return (
-      <LinkableField
+      <RichTextEditor
         value={block.body}
         onChange={(v) => onPatch({ body: v })}
-        rows={3}
         placeholder="Write a paragraph…"
-        hint="Separate paragraphs with a blank line."
+        ariaLabel="Text"
       />
     );
   }

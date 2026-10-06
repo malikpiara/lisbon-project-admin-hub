@@ -25,6 +25,8 @@ import {
   SelectField,
   HeadingComboField,
 } from "@/components/admin/field";
+import { RichTextField } from "@/components/admin/rich-text-editor";
+import { toPlainText } from "@/lib/rich-text";
 import {
   ARTICLE_SECTION_TEMPLATES,
   SECTION_HEADING_PRESETS,
@@ -741,7 +743,7 @@ export function ArticleEditor({
                   <div key={f._k} ref={rowRef(faqFlip(f._k), f._k)}>
                     <EditorRow
                       title={f.question || "Untitled question"}
-                      subtitle={f.answer}
+                      subtitle={toPlainText(f.answer)}
                       defaultOpen={f.question === "New question"}
                       onDelete={() => removeFaq(i)}
                       onMoveUp={() => moveFaq(i, -1)}
@@ -760,13 +762,12 @@ export function ArticleEditor({
                           onChange={(v) => setFaq(i, { question: v })}
                           dirty={fieldDirty(f.question, fc?.question)}
                         />
-                        <Field
+                        <RichTextField
                           label="Answer"
                           value={f.answer}
                           onChange={(v) => setFaq(i, { answer: v })}
                           dirty={fieldDirty(f.answer, fc?.answer)}
-                          textarea
-                          rows={3}
+                          placeholder="Write the answer…"
                         />
                       </div>
                     </EditorRow>

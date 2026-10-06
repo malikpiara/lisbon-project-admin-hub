@@ -18,6 +18,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Field } from "@/components/admin/field";
+import { RichTextField } from "@/components/admin/rich-text-editor";
 import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import {
@@ -272,15 +273,13 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
               rows={2}
               hint="Copy for the home grid card."
             />
-            <Field
+            <RichTextField
               className="sm:col-span-2"
               label="Intro paragraphs"
               value={draft.intro}
               onChange={(v) => set({ intro: v })}
               dirty={fieldDirty(draft.intro, saved.intro)}
-              textarea
-              rows={4}
-              hint="Paragraphs separated by a blank line."
+              placeholder="Introduce this category…"
             />
             <IconPicker
               className="sm:col-span-2"
