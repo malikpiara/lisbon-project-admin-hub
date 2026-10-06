@@ -101,7 +101,8 @@ export function SiteChatShell({ children }) {
           the server/client markup for the page content matches. */}
       {!mounted ? null : (
         <>
-      {/* Launcher — 50px circle, hidden while the panel is open. We pass our own
+      {/* Launcher — 50px circle on mobile, 60px from `md` up (team feedback: a
+          bigger button on desktop only), hidden while the panel is open. We pass our own
           <button> via Base UI's `render` prop (NOT props on TooltipTrigger): that
           keeps React binding onClick/ref to *our* element, while the Trigger merges
           its hover/focus behavior on top. Tooltip stays closed while the panel is
@@ -118,14 +119,14 @@ export function SiteChatShell({ children }) {
                 aria-expanded={open}
                 style={{ backgroundColor: LAUNCHER_ORANGE }}
                 className={cn(
-                  "fixed right-6 bottom-6 z-[60] grid size-[50px] cursor-pointer place-items-center rounded-full text-white",
+                  "fixed right-6 bottom-6 z-[60] grid size-[50px] md:size-[60px] cursor-pointer place-items-center rounded-full text-white",
                   "shadow-[0_4px_4px_0_#BDBDBD] transition-[transform,opacity,filter] duration-200 ease-out",
                   "hover:brightness-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#F57600]/40",
                   "motion-reduce:transition-none",
                   open && "pointer-events-none scale-90 opacity-0",
                 )}
               >
-                <IconChatBot className="size-[22px]" />
+                <IconChatBot className="size-[22px] md:size-[26px]" />
               </button>
             }
           />
