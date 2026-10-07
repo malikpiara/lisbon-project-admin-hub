@@ -405,8 +405,9 @@ function TableFields({ block, onPatch }) {
   const n = headers.length;
   const atCap = n >= TABLE_MAX_COLUMNS;
   const gridRef = useRef(null);
-  // Heading index to focus once a just-added column renders (a ref, not state:
-  // read inside the effect, never during render).
+  // What to focus once a just-added column or row renders: the new heading,
+  // or the new row's first cell. A ref, not state: read inside the effect,
+  // never during render.
   const pendingFocus = useRef(null);
   const [armedCol, setArmedCol] = useState(null);
 
@@ -418,12 +419,14 @@ function TableFields({ block, onPatch }) {
         idx === k ? { ...r, cells: r.cells.map((c, j) => (j === i ? v : c)) } : r
       ),
     });
-  const addRow = () =>
+  const addRow = () => {
+    pendingFocus.current = `textarea[data-row="${rows.length}"][data-col="0"]`;
     onPatch({ rows: [...rows, { _k: nextBlockKey(), cells: headers.map(() => "") }] });
+  };
   const removeRow = (k) => onPatch({ rows: rows.filter((_, idx) => idx !== k) });
   const addColumn = () => {
     if (atCap) return;
-    pendingFocus.current = n;
+    pendingFocus.current = `[data-header-index="${n}"]`;
     onPatch({
       headers: [...headers, ""],
       rows: rows.map((r) => ({ ...r, cells: [...r.cells, ""] })),
@@ -443,11 +446,11 @@ function TableFields({ block, onPatch }) {
   const askRemoveColumn = (i) => (filledIn(i) ? setArmedCol(i) : removeColumn(i));
 
   useEffect(() => {
-    const i = pendingFocus.current;
-    if (i == null) return;
+    const selector = pendingFocus.current;
+    if (!selector) return;
     pendingFocus.current = null;
-    gridRef.current?.querySelector(`[data-header-index="${i}"]`)?.focus();
-  }, [n]);
+    gridRef.current?.querySelector(selector)?.focus();
+  }, [n, rows.length]);
 
   const cellClass = "min-h-11 rounded-md px-2.5 py-2 text-ds-xxs font-medium";
   const gridCols = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr)) 1.75rem` };

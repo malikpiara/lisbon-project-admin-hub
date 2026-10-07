@@ -432,9 +432,16 @@
 
 /* Stack: below md, a 3- or 4-column table becomes one card per row — the
    first cell as the card's title, every other cell under its column heading
-   (data-label, present only when the heading exists). These rules are
+   (data-label, present only when the heading exists). The outer card surface
+   comes off so the row cards don't sit inside a second card. These rules are
    unlayered, so they win over the Tailwind utilities on the cells. */
 @media (max-width: 767px) {
+  .table-stack {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
   .table-stack thead {
     display: none;
   }
@@ -446,6 +453,9 @@
   }
   .table-stack caption {
     display: block;
+    margin-bottom: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
   }
   .table-stack tr {
     margin-bottom: 0.75rem;
@@ -464,6 +474,7 @@
   .table-stack td + td {
     border-top: 2px solid var(--border);
   }
+  /* Same voice as the heading row on wide screens: DS bold muted. */
   .table-stack td[data-label]::before {
     content: attr(data-label);
     display: block;
@@ -471,8 +482,6 @@
     font-size: var(--ds-text-xxs);
     line-height: var(--ds-leading-xxs);
     font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--muted-foreground);
   }
 }

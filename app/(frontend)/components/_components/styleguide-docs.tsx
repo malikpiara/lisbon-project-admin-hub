@@ -1773,6 +1773,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     api: [
       { name: "headers", type: "string[]", defaultValue: "-", description: "One per column (2 to 4); empty strings for no heading row." },
       { name: "rows", type: "string[][]", defaultValue: "-", description: "One string per cell; newline-separated lines render as bullets." },
+      { name: "(container)", type: "ancestor", defaultValue: "-", description: "From 3 columns the table measures its nearest @container ancestor to break out; render it inside one (the article section card is)." },
     ],
   },
   {

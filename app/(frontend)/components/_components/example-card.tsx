@@ -50,7 +50,10 @@ export function ExampleCard({
       >
         <div
           className={cn(
-            "w-full",
+            // @container: components that size themselves against their
+            // nearest container (the reference table's breakout) measure
+            // this preview frame, not the viewport.
+            "@container w-full",
             align === "center" && "max-w-2xl [&>*]:mx-auto"
           )}
         >

@@ -222,6 +222,14 @@ Button and Checkbox use a CVA variant API.
   Monday-start, today = neutral outline, selected = teal outline + mint fill, event = teal dot.
 - **Table** (`table.tsx`) — `border-b-2` rows (hover `bg-muted/50`), `text-ds-xs`,
   bold muted headers.
+- **Reference table** (`components/services/reference-table.tsx`) — the article
+  content table built on the primitive: its own surface (`rounded-lg border-2
+  border-border bg-card`, title + heading row on `bg-secondary/50`), **no row
+  hover** (rows aren't links), 2–4 columns. From 3 columns it breaks out of the
+  760px reading column to the section card's inner edge (the card is the
+  `@container`; `.table-breakout` in `globals.css`) and stacks into one card per
+  row below `md` (`.table-stack`). Any surface that renders it needs a
+  `@container` ancestor, or the breakout measures the viewport.
 - **Collapsible** (`collapsible.tsx`) — **unstyled** Base UI pass-through (the DS has
   no styled Collapsible; Accordion is the styled disclosure).
 - **Icon** (`icon.tsx`) — `<Icon name="…">` looks up raw SVG in `DS_ICONS` (see §3).
