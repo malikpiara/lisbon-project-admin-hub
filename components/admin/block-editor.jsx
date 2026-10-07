@@ -452,11 +452,25 @@ function TableFields({ block, onPatch }) {
     gridRef.current?.querySelector(selector)?.focus();
   }, [n, rows.length]);
 
-  const cellClass = "min-h-11 rounded-md px-2.5 py-2 text-ds-xxs font-medium";
+  // Cells carry the content, so they get the DS body size while there is room
+  // (two columns) and step down one size when three or four columns share the
+  // width. Headings are labels: one size smaller, bold, on the same mint tint
+  // the public heading row uses. Everything in the grid shares the DS input
+  // height (h-11) and radius (rounded-lg).
+  const cellClass = cn(
+    "min-h-11 rounded-lg px-3 py-2.5 font-medium",
+    n >= 3 ? "text-ds-xxs" : "text-ds-xs"
+  );
+  const headingClass = "bg-secondary/50 px-3 text-ds-xxs font-bold placeholder:font-medium";
   const gridCols = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr)) 1.75rem` };
+  // Column removal is rare: its buttons rest hidden and appear while the
+  // pointer or keyboard focus is inside this table block. Opacity, not
+  // display, so they stay in the tab order.
+  const revealOnEngage =
+    "opacity-0 transition-opacity group-hover/table:opacity-100 group-focus-within/table:opacity-100";
 
   return (
-    <div className="grid gap-3">
+    <div className="group/table grid gap-3">
       <label className="block">
         <span className={inputLabel}>
           Table title <span className="font-normal text-muted-foreground">— optional</span>
@@ -478,12 +492,14 @@ function TableFields({ block, onPatch }) {
                 onChange={(e) => setHeader(i, e.target.value)}
                 placeholder={i === 0 ? "Heading, e.g. Document" : "Heading, e.g. Where to get it"}
                 aria-label={`Column ${i + 1} heading`}
-                className="h-9 px-2.5 text-ds-xxs font-bold tracking-wide uppercase placeholder:normal-case placeholder:font-medium"
+                className={headingClass}
               />
               {n > TABLE_MIN_COLUMNS ? (
-                <IconBtn label={`Remove column ${i + 1}`} danger onClick={() => askRemoveColumn(i)}>
-                  <Trash2 className="size-3.5" strokeWidth={2} />
-                </IconBtn>
+                <span className={revealOnEngage}>
+                  <IconBtn label={`Remove column ${i + 1}`} danger onClick={() => askRemoveColumn(i)}>
+                    <Trash2 className="size-3.5" strokeWidth={2} />
+                  </IconBtn>
+                </span>
               ) : null}
             </div>
           ))}
@@ -535,6 +551,9 @@ function TableFields({ block, onPatch }) {
         </div>
       </div>
 
+      {/* Add row is the frequent action and keeps the secondary button; Add
+          column is rare and steps down to ghost. The column counter only
+          appears once the cap is in sight. */}
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="secondary" size="sm" onClick={addRow} className="w-fit">
           <IconPlus className="size-3.5" />
@@ -542,7 +561,7 @@ function TableFields({ block, onPatch }) {
         </Button>
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           onClick={addColumn}
           disabled={atCap}
@@ -557,9 +576,11 @@ function TableFields({ block, onPatch }) {
           Add column
         </Button>
         <TableLinkTool gridRef={gridRef} onInsert={setCell} />
-        <span className="text-ds-xxs font-medium text-muted-foreground">
-          {n} of {TABLE_MAX_COLUMNS} columns · each line in a cell is a bullet
-        </span>
+        {n > TABLE_MIN_COLUMNS ? (
+          <span className="ml-auto text-ds-xxs font-medium text-muted-foreground">
+            {n} of {TABLE_MAX_COLUMNS} columns
+          </span>
+        ) : null}
       </div>
     </div>
   );
