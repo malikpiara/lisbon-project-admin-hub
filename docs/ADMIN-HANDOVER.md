@@ -60,7 +60,7 @@ Postgres); the UI is ours, built from the LP design system.
 |---|---|---|
 | Shell | `admin/layout.js`, `components/admin/admin-sidebar.jsx` | Sticky sidebar (`h-dvh`) from `md` up; below `md` a slim top bar + hamburger drawer (same nav markup via shared `SidebarContent`; closes on navigate / Escape / backdrop). Grouped nav (Content / Analytics / Admin), signed-in footer |
 | Dashboard | `admin/page.js` | Counts + cards into each editor + Insights |
-| Quick Access | `admin/quick-access/` | Editor + reorder + per-card save-state + **unsaved-changes guard** (aggregated across cards) |
+| Quick Access | `admin/quick-access/` | Editor + reorder + per-card save-state + **unsaved-changes guard** (aggregated across cards); per-card **button label** (empty = the default in `lib/quick-access-defaults.js`) |
 | Services | `admin/services/` + `[id]/` | Editor: basics, intro, icon, contacts-page header, topic list (reorder), **version history + diff + restore**. (Contacts + the old per-service category filters moved out — see Contacts.) |
 | Contacts | `admin/contacts/` + `[id]/` | **Global contacts directory** — one contact per organization, tagged with the service categories it belongs to (`categories`, many-to-many). List → editor with a category multiselect. The home "External Contacts" table and every category page render from this one list; the category filter == the services. |
 | Articles | `admin/articles/` + `[id]/` | Searchable list; editor with **live `ArticlePreview`**, key links + sections + FAQs (reorder/duplicate), required markers. (Payload collection slug stays `topics`.) |

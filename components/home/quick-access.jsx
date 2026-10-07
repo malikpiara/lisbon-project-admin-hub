@@ -7,35 +7,33 @@ import {
   IconTip,
   IconUserPlus,
 } from "@/components/icons/ds-icons";
-import { DONATE_URL } from "@/lib/site";
+import { legacyCardMeta, quickAccessCta } from "@/lib/quick-access-defaults";
 
-// Per-card icon + call-to-action, keyed by the card's href (stable across the
-// seed and Payload, whose auto-increment ids differ from the seed's string ids).
-// Icons are the actual DS glyphs exported from Figma (iconography page):
-// user/plus, tip (donor), heart-open. A card may override its link target and
-// external flag (Donate always points at the main charity site).
-const cardMeta = {
-  "/register": { icon: IconUserPlus, cta: "Get Started" },
-  "/donate": {
-    icon: IconTip,
-    cta: "Donate Now",
-    href: DONATE_URL,
-    external: true,
-  },
-  "https://lisbonproject.org": { icon: IconHeartOpen, cta: "Visit Website" },
-  "/internal": { icon: IconArrowRight, cta: "Open Portal" },
+// Per-card icon, keyed by the card's href (stable across the seed and Payload,
+// whose auto-increment ids differ from the seed's string ids). Icons are the
+// actual DS glyphs exported from Figma (iconography page): user/plus, tip
+// (donor), heart-open. Still hardcoded — making the icon a field is the next
+// Quick Access ticket. The button label is a field already; the per-href
+// defaults for it, and the Donate link pin, live in lib/quick-access-defaults.
+const cardIcons = {
+  "/register": IconUserPlus,
+  "/donate": IconTip,
+  "https://lisbonproject.org": IconHeartOpen,
+  "/internal": IconArrowRight,
 };
 
 export function QuickAccess({ items = [], embedded = false }) {
   const content = (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
       {items.map((item) => {
-        const meta = cardMeta[item.href] ?? { icon: IconArrowRight, cta: "Learn more" };
-        const Icon = meta.icon;
-        // A card's meta may pin its destination (e.g. Donate → charity site);
+        const Icon = cardIcons[item.href] ?? IconArrowRight;
+        // The stored label wins; empty falls back to the card's legacy default.
+        const cta = quickAccessCta(item);
+        // A card's legacy meta may pin its destination (Donate → charity site);
         // otherwise use the stored href/external flag.
-        const href = meta.href ?? item.href;
-        const external = meta.external ?? item.external;
+        const legacy = legacyCardMeta[item.href] ?? {};
+        const href = legacy.href ?? item.href;
+        const external = legacy.external ?? item.external;
         return (
           <CardShortcut
             key={item.id}
@@ -51,7 +49,7 @@ export function QuickAccess({ items = [], embedded = false }) {
                   : {})}
                 className={buttonVariants({ className: "w-fit" })}
               >
-                {meta.cta}
+                {cta}
                 <IconArrowRight className="size-4" />
               </Link>
             }

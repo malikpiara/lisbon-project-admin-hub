@@ -13,6 +13,7 @@ import { MoveControls } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 import { SaveBar } from "@/components/admin/save-bar";
 import { countChanges } from "@/lib/count-changes";
+import { quickAccessCta } from "@/lib/quick-access-defaults";
 import { useFlip } from "@/lib/use-flip";
 import {
   createQuickAccessItem,
@@ -178,13 +179,14 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
             Link cards shown in the home-page hero.
           </p>
         </div>
-        {/* Disabled until cards support an icon + button label (the public hero
-            renders both, hardcoded by id today). Re-enable by removing `disabled`
-            once the icon picker + cta field land. addCard stays wired for then. */}
+        {/* Disabled until cards carry their own icon (the public hero still
+            picks it by link target, so a new card would show a bare arrow).
+            The button label is a field since 2026-10; re-enable by removing
+            `disabled` once the icon picker lands. addCard stays wired for then. */}
         <Button
           size="sm"
           disabled
-          title="Adding cards is paused until they support an icon and button label"
+          title="Adding cards is paused until they support an icon"
           onClick={addCard}
         >
           <IconPlus />
@@ -240,12 +242,14 @@ function QuickAccessCardEditor({
     href: item.href ?? "",
     description: item.description ?? "",
     external: item.external ?? false,
+    cta: item.cta ?? "",
   }));
   const [saved, setSaved] = useState(() => ({
     title: item.title ?? "",
     href: item.href ?? "",
     description: item.description ?? "",
     external: item.external ?? false,
+    cta: item.cta ?? "",
   }));
   const [isPending, startTransition] = useTransition();
 
@@ -275,6 +279,9 @@ function QuickAccessCardEditor({
   }, [item.id, draft, saved, registerCard]);
 
   const patch = (p) => setDraft((d) => ({ ...d, ...p }));
+  // What the site shows while the label is empty — surfaced as the placeholder
+  // so an empty field never hides what visitors actually see.
+  const ctaFallback = quickAccessCta({ href: draft.href });
 
   return (
     <Card
@@ -309,6 +316,15 @@ function QuickAccessCardEditor({
             textarea
             rows={2}
             hint="One line under the title. Optional."
+          />
+          <Field
+            className="sm:col-span-2"
+            label="Button label"
+            value={draft.cta}
+            onChange={(v) => patch({ cta: v })}
+            dirty={fieldDirty(draft.cta, saved.cta)}
+            placeholder={ctaFallback}
+            hint={`The card’s green button. Leave empty to keep “${ctaFallback}”.`}
           />
         </div>
         <div className="flex items-center justify-between border-t-2 border-border pt-3">

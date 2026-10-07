@@ -459,6 +459,10 @@ export interface QuickAccess {
   title: string;
   description?: string | null;
   href: string;
+  /**
+   * What the card’s green button says. Leave empty for the default.
+   */
+  cta?: string | null;
   external?: boolean | null;
   order?: number | null;
   createdBy?: (number | null) | User;
@@ -794,6 +798,7 @@ export interface QuickAccessSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   href?: T;
+  cta?: T;
   external?: T;
   order?: T;
   createdBy?: T;

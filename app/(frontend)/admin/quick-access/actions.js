@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 
 // WRITE path. The admin editor reaches Payload's Local API (Postgres on
 // Supabase) through these server actions, instead of the localStorage store
@@ -26,7 +27,7 @@ export async function saveQuickAccessItem(id, data) {
     userId: user.id,
   });
   revalidatePath("/admin/quick-access");
-  revalidatePath("/"); // home hero — becomes live once the public site reads Payload
+  revalidatePublicContent(); // home hero cards
 }
 
 export async function createQuickAccessItem() {
@@ -69,7 +70,7 @@ export async function reorderQuickAccessItems(ids) {
     )
   );
   revalidatePath("/admin/quick-access");
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 
 export async function deleteQuickAccessItem(id) {
@@ -86,5 +87,5 @@ export async function deleteQuickAccessItem(id) {
     userId: user.id,
   });
   revalidatePath("/admin/quick-access");
-  revalidatePath("/");
+  revalidatePublicContent();
 }
