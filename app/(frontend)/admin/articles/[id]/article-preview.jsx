@@ -110,9 +110,10 @@ export function ArticlePreview({ draft, topicTitle }) {
                     );
                   }
                   if (b.type === "table") {
-                    // Mirrors reference-table.tsx: heading row when any heading
-                    // is typed, bold first cell, bullets only for multi-line
-                    // cells. Compact, so no breakout here.
+                    // Mirrors reference-table.tsx: its own card surface, title
+                    // and heading row on the mint tint, DS bold-muted headings,
+                    // bold first cell, bullets only for multi-line cells.
+                    // Compact, so no breakout here.
                     const headers = b.headers ?? ["", ""];
                     const rows = b.rows ?? [];
                     const grid = { gridTemplateColumns: `repeat(${headers.length}, minmax(0, 1fr))` };
@@ -120,16 +121,21 @@ export function ArticlePreview({ draft, topicTitle }) {
                     return (
                       <div
                         key={b._k ?? j}
-                        className="overflow-hidden rounded-md border-2 border-border"
+                        className="overflow-hidden rounded-lg border-2 border-border bg-card"
                       >
                         {b.title ? (
-                          <p className="bg-secondary/50 px-3 py-1.5 text-center text-ds-xxs font-bold uppercase tracking-wide text-primary">
+                          <p
+                            className={cn(
+                              "bg-secondary/50 px-3 py-1.5 text-center text-ds-xxs font-bold uppercase tracking-wide text-primary",
+                              showHeaders && "border-b-2 border-border"
+                            )}
+                          >
                             {b.title}
                           </p>
                         ) : null}
                         {showHeaders ? (
                           <div
-                            className="grid gap-3 border-b-2 border-border px-3 py-1.5 text-ds-xxs font-bold uppercase tracking-wide text-primary"
+                            className="grid gap-3 border-b-2 border-border bg-secondary/50 px-3 py-1.5 text-ds-xxs font-bold text-muted-foreground"
                             style={grid}
                           >
                             {headers.map((h, i) => (

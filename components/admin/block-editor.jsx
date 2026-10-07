@@ -423,7 +423,14 @@ function TableFields({ block, onPatch }) {
     pendingFocus.current = `textarea[data-row="${rows.length}"][data-col="0"]`;
     onPatch({ rows: [...rows, { _k: nextBlockKey(), cells: headers.map(() => "") }] });
   };
-  const removeRow = (k) => onPatch({ rows: rows.filter((_, idx) => idx !== k) });
+  const removeRow = (k) => {
+    // Land on the row now at this position; with none left, on "Add row".
+    pendingFocus.current =
+      rows.length > 1
+        ? `textarea[data-row="${Math.min(k, rows.length - 2)}"][data-col="0"]`
+        : `[data-table-add-row]`;
+    onPatch({ rows: rows.filter((_, idx) => idx !== k) });
+  };
   const addColumn = () => {
     if (atCap) return;
     pendingFocus.current = `[data-header-index="${n}"]`;
@@ -437,6 +444,8 @@ function TableFields({ block, onPatch }) {
     rows.filter((r) => (r.cells[i] ?? "").trim()).length;
   const removeColumn = (i) => {
     setArmedCol(null);
+    // Land on the heading now at this position (or the last one).
+    pendingFocus.current = `[data-header-index="${Math.min(i, n - 2)}"]`;
     onPatch({
       headers: headers.filter((_, idx) => idx !== i),
       rows: rows.map((r) => ({ ...r, cells: r.cells.filter((_, idx) => idx !== i) })),
@@ -444,13 +453,28 @@ function TableFields({ block, onPatch }) {
   };
   // An empty column goes at once; a filled one is a two-step confirm.
   const askRemoveColumn = (i) => (filledIn(i) ? setArmedCol(i) : removeColumn(i));
+  const cancelRemoveColumn = () => {
+    const i = armedCol;
+    setArmedCol(null);
+    gridRef.current?.querySelector(`[data-header-index="${i}"]`)?.focus();
+  };
+  const isEmpty =
+    headers.every((h) => !(h ?? "").trim()) &&
+    rows.every((r) => r.cells.every((c) => !(c ?? "").trim()));
 
   useEffect(() => {
     const selector = pendingFocus.current;
     if (!selector) return;
     pendingFocus.current = null;
-    gridRef.current?.querySelector(selector)?.focus();
+    gridRef.current?.closest("[data-table-fields]")?.querySelector(selector)?.focus();
   }, [n, rows.length]);
+
+  // A keyboard user who arms a removal should land on the safe choice, and
+  // Escape should back out the way Cancel does.
+  useEffect(() => {
+    if (armedCol == null) return;
+    gridRef.current?.querySelector("[data-table-cancel]")?.focus();
+  }, [armedCol]);
 
   // Cells carry the content, so they get the DS body size while there is room
   // (two columns) and step down one size when three or four columns share the
@@ -470,7 +494,7 @@ function TableFields({ block, onPatch }) {
     "opacity-0 transition-opacity group-hover/table:opacity-100 group-focus-within/table:opacity-100";
 
   return (
-    <div className="group/table grid gap-3">
+    <div className="group/table grid gap-3" data-table-fields>
       <label className="block">
         <span className={inputLabel}>
           Table title <span className="font-normal text-muted-foreground">— optional</span>
@@ -507,6 +531,14 @@ function TableFields({ block, onPatch }) {
 
           {armedCol != null ? (
             <div
+              role="group"
+              aria-label="Confirm column removal"
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.stopPropagation();
+                  cancelRemoveColumn();
+                }
+              }}
               className="flex flex-wrap items-center gap-2 rounded-lg border-2 border-destructive/30 bg-destructive/5 px-3 py-2 text-ds-xxs font-medium text-foreground"
               style={{ gridColumn: "1 / -1" }}
             >
@@ -515,7 +547,7 @@ function TableFields({ block, onPatch }) {
                 {(headers[armedCol] ?? "").trim() ? ` “${headers[armedCol]}”` : ""} and the{" "}
                 {filledIn(armedCol)} cell{filledIn(armedCol) === 1 ? "" : "s"} written in it?
               </span>
-              <Button size="sm" variant="ghost" onClick={() => setArmedCol(null)}>
+              <Button size="sm" variant="ghost" onClick={cancelRemoveColumn} data-table-cancel>
                 Cancel
               </Button>
               <Button
@@ -551,11 +583,25 @@ function TableFields({ block, onPatch }) {
         </div>
       </div>
 
+      {isEmpty ? (
+        <p className="text-ds-xxs font-medium text-muted-foreground">
+          Start with the first column: what each row is about. The other columns hold
+          one fact each; several lines in a cell become bullets.
+        </p>
+      ) : null}
+
       {/* Add row is the frequent action and keeps the secondary button; Add
           column is rare and steps down to ghost. The column counter only
           appears once the cap is in sight. */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="secondary" size="sm" onClick={addRow} className="w-fit">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={addRow}
+          className="w-fit"
+          data-table-add-row
+        >
           <IconPlus className="size-3.5" />
           Add row
         </Button>
