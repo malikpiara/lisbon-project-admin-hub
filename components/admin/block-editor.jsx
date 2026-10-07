@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 // DS lacks link + trash glyphs — interim lucide icons, flagged for Rafael.
 import { Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,12 @@ import {
   IconPlus,
 } from "@/components/icons/ds-icons";
 import { cn } from "@/lib/utils";
+import {
+  TABLE_MAX_COLUMNS,
+  TABLE_MIN_COLUMNS,
+  normalizeTableBlock,
+  tableBlockToPayload,
+} from "@/lib/table-block";
 
 // Stable client-only keys per block / table row so React reconciles and the
 // dirty-diff (countChanges, which matches by `_k`) doesn't light up on reorder.
@@ -85,7 +91,7 @@ function TableGlyph({ className }) {
 const BLOCK_META = {
   text: { label: "Text", desc: "A paragraph", Icon: IconNotes },
   list: { label: "List", desc: "Bulleted or numbered", Icon: IconMenu },
-  table: { label: "Table", desc: "Two-column reference", Icon: TableGlyph },
+  table: { label: "Table", desc: "Up to 4 columns", Icon: TableGlyph },
   button: { label: "Button", desc: "A call to action", Icon: IconArrowRight },
 };
 const BLOCK_TYPES = ["text", "list", "table", "button"];
@@ -95,8 +101,28 @@ export function emptyBlock(type) {
   if (type === "text") return { _k, type, body: "" };
   if (type === "list") return { _k, type, ordered: false, items: "" };
   if (type === "table")
-    return { _k, type, title: "", rows: [{ _k: nextBlockKey(), label: "", items: "" }] };
+    return {
+      _k,
+      type,
+      title: "",
+      headers: ["", ""],
+      rows: [{ _k: nextBlockKey(), cells: ["", ""] }],
+    };
   return { _k, type, label: "", href: "" };
+}
+
+// A stored table (either shape, see lib/table-block.js) → the editor's table:
+// `headers` (one per column) and rows of `cells` (one string per column, lines
+// = bullets). Rows get a stable key for reorder-safe change counting.
+function tableFromPayload(block) {
+  const v = normalizeTableBlock(block);
+  return {
+    _k: nextBlockKey(),
+    type: "table",
+    title: v.title,
+    headers: v.headers,
+    rows: v.rows.map((cells) => ({ _k: nextBlockKey(), cells })),
+  };
 }
 
 // Payload section (blocks OR deprecated fields) → editor blocks. `items` become
@@ -116,17 +142,7 @@ export function blocksFromPayload(s) {
             ordered: !!b.ordered,
             items: (b.items ?? []).map((i) => i.text).join("\n"),
           };
-        if (b.blockType === "table")
-          return {
-            _k,
-            type: "table",
-            title: b.title ?? "",
-            rows: (b.rows ?? []).map((r) => ({
-              _k: nextBlockKey(),
-              label: r.label ?? "",
-              items: (r.items ?? []).map((i) => i.text).join("\n"),
-            })),
-          };
+        if (b.blockType === "table") return tableFromPayload(b);
         if (b.blockType === "button")
           return { _k, type: "button", label: b.label ?? "", href: b.href ?? "" };
         return null;
@@ -138,15 +154,8 @@ export function blocksFromPayload(s) {
   const bullets = (s.bullets ?? []).map((b) => b.text).filter(Boolean);
   if (bullets.length)
     out.push({ _k: nextBlockKey(), type: "list", ordered: !!s.ordered, items: bullets.join("\n") });
-  const rows = (s.table?.rows ?? [])
-    .map((r) => ({
-      _k: nextBlockKey(),
-      label: r.label ?? "",
-      items: (r.items ?? []).map((i) => i.text).join("\n"),
-    }))
-    .filter((r) => r.label.trim() || r.items.trim());
-  if (rows.length || (s.table?.title ?? "").trim())
-    out.push({ _k: nextBlockKey(), type: "table", title: s.table?.title ?? "", rows });
+  const table = tableFromPayload({ title: s.table?.title, rows: s.table?.rows });
+  if (table.rows.length || table.title.trim()) out.push(table);
   if ((s.cta ?? "").trim())
     out.push({ _k: nextBlockKey(), type: "button", label: s.cta, href: s.ctaHref ?? "" });
   return out;
@@ -164,13 +173,12 @@ export function blocksToPayload(blocks) {
         return items.length ? { blockType: "list", ordered: !!b.ordered, items } : null;
       }
       if (b.type === "table") {
-        const rows = (b.rows ?? [])
-          .map((r) => ({
-            label: r.label ?? "",
-            items: splitL(r.items).map((text) => ({ text })),
-          }))
-          .filter((r) => r.label.trim() || r.items.length);
-        return rows.length ? { blockType: "table", title: b.title ?? "", rows } : null;
+        const table = tableBlockToPayload({
+          title: b.title,
+          headers: b.headers,
+          rows: (b.rows ?? []).map((r) => r.cells),
+        });
+        return table.rows.length ? table : null;
       }
       if (b.type === "button")
         return (b.label ?? "").trim()
@@ -382,13 +390,68 @@ function BlockFields({ block, onPatch }) {
       </div>
     );
   }
-  // table
+  return <TableFields block={block} onPatch={onPatch} />;
+}
+
+// The table editor is shaped like the table: headings across the top, one
+// textarea per cell, rows down. Adding a column adds a cell to every row and
+// focuses the new heading; removing a column that holds anything asks first,
+// naming what goes. "Add column" disables at the cap and says why — the cap is
+// a readability constraint (lib/table-block.js), so it is impossible to exceed
+// rather than warned about.
+function TableFields({ block, onPatch }) {
+  const headers = block.headers ?? ["", ""];
   const rows = block.rows ?? [];
-  const setRow = (k, patch) =>
-    onPatch({ rows: rows.map((r, idx) => (idx === k ? { ...r, ...patch } : r)) });
+  const n = headers.length;
+  const atCap = n >= TABLE_MAX_COLUMNS;
+  const gridRef = useRef(null);
+  // Heading index to focus once a just-added column renders (a ref, not state:
+  // read inside the effect, never during render).
+  const pendingFocus = useRef(null);
+  const [armedCol, setArmedCol] = useState(null);
+
+  const setHeader = (i, v) =>
+    onPatch({ headers: headers.map((h, idx) => (idx === i ? v : h)) });
+  const setCell = (k, i, v) =>
+    onPatch({
+      rows: rows.map((r, idx) =>
+        idx === k ? { ...r, cells: r.cells.map((c, j) => (j === i ? v : c)) } : r
+      ),
+    });
   const addRow = () =>
-    onPatch({ rows: [...rows, { _k: nextBlockKey(), label: "", items: "" }] });
+    onPatch({ rows: [...rows, { _k: nextBlockKey(), cells: headers.map(() => "") }] });
   const removeRow = (k) => onPatch({ rows: rows.filter((_, idx) => idx !== k) });
+  const addColumn = () => {
+    if (atCap) return;
+    pendingFocus.current = n;
+    onPatch({
+      headers: [...headers, ""],
+      rows: rows.map((r) => ({ ...r, cells: [...r.cells, ""] })),
+    });
+  };
+  const filledIn = (i) =>
+    ((headers[i] ?? "").trim() ? 1 : 0) +
+    rows.filter((r) => (r.cells[i] ?? "").trim()).length;
+  const removeColumn = (i) => {
+    setArmedCol(null);
+    onPatch({
+      headers: headers.filter((_, idx) => idx !== i),
+      rows: rows.map((r) => ({ ...r, cells: r.cells.filter((_, idx) => idx !== i) })),
+    });
+  };
+  // An empty column goes at once; a filled one is a two-step confirm.
+  const askRemoveColumn = (i) => (filledIn(i) ? setArmedCol(i) : removeColumn(i));
+
+  useEffect(() => {
+    const i = pendingFocus.current;
+    if (i == null) return;
+    pendingFocus.current = null;
+    gridRef.current?.querySelector(`[data-header-index="${i}"]`)?.focus();
+  }, [n]);
+
+  const cellClass = "min-h-11 rounded-md px-2.5 py-2 text-ds-xxs font-medium";
+  const gridCols = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr)) 1.75rem` };
+
   return (
     <div className="grid gap-3">
       <label className="block">
@@ -401,37 +464,205 @@ function BlockFields({ block, onPatch }) {
           placeholder="Documents Required"
         />
       </label>
-      {rows.map((r, k) => (
-        <div key={r._k} className="rounded-lg border-2 border-border bg-muted/30 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-ds-xxs font-bold text-muted-foreground">Row {k + 1}</span>
-            <IconBtn label="Remove row" danger onClick={() => removeRow(k)}>
-              <Trash2 className="size-4" strokeWidth={2} />
-            </IconBtn>
-          </div>
-          <label className="block">
-            <span className={inputLabel}>Label</span>
-            <Input
-              value={r.label ?? ""}
-              onChange={(e) => setRow(k, { label: e.target.value })}
-              placeholder="Proof of identity"
-            />
-          </label>
-          <div className="mt-2">
-            <span className={inputLabel}>Items</span>
-            <LinkableField
-              value={r.items}
-              onChange={(v) => setRow(k, { items: v })}
-              rows={2}
-              placeholder="One item per line"
-            />
+
+      <div className="overflow-x-auto">
+        <div ref={gridRef} className="grid min-w-[520px] items-start gap-2" style={gridCols}>
+          {headers.map((h, i) => (
+            <div key={`h${i}`} className="flex items-center gap-1">
+              <Input
+                data-header-index={i}
+                value={h}
+                onChange={(e) => setHeader(i, e.target.value)}
+                placeholder={i === 0 ? "Heading, e.g. Document" : "Heading, e.g. Where to get it"}
+                aria-label={`Column ${i + 1} heading`}
+                className="h-9 px-2.5 text-ds-xxs font-bold tracking-wide uppercase placeholder:normal-case placeholder:font-medium"
+              />
+              {n > TABLE_MIN_COLUMNS ? (
+                <IconBtn label={`Remove column ${i + 1}`} danger onClick={() => askRemoveColumn(i)}>
+                  <Trash2 className="size-3.5" strokeWidth={2} />
+                </IconBtn>
+              ) : null}
+            </div>
+          ))}
+          <span aria-hidden />
+
+          {armedCol != null ? (
+            <div
+              className="flex flex-wrap items-center gap-2 rounded-lg border-2 border-destructive/30 bg-destructive/5 px-3 py-2 text-ds-xxs font-medium text-foreground"
+              style={{ gridColumn: "1 / -1" }}
+            >
+              <span className="mr-auto">
+                Remove column {armedCol + 1}
+                {(headers[armedCol] ?? "").trim() ? ` “${headers[armedCol]}”` : ""} and the{" "}
+                {filledIn(armedCol)} cell{filledIn(armedCol) === 1 ? "" : "s"} written in it?
+              </span>
+              <Button size="sm" variant="ghost" onClick={() => setArmedCol(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => removeColumn(armedCol)}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                Remove column
+              </Button>
+            </div>
+          ) : null}
+
+          {rows.map((r, k) => (
+            <Fragment key={r._k}>
+              {headers.map((_, i) => (
+                <Textarea
+                  key={i}
+                  rows={1}
+                  data-row={k}
+                  data-col={i}
+                  value={r.cells[i] ?? ""}
+                  onChange={(e) => setCell(k, i, e.target.value)}
+                  aria-label={`Row ${k + 1}, column ${i + 1}`}
+                  placeholder={k === 0 ? (i === 0 ? "Proof of identity" : "One item per line") : undefined}
+                  className={cn(cellClass, i === 0 && "font-bold")}
+                />
+              ))}
+              <IconBtn label={`Remove row ${k + 1}`} danger onClick={() => removeRow(k)}>
+                <Trash2 className="size-4" strokeWidth={2} />
+              </IconBtn>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="secondary" size="sm" onClick={addRow} className="w-fit">
+          <IconPlus className="size-3.5" />
+          Add row
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={addColumn}
+          disabled={atCap}
+          title={
+            atCap
+              ? `Tables stop at ${TABLE_MAX_COLUMNS} columns so they stay readable on phones`
+              : undefined
+          }
+          className="w-fit"
+        >
+          <IconPlus className="size-3.5" />
+          Add column
+        </Button>
+        <TableLinkTool gridRef={gridRef} onInsert={setCell} />
+        <span className="text-ds-xxs font-medium text-muted-foreground">
+          {n} of {TABLE_MAX_COLUMNS} columns · each line in a cell is a bullet
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// "Add link" for table cells: acts on the cell the editor last clicked into
+// (tracked with a focusin listener on the grid), so one tool serves every
+// cell instead of a form under each textarea. Same validation and the same
+// no-markdown promise as LinkableField.
+function TableLinkTool({ gridRef, onInsert }) {
+  const lastCell = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [sel, setSel] = useState({ start: 0, end: 0 });
+  const [text, setText] = useState("");
+  const [url, setUrl] = useState("");
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const onFocus = (e) => {
+      const el = e.target;
+      if (el?.tagName === "TEXTAREA" && el.dataset.row != null) lastCell.current = el;
+    };
+    grid.addEventListener("focusin", onFocus);
+    return () => grid.removeEventListener("focusin", onFocus);
+  }, [gridRef]);
+
+  const openForm = () => {
+    const el = lastCell.current;
+    if (!el || !el.isConnected) {
+      setErr("Click into a cell first, then add the link.");
+      setOpen(true);
+      return;
+    }
+    const v = el.value || "";
+    const start = el.selectionStart ?? v.length;
+    const end = el.selectionEnd ?? start;
+    setSel({ start, end });
+    setText(v.slice(start, end));
+    setUrl("");
+    setErr("");
+    setOpen(true);
+  };
+  const insert = () => {
+    const el = lastCell.current;
+    if (!el || !el.isConnected) {
+      setErr("Click into a cell first, then add the link.");
+      return;
+    }
+    const u = normUrl(url);
+    if (!u) {
+      setErr("Enter a valid web address, e.g. https://eportugal.gov.pt");
+      return;
+    }
+    const snippet = text.trim() ? `[${text.trim()}](${u})` : u;
+    const v = el.value || "";
+    const s = Math.min(sel.start, v.length);
+    const e = Math.min(sel.end, v.length);
+    onInsert(Number(el.dataset.row), Number(el.dataset.col), v.slice(0, s) + snippet + v.slice(e));
+    setOpen(false);
+    setText("");
+    setUrl("");
+    setErr("");
+  };
+
+  return (
+    <div className="contents">
+      <button
+        type="button"
+        onClick={openForm}
+        className="inline-flex items-center gap-1.5 px-1 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
+      >
+        <Link2 className="size-3.5" strokeWidth={2} />
+        Add link
+      </button>
+      {open ? (
+        <div className="basis-full rounded-lg border-2 border-border bg-muted/40 p-3">
+          <label className="mb-1 block text-ds-xxs font-bold text-foreground">Text to show</label>
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="e.g. the appointment form"
+          />
+          <label className="mb-1 mt-2 block text-ds-xxs font-bold text-foreground">Web address</label>
+          <Input
+            type="url"
+            inputMode="url"
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setErr("");
+            }}
+            placeholder="https://eportugal.gov.pt"
+          />
+          {err ? <p className="mt-1 text-ds-xxs font-bold text-destructive">{err}</p> : null}
+          <div className="mt-2 flex gap-2">
+            <Button size="sm" onClick={insert}>
+              Insert link
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
           </div>
         </div>
-      ))}
-      <Button type="button" variant="secondary" size="sm" onClick={addRow} className="w-fit">
-        <IconPlus className="size-3.5" />
-        Add row
-      </Button>
+      ) : null}
     </div>
   );
 }

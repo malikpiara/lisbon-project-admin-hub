@@ -110,7 +110,13 @@ export function ArticlePreview({ draft, topicTitle }) {
                     );
                   }
                   if (b.type === "table") {
+                    // Mirrors reference-table.tsx: heading row when any heading
+                    // is typed, bold first cell, bullets only for multi-line
+                    // cells. Compact, so no breakout here.
+                    const headers = b.headers ?? ["", ""];
                     const rows = b.rows ?? [];
+                    const grid = { gridTemplateColumns: `repeat(${headers.length}, minmax(0, 1fr))` };
+                    const showHeaders = headers.some((h) => (h ?? "").trim());
                     return (
                       <div
                         key={b._k ?? j}
@@ -121,39 +127,66 @@ export function ArticlePreview({ draft, topicTitle }) {
                             {b.title}
                           </p>
                         ) : null}
+                        {showHeaders ? (
+                          <div
+                            className="grid gap-3 border-b-2 border-border px-3 py-1.5 text-ds-xxs font-bold uppercase tracking-wide text-primary"
+                            style={grid}
+                          >
+                            {headers.map((h, i) => (
+                              <span key={i}>{h}</span>
+                            ))}
+                          </div>
+                        ) : null}
                         {rows.length ? (
-                          rows.map((r, k) => {
-                            const items = splitLines(r.items);
-                            return (
-                              <div
-                                key={r._k ?? k}
-                                className="flex gap-3 border-t-2 border-border px-3 py-2 first:border-t-0"
-                              >
-                                <p className="w-1/3 shrink-0 text-ds-xxs font-bold text-foreground">
-                                  {r.label?.trim() ? (
-                                    r.label
-                                  ) : (
-                                    <span className="font-medium text-muted-foreground/60 italic">
-                                      Label
-                                    </span>
-                                  )}
-                                </p>
-                                {items.length ? (
-                                  <ul className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep">
-                                    {items.map((it, m) => (
-                                      <li key={m}>
-                                        {renderInlineRich(stripListMarker(it), `pv-tb-${bk}-${k}-${m}`)}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <span className="text-ds-xxs font-medium text-muted-foreground/60 italic">
-                                    Items…
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })
+                          rows.map((r, k) => (
+                            <div
+                              key={r._k ?? k}
+                              className={cn(
+                                "grid gap-3 px-3 py-2",
+                                k > 0 && "border-t-2 border-border"
+                              )}
+                              style={grid}
+                            >
+                              {headers.map((_, i) => {
+                                const lines = splitLines(r.cells?.[i]);
+                                const kb = `pv-tb-${bk}-${k}-${i}`;
+                                if (i === 0) {
+                                  return (
+                                    <p key={i} className="text-ds-xxs font-bold text-foreground">
+                                      {lines.length ? (
+                                        lines.join(" ")
+                                      ) : (
+                                        <span className="font-medium text-muted-foreground/60 italic">
+                                          Label
+                                        </span>
+                                      )}
+                                    </p>
+                                  );
+                                }
+                                if (lines.length > 1) {
+                                  return (
+                                    <ul
+                                      key={i}
+                                      className="list-disc space-y-0.5 pl-4 text-ds-xxs font-medium text-brand-deep"
+                                    >
+                                      {lines.map((it, m) => (
+                                        <li key={m}>{renderInlineRich(stripListMarker(it), `${kb}-${m}`)}</li>
+                                      ))}
+                                    </ul>
+                                  );
+                                }
+                                return (
+                                  <p key={i} className="text-ds-xxs font-medium text-brand-deep">
+                                    {lines.length ? (
+                                      renderInlineRich(stripListMarker(lines[0]), kb)
+                                    ) : (
+                                      <span className="text-muted-foreground/60 italic">…</span>
+                                    )}
+                                  </p>
+                                );
+                              })}
+                            </div>
+                          ))
                         ) : (
                           <p className="px-3 py-2 text-ds-xxs font-medium text-muted-foreground/60 italic">
                             Add a row…

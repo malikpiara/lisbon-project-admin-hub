@@ -415,6 +415,68 @@
   animation: reorder-flash 0.7s ease;
 }
 
+/* Content tables (components/services/reference-table.tsx).
+
+   Breakout: a table is not prose, so a 3- or 4-column table may grow past the
+   760px reading column, up to the inner edge of the section card — the card
+   is the `@container`, so 100cqw is its content width. The width follows the
+   column count (--table-breakout is set inline: 3 columns ≈ 1040px, 4 ≈
+   1328px) and the negative inline margins centre it, so the table extends
+   symmetrically either side of the text. Any page that renders a table must
+   mark the card `@container`; without one, cqw falls back to the viewport. */
+.table-breakout {
+  --table-breakout: 100%;
+  width: min(100cqw, var(--table-breakout));
+  margin-inline: calc((100% - min(100cqw, var(--table-breakout))) / 2);
+}
+
+/* Stack: below md, a 3- or 4-column table becomes one card per row — the
+   first cell as the card's title, every other cell under its column heading
+   (data-label, present only when the heading exists). These rules are
+   unlayered, so they win over the Tailwind utilities on the cells. */
+@media (max-width: 767px) {
+  .table-stack thead {
+    display: none;
+  }
+  .table-stack table,
+  .table-stack tbody,
+  .table-stack tr,
+  .table-stack td {
+    display: block;
+  }
+  .table-stack caption {
+    display: block;
+  }
+  .table-stack tr {
+    margin-bottom: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .table-stack tr:last-child {
+    margin-bottom: 0;
+  }
+  .table-stack td {
+    width: auto;
+    border: 0;
+    padding: 0.625rem 1rem;
+  }
+  .table-stack td + td {
+    border-top: 2px solid var(--border);
+  }
+  .table-stack td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: var(--ds-text-xxs);
+    line-height: var(--ds-leading-xxs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+}
+
 /* ============================================================
    Motion — DS animation layer
    LP motion guidelines (Emil Kowalski / animations.dev): entrances use

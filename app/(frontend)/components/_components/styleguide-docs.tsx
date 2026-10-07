@@ -444,35 +444,61 @@ function TableExample() {
   );
 }
 
-// Two-column reference layout: a label column paired with a bulleted content
-// column. Adapted from the "Documents Required" (Article 98) layout — the kind
-// of dense reference content that doesn't fit a flat data grid. Editors manage
-// these per article section; items support inline [text](url) links.
+// Reference table: a bold label column paired with content columns (2 to 4).
+// Adapted from the "Documents Required" (Article 98) layout — the kind of
+// dense reference content that doesn't fit a flat data grid. Editors manage
+// these per article section; a cell with several lines renders as bullets,
+// and cells support inline [text](url) links.
 function ReferenceTableExample() {
   return (
     <ReferenceTable
       title="Documents Required"
+      headers={["", ""]}
       rows={[
-        {
-          label: "Article 98 n.1 — family outside national territory",
-          items: [
+        [
+          "Article 98 n.1 — family outside national territory",
+          [
             "Residence permit of the individual residing in Portugal.",
             "Authenticated copy of the passport of the family member to be reunited.",
             "Properly authenticated evidence of the claimed family ties.",
             "Proof of means of subsistence.",
             "Criminal record from the country of nationality, duly authenticated.",
-          ],
-        },
-        {
-          label: "Article 98 n.2 — family in national territory",
-          items: [
+          ].join("\n"),
+        ],
+        [
+          "Article 98 n.2 — family in national territory",
+          [
             "Residence permit of the individual residing in national territory.",
             "Valid passport or another valid travel document.",
             "Proof of legal entry into Portugal.",
             "Declaration of the residential address. The form can be found [here](https://eportugal.gov.pt).",
             "Proof of means of subsistence.",
-          ],
-        },
+          ].join("\n"),
+        ],
+      ]}
+    />
+  );
+}
+
+// Three columns with a heading row. On the article page this width breaks out
+// of the reading column (.table-breakout); below md it stacks into one card
+// per row with the headings as labels (.table-stack).
+function ReferenceTableColumnsExample() {
+  return (
+    <ReferenceTable
+      title=""
+      headers={["Risk", "What it means", "Warning signs"]}
+      rows={[
+        [
+          "Cyberbullying",
+          "Hurtful or abusive messages, sharing embarrassing photos, or fake accounts.",
+          "Sadness or anxiety after going online\nAvoiding devices\nSocial withdrawal",
+        ],
+        [
+          "Unwanted contact",
+          "Strangers asking personal questions, offering gifts, or pushing to meet.",
+          "Hiding conversations\nSecretive new “friends”",
+        ],
       ]}
     />
   );
@@ -1732,13 +1758,21 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
       {
         title: "Two-column reference table",
         description:
-          "A bold label column paired with a bulleted content column — for documents-required and comparison layouts. Editors add one per article section; items support inline [text](url) links.",
+          "A bold label column paired with a content column — for documents-required and comparison layouts. Editors add one per article section; a cell with several lines renders as bullets, and cells support inline [text](url) links.",
         preview: <ReferenceTableExample />,
+        align: "start",
+      },
+      {
+        title: "Three columns with headings",
+        description:
+          "Up to 4 columns. From 3 columns the table breaks out of the 760px reading column on wide screens (up to the section card’s inner edge) and stacks into one card per row on phones, each cell under its heading.",
+        preview: <ReferenceTableColumnsExample />,
         align: "start",
       },
     ],
     api: [
-      { name: "className", type: "string", defaultValue: "-", description: "Use min-w values for predictable mobile scrolling." },
+      { name: "headers", type: "string[]", defaultValue: "-", description: "One per column (2 to 4); empty strings for no heading row." },
+      { name: "rows", type: "string[][]", defaultValue: "-", description: "One string per cell; newline-separated lines render as bullets." },
     ],
   },
   {

@@ -43,7 +43,7 @@ const EMPTY_ARTICLE: Article = {
 type ContentBlock =
   | { type: "text"; body: string }
   | { type: "list"; ordered: boolean; items: string[] }
-  | { type: "table"; title: string; rows: ReferenceTableData["rows"] }
+  | ({ type: "table" } & ReferenceTableData)
   | { type: "button"; label: string; href: string };
 type ArticleSection = {
   heading: string;
@@ -155,7 +155,9 @@ export function ArticleView({
               <article
                 key={`${s.heading}-${index}`}
                 className={cn(
-                  "ds-section-padding rounded-none xl:rounded-[3.5rem]",
+                  // @container: the inner edge of this card is how far a wide
+                  // table may grow (reference-table.tsx, .table-breakout).
+                  "@container ds-section-padding rounded-none xl:rounded-[3.5rem]",
                   panel ? "bg-card" : "bg-bg-page"
                 )}
               >
@@ -214,6 +216,7 @@ export function ArticleView({
                             <ReferenceTable
                               key={i}
                               title={b.title}
+                              headers={b.headers}
                               rows={b.rows}
                             />
                           ) : null;

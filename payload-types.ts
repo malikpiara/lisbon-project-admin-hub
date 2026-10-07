@@ -339,12 +339,30 @@ export interface Topic {
                   }
                 | {
                     /**
-                     * Header row spanning both columns (e.g. “Documents Required”). Optional.
+                     * Title row spanning the table (e.g. “Documents Required”). Optional.
                      */
                     title?: string | null;
+                    /**
+                     * Column headings, left to right (2 to 4). Leave them empty for a table without a heading row.
+                     */
+                    columns?:
+                      | {
+                          header?: string | null;
+                          id?: string | null;
+                        }[]
+                      | null;
                     rows?:
                       | {
-                          label: string;
+                          /**
+                           * One per column. Several lines in a cell render as bullets.
+                           */
+                          cells?:
+                            | {
+                                text?: string | null;
+                                id?: string | null;
+                              }[]
+                            | null;
+                          label?: string | null;
                           items?:
                             | {
                                 text: string;
@@ -707,9 +725,21 @@ export interface TopicsSelect<T extends boolean = true> {
                       | T
                       | {
                           title?: T;
+                          columns?:
+                            | T
+                            | {
+                                header?: T;
+                                id?: T;
+                              };
                           rows?:
                             | T
                             | {
+                                cells?:
+                                  | T
+                                  | {
+                                      text?: T;
+                                      id?: T;
+                                    };
                                 label?: T;
                                 items?:
                                   | T

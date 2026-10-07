@@ -128,19 +128,50 @@ export const Topics: CollectionConfig = {
                       type: "text",
                       admin: {
                         description:
-                          "Header row spanning both columns (e.g. “Documents Required”). Optional.",
+                          "Title row spanning the table (e.g. “Documents Required”). Optional.",
                       },
+                    },
+                    // Since 2026-10 a table has 2 to 4 columns: `columns` holds
+                    // the headings (always one entry per column, so the width is
+                    // explicit even when no heading is typed) and each row holds
+                    // one `cells` entry per column. `label` + `items` are the
+                    // pre-October two-column shape; lib/table-block.js reads
+                    // both, so old articles need no migration. The cap of 4 is
+                    // a readability limit (see that file).
+                    {
+                      name: "columns",
+                      type: "array",
+                      labels: { singular: "Column", plural: "Columns" },
+                      maxRows: 4,
+                      admin: {
+                        description:
+                          "Column headings, left to right (2 to 4). Leave them empty for a table without a heading row.",
+                      },
+                      fields: [{ name: "header", type: "text" }],
                     },
                     {
                       name: "rows",
                       type: "array",
                       labels: { singular: "Table row", plural: "Table rows" },
                       fields: [
-                        { name: "label", type: "text", required: true },
+                        {
+                          name: "cells",
+                          type: "array",
+                          labels: { singular: "Cell", plural: "Cells" },
+                          maxRows: 4,
+                          admin: {
+                            description:
+                              "One per column. Several lines in a cell render as bullets.",
+                          },
+                          fields: [{ name: "text", type: "textarea" }],
+                        },
+                        // Legacy two-column row (read-only fallback).
+                        { name: "label", type: "text", admin: { hidden: true } },
                         {
                           name: "items",
                           type: "array",
                           labels: { singular: "Item", plural: "Items" },
+                          admin: { hidden: true },
                           fields: [{ name: "text", type: "text", required: true }],
                         },
                       ],
