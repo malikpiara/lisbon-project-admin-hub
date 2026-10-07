@@ -1,18 +1,7 @@
-import { JetBrains_Mono, Quicksand } from "next/font/google";
+import { jetBrainsMono, quicksand } from "@/app/_fonts";
 import "../globals.css";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { SITE, SITE_URL } from "@/lib/site";
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
-// Heading display font — Quicksand, per the DS Settings token (the DS's single family).
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
-  subsets: ["latin"],
-});
 
 // Margin, RoundTwenty's review layer, rides on the preview Worker only: the
 // script tag and the commit meta below never reach a production build.
