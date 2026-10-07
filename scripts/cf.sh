@@ -148,6 +148,9 @@ case "$cmd" in
       # DEPLOY_ENV the Worker gets from its vars at runtime.
       export DEPLOY_ENV=preview
       export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://lisbon-project-preview.upfra-me.workers.dev}"
+      # Margin stamps each comment with the commit it was made on
+      # (<meta name="margin-version"> in app/(frontend)/layout.js, 2026-10-07).
+      export MARGIN_VERSION="${MARGIN_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"
     fi
     if [ -f .env.local ]; then
       export_build_env
