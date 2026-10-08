@@ -9,9 +9,9 @@ export function ServicesGrid({
 }) {
   return (
     <section id="services" className="scroll-mt-24 bg-bg-page">
-      <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
+      <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-14">
         <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
-          <header className="mb-10 flex items-center gap-4">
+          <header className="mb-12 flex items-center gap-4">
             <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
               <IconInfo className="size-5" />
             </div>

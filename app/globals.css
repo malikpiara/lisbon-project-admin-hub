@@ -346,19 +346,25 @@
   }
 }
 
+/* 1680 is the width the Figma DS frames are drawn at. Every section there
+   (Home: section-header, section-grid; Article: section-header, section-grid,
+   section-text) puts its content 92px inside the 1568px section — header and
+   content at x = 92, y = 92. The original token commit guessed 8.4rem/8.75rem
+   here, which made the home shortcut cards 422px against Figma's 450.67 and
+   narrowed every section's inner width by 85px. Corrected 2026-10-08. */
 @media (min-width: 1680px) {
   .ds-section-padding {
-    padding-inline: 8.4rem;
-    padding-block: 8.75rem;
+    padding-inline: 5.75rem;
+    padding-block: 5.75rem;
   }
 
   .ds-section-padding-compact {
-    padding-inline: 8.4rem;
-    padding-block: 6.5rem;
+    padding-inline: 5.75rem;
+    padding-block: 5.75rem;
   }
 
   .ds-section-x-padding {
-    padding-inline: 8.4rem;
+    padding-inline: 5.75rem;
   }
 }
 

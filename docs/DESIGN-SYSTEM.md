@@ -163,7 +163,9 @@ No bespoke spacing scale — Tailwind's default 4px utilities. Two conventions:
   contrast, **not** shadows.
 - **Section padding helpers** (`app/globals.css`): `.ds-section-padding`,
   `.ds-section-padding-compact`, `.ds-section-x-padding` (responsive,
-  base `4rem 1.5rem` → up to `8.4rem` inline / `8.75rem` block at ≥1680).
+  base `4rem 1.5rem` → `5rem` inline at ≥1280 → `5.75rem` = **92px** at ≥1680,
+  which is where every Figma section places its content inside the 1568px
+  section; the earlier 8.4rem/8.75rem was a guess).
 - **Card internal padding** steps up at xl: `px-4 → xl:px-6`; `size="sm"` → `px-3`.
 
 ### 1.5 Shadows

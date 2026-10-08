@@ -139,7 +139,8 @@ export function ContactsSection({
   return (
     <section id="contacts" className="scroll-mt-20 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-20 sm:px-6 lg:px-14">
-        <header className="ds-section-x-padding flex items-center gap-4">
+       <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
+        <header className="flex items-center gap-4">
           <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
             <IconInfo className="size-5" />
           </div>
@@ -148,12 +149,12 @@ export function ContactsSection({
           </h2>
         </header>
         {subtitle ? (
-          <p className="ds-section-x-padding mt-3 font-heading text-ds-xs font-bold text-primary">
+          <p className="mt-4 font-heading text-ds-xs font-bold text-primary">
             {subtitle}
           </p>
         ) : null}
 
-        <div className="ds-section-x-padding mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <IconSearch className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -187,7 +188,7 @@ export function ContactsSection({
           </Select>
         </div>
 
-        <div className="ds-section-x-padding mt-4">
+        <div className="mt-6">
           {/* table-fixed + explicit column widths: column widths are derived from
               these headers, not the visible cell content — so filtering/searching
               (which changes the row set) never makes the columns jump. */}
@@ -208,16 +209,16 @@ export function ContactsSection({
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.id} className="border-border hover:bg-transparent">
-                  <TableCell className="max-w-48 py-5 align-top text-ds-m font-bold whitespace-normal text-foreground">
+                  <TableCell className="max-w-48 py-6 align-top text-ds-m font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
-                  <TableCell className="max-w-56 py-5 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
+                  <TableCell className="max-w-56 py-6 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
                   </TableCell>
                   {/* Each channel renders only when it has a value — no bare icon or
                       dead mailto:/tel: link. With neither, the cell stays empty (the
                       <td> itself stays so the row's columns keep lining up). */}
-                  <TableCell className="py-5 align-top">
+                  <TableCell className="py-6 align-top">
                     {c.email.trim() || c.phone.trim() ? (
                       <div className="space-y-2">
                         {c.email.trim() ? (
@@ -243,7 +244,7 @@ export function ContactsSection({
                       </div>
                     ) : null}
                   </TableCell>
-                  <TableCell className="py-5 align-top">
+                  <TableCell className="py-6 align-top">
                     <div className="flex flex-wrap gap-1.5">
                       {c.categories.map((slug) => {
                         const label = labelBySlug[slug] ?? slug;
@@ -264,7 +265,7 @@ export function ContactsSection({
                       })}
                     </div>
                   </TableCell>
-                  <TableCell className="py-5 align-top">
+                  <TableCell className="py-6 align-top">
                     <a
                       href={mapsHref(c.organization)}
                       target="_blank"
@@ -291,6 +292,7 @@ export function ContactsSection({
           </Table>
           </ViewTransition>
         </div>
+       </div>
       </div>
     </section>
   );

@@ -144,7 +144,7 @@ export function ArticleView({
 
       {/* Content sections */}
       <section className="bg-bg-page">
-        <div className="mx-auto max-w-[1680px] space-y-8 px-4 pb-16 sm:px-6 lg:px-14">
+        <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
           {/* Key links lead the article ("I just need the portal link") —
               decided 2026-07-04, matching the old site's hierarchy. */}
           <KeyLinks links={article.keyLinks ?? []} />
@@ -162,7 +162,7 @@ export function ArticleView({
                 )}
               >
                 <div className="mx-auto max-w-[760px]">
-                  <header className="mb-10 flex items-center gap-4">
+                  <header className={cn("flex items-center gap-4", s.lead ? "mb-4" : "mb-6")}>
                     <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
                       <CategoryIcon className="size-5" />
                     </div>
@@ -177,7 +177,7 @@ export function ArticleView({
                     </p>
                   ) : null}
                   {s.blocks.length ? (
-                    <div className="mt-4 max-w-3xl space-y-4">
+                    <div className={cn("max-w-3xl space-y-4", s.lead && "mt-6")}>
                       {s.blocks.map((b, i) => {
                         const k = `${index}-${i}`;
                         if (b.type === "text") {

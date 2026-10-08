@@ -26,7 +26,7 @@ export function Hero({
 }) {
   return (
     <section className="bg-bg-page">
-      <div className="mx-auto max-w-[1680px] px-4 pb-8 pt-6 sm:px-6 lg:px-14 lg:pt-10">
+      <div className="mx-auto max-w-[1680px] px-4 pt-6 sm:px-6 lg:px-14 lg:pt-10">
         <div className="ds-section-padding relative isolate flex flex-col gap-12 overflow-hidden rounded-none xl:rounded-[3.5rem]">
           <HeroIllustration />
           <div className="max-w-[760px]">
