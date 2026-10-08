@@ -39,7 +39,10 @@ export function QuickAccess({ items = [], embedded = false }) {
           <CardShortcut
             key={item.id}
             className="transition-shadow hover:shadow-[0_18px_36px_rgba(7,24,23,0.08)]"
-            icon={<Icon aria-hidden />}
+            // 56px, as the Figma card draws it. The DS <Icon> wrapper (used for
+            // picked glyphs) defaults to 24px and isn't a bare <svg>, so the
+            // card's own [&>svg]:size-14 rule doesn't reach it.
+            icon={<Icon aria-hidden className="size-14" />}
             title={item.title}
             description={item.description}
             action={
