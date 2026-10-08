@@ -1,9 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  IconAdminHubLogo,
-  IconLisbonBrandMark,
-} from "@/components/icons/ds-icons";
 import { SiteNav } from "@/components/site/site-nav";
 import { DONATE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -17,26 +14,20 @@ export function SiteHeader({ sticky = true } = {}) {
       )}
     >
       <div className="mx-auto flex min-h-[72px] max-w-[1680px] items-center justify-between px-4 py-4 sm:px-6 lg:px-14">
-        {/* Admin Hub lockup — DS logo 3112:9963: magnifier-house glyph +
-            "Admin Hub" in brand teal, endorsed by the mini brand mark +
-            "lisbon project" in brand dark. */}
-        <Link
-          href="/"
-          aria-label="Admin Hub home"
-          className="inline-flex items-center gap-2.5"
-        >
-          <IconAdminHubLogo className="size-10 shrink-0 text-primary" />
-          <span className="flex flex-col leading-none">
-            <span className="text-[19px] font-bold text-primary">
-              Admin Hub
-            </span>
-            <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-normal text-brand-dark">
-              <IconLisbonBrandMark className="size-3 shrink-0" />
-              <span>
-                <span className="font-bold">lisbon</span> project
-              </span>
-            </span>
-          </span>
+        {/* Admin Hub lockup: the DS asset as drawn in the main menu
+            (Figma 3393:7331, "brand" 150×40 at the 56px gutter). One file
+            rather than glyph + live text, so the type and spacing are
+            exactly the designer's. */}
+        <Link href="/" className="inline-flex shrink-0">
+          <Image
+            src="/admin-hub-logo.svg"
+            alt="Admin Hub, lisbon project"
+            width={150}
+            height={40}
+            priority
+            unoptimized
+            className="h-10 w-auto"
+          />
         </Link>
 
         <nav className="flex items-center gap-3 sm:gap-4">
