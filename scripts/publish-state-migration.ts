@@ -12,6 +12,7 @@
  *   pnpm tsx scripts/publish-state-migration.ts --from-json topics.json  preview step 1 from a REST dump
  *   pnpm tsx scripts/publish-state-migration.ts                           dry run against DATABASE_URI
  *   pnpm tsx scripts/publish-state-migration.ts --apply                   write
+ *   pnpm tsx scripts/publish-state-migration.ts --unflag 306,349,358      dry run, then add --apply
  *
  * DATABASE_URI in .env.local is production. Run the dry run first.
  */
@@ -66,6 +67,44 @@ async function main() {
     ).docs;
   }
 
+  // --unflag 306,349,358: clear reviewRequested on those articles' newest
+  // draft. Added after the 2026-10-08 run, whose step 2 flagged the shells
+  // step 1 had just unpublished (fixed below: pending is read first).
+  const unflag = process.argv.indexOf("--unflag");
+  if (unflag >= 0) {
+    if (!payload) throw new Error("--unflag needs the database");
+    const ids = String(process.argv[unflag + 1] ?? "").split(",").filter(Boolean);
+    if (!ids.length) throw new Error("--unflag needs ids, e.g. --unflag 306,349,358");
+    for (const id of ids) {
+      if (apply) {
+        await payload.update({ collection: "topics", id, data: { reviewRequested: false }, draft: true, overrideAccess: true });
+      }
+      console.log(`  ${apply ? "unflagged" : "would unflag"} ${id}`);
+    }
+    console.log(apply ? "\nDone." : "\ndry run only. Re-run with --apply to write.");
+    if (payload?.db?.destroy) await payload.db.destroy();
+    return;
+  }
+
+  // Step 2's candidates are read BEFORE step 1 writes: unpublishing a shell
+  // makes its newest version a draft, and the 2026-10-08 run flagged those as
+  // waiting for review.
+  const pendingBefore = payload
+    ? (
+        await payload.findVersions({
+          collection: "topics",
+          where: {
+            latest: { equals: true },
+            "version._status": { equals: "draft" },
+            "version.title": { not_equals: STUB_TITLE },
+            "version.reviewRequested": { not_equals: true },
+          },
+          limit: 500,
+          depth: 0,
+        })
+      ).docs
+    : [];
+
   console.log(`\n=== Step 1: published shells (${published.length} published articles scanned)`);
   const shells = published.filter(isShell);
   for (const t of shells) {
@@ -93,17 +132,10 @@ async function main() {
   }
 
   console.log(`\n=== Step 2: drafts waiting for review today → reviewRequested`);
-  const { docs: pending } = await payload.findVersions({
-    collection: "topics",
-    where: {
-      latest: { equals: true },
-      "version._status": { equals: "draft" },
-      "version.title": { not_equals: STUB_TITLE },
-      "version.reviewRequested": { not_equals: true },
-    },
-    limit: 500,
-    depth: 0,
-  });
+  // A shell that also had a real draft waiting (389 on 2026-10-08) was
+  // already in pendingBefore, so it is still flagged; the versions step 1
+  // created are not.
+  const pending = pendingBefore;
   for (const v of pending) {
     const parent = typeof v.parent === "object" ? v.parent?.id : v.parent;
     console.log(`  ${String(parent).padStart(4)}  ${String(v.version?.title ?? "").slice(0, 40).padEnd(40)}  draft from ${v.updatedAt}`);
