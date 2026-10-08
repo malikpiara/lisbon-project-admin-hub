@@ -179,7 +179,10 @@ export function ContactsSection({
   return (
     <section id="contacts" className="scroll-mt-20 bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pb-20 sm:px-6 lg:px-14">
-       <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-card">
+       {/* Figma section-grid 3393:7225: its .background is semantic/background/
+           primary — the page mint, not the white card the services section
+           uses. Same 92px padding and gaps, no card surface. */}
+       <div className="ds-section-padding rounded-none xl:rounded-[3.5rem] bg-bg-page">
         <header className="flex items-center gap-4">
           <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-dark text-primary-foreground">
             <IconInfo className="size-5" />
