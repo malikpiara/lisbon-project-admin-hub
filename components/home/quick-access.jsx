@@ -8,13 +8,12 @@ import {
   IconUserPlus,
 } from "@/components/icons/ds-icons";
 import { legacyCardMeta, quickAccessCta } from "@/lib/quick-access-defaults";
+import { getServiceIcon } from "@/lib/service-icons";
 
-// Per-card icon, keyed by the card's href (stable across the seed and Payload,
-// whose auto-increment ids differ from the seed's string ids). Icons are the
-// actual DS glyphs exported from Figma (iconography page): user/plus, tip
-// (donor), heart-open. Still hardcoded — making the icon a field is the next
-// Quick Access ticket. The button label is a field already; the per-href
-// defaults for it, and the Donate link pin, live in lib/quick-access-defaults.
+// Legacy per-card icon, keyed by the card's href — how every card's glyph was
+// chosen until October 2026, so cards saved before the icon field keep the
+// glyph they had. New picks are DS iconography names stored on the card. The
+// button label works the same way (lib/quick-access-defaults).
 const cardIcons = {
   "/register": IconUserPlus,
   "/donate": IconTip,
@@ -26,7 +25,9 @@ export function QuickAccess({ items = [], embedded = false }) {
   const content = (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
       {items.map((item) => {
-        const Icon = cardIcons[item.href] ?? IconArrowRight;
+        const Icon = item.iconKey
+          ? getServiceIcon(item.iconKey)
+          : (cardIcons[item.href] ?? IconArrowRight);
         // The stored label wins; empty falls back to the card's legacy default.
         const cta = quickAccessCta(item);
         // A card's legacy meta may pin its destination (Donate → charity site);

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, DirtyDot } from "@/components/admin/field";
+import { IconPicker } from "@/components/admin/icon-picker";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { MoveControls } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -179,16 +180,9 @@ export function QuickAccessEditor({ initialItems, userEmail }) {
             Link cards shown in the home-page hero.
           </p>
         </div>
-        {/* Disabled until cards carry their own icon (the public hero still
-            picks it by link target, so a new card would show a bare arrow).
-            The button label is a field since 2026-10; re-enable by removing
-            `disabled` once the icon picker lands. addCard stays wired for then. */}
-        <Button
-          size="sm"
-          disabled
-          title="Adding cards is paused until they support an icon"
-          onClick={addCard}
-        >
+        {/* Cards carry their own icon and button label since 2026-10, so a new
+            card no longer lands on the site as an arrow with "Learn more". */}
+        <Button size="sm" onClick={addCard}>
           <IconPlus />
           Add card
         </Button>
@@ -243,6 +237,7 @@ function QuickAccessCardEditor({
     description: item.description ?? "",
     external: item.external ?? false,
     cta: item.cta ?? "",
+    iconKey: item.iconKey ?? "",
   }));
   const [saved, setSaved] = useState(() => ({
     title: item.title ?? "",
@@ -250,6 +245,7 @@ function QuickAccessCardEditor({
     description: item.description ?? "",
     external: item.external ?? false,
     cta: item.cta ?? "",
+    iconKey: item.iconKey ?? "",
   }));
   const [isPending, startTransition] = useTransition();
 
@@ -325,6 +321,17 @@ function QuickAccessCardEditor({
             dirty={fieldDirty(draft.cta, saved.cta)}
             placeholder={ctaFallback}
             hint={`The card’s green button. Leave empty to keep “${ctaFallback}”.`}
+          />
+          <IconPicker
+            className="sm:col-span-2"
+            label={
+              <>
+                Icon
+                {fieldDirty(draft.iconKey, saved.iconKey) ? <DirtyDot className="ml-1.5" /> : null}
+              </>
+            }
+            value={draft.iconKey}
+            onChange={(key) => patch({ iconKey: key })}
           />
         </div>
         <div className="flex items-center justify-between border-t-2 border-border pt-3">

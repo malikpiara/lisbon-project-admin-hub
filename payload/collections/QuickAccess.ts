@@ -20,6 +20,18 @@ export const QuickAccess: CollectionConfig = {
     // Added 2026-10 (team feedback): the button text used to be hardcoded per
     // href in components/home/quick-access.jsx. Empty keeps the default — see
     // lib/quick-access-defaults.js.
+    // Added 2026-10 (team feedback, "logos nos box dos Quick Access"): the
+    // card's glyph used to be chosen by its link target, so two of the three
+    // live cards showed a generic arrow. A DS iconography name, picked in the
+    // admin; empty keeps the per-link fallback in components/home/quick-access.
+    {
+      name: "iconKey",
+      type: "text",
+      label: "Icon",
+      admin: {
+        description: "A DS icon name (the same set as service icons). Empty keeps the default.",
+      },
+    },
     {
       name: "cta",
       type: "text",

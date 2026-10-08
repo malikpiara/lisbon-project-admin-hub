@@ -482,6 +482,10 @@ export interface QuickAccess {
   description?: string | null;
   href: string;
   /**
+   * A DS icon name (the same set as service icons). Empty keeps the default.
+   */
+  iconKey?: string | null;
+  /**
    * What the card’s green button says. Leave empty for the default.
    */
   cta?: string | null;
@@ -833,6 +837,7 @@ export interface QuickAccessSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   href?: T;
+  iconKey?: T;
   cta?: T;
   external?: T;
   order?: T;
