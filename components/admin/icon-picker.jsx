@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 // Visual icon picker over the DS iconography (same set + names as
 // /components/icons). Services that still store a legacy lucide-era key
 // highlight the DS tile with the identical glyph; picking writes the DS name.
-export function IconPicker({ value, onChange, label, className = "" }) {
+// `options` narrows the set — the Quick Access cards have their own glyph
+// family (lib/quick-access-icons.js) and must not offer the category icons.
+export function IconPicker({ value, onChange, label, className = "", options = iconOptions }) {
   const current = legacyIconToDsName[value] ?? value;
   return (
     <div className={cn("block", className)}>
@@ -16,8 +18,13 @@ export function IconPicker({ value, onChange, label, className = "" }) {
           {label}
         </span>
       ) : null}
-      <div className="grid grid-cols-8 gap-2 sm:grid-cols-10">
-        {iconOptions.map((key) => {
+      <div
+        className={cn(
+          "grid gap-2",
+          options.length > 12 ? "grid-cols-8 sm:grid-cols-10" : "grid-flow-col auto-cols-[3rem] justify-start"
+        )}
+      >
+        {options.map((key) => {
           const Icon = getServiceIcon(key);
           const selected = current === key;
           return (

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, DirtyDot } from "@/components/admin/field";
 import { IconPicker } from "@/components/admin/icon-picker";
+import { QUICK_ACCESS_ICONS } from "@/lib/quick-access-icons";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { MoveControls } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -332,6 +333,7 @@ function QuickAccessCardEditor({
             }
             value={draft.iconKey}
             onChange={(key) => patch({ iconKey: key })}
+            options={QUICK_ACCESS_ICONS}
           />
         </div>
         <div className="flex items-center justify-between border-t-2 border-border pt-3">

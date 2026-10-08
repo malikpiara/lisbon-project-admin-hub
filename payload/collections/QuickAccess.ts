@@ -29,7 +29,8 @@ export const QuickAccess: CollectionConfig = {
       type: "text",
       label: "Icon",
       admin: {
-        description: "A DS icon name (the same set as service icons). Empty keeps the default.",
+        description:
+          "One of the Quick Access glyphs (lib/quick-access-icons.js). Empty keeps the default.",
       },
     },
     {

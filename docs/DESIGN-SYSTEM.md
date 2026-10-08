@@ -246,9 +246,14 @@ color drives the glyph), exported from Rafael's Figma DS (iconography node `2278
   `IconArrowRight`, `IconCheck`, `IconPlus`/`IconMinus`, `IconSearch`, `IconInfo`,
   `IconMail`, `IconPhone`, `IconArrowDown/Left`, `IconEyeOpen/Closed`, `IconMenu`,
   plus domain icons (`IconHome`, `IconSchool`, `IconLegal`, `IconHealthChart`, …).
-- **(B) String-keyed registry — `lib/ds-icons-data.ts` (`DS_ICONS`, 81 icons)** +
+- **(B) String-keyed registry — `lib/ds-icons-data.ts` (`DS_ICONS`, 85 icons)** +
   manifest `lib/ds-icons.json`. Auto-generated from `public/icons/*.svg`, consumed by
-  `<Icon name>` and the searchable styleguide gallery (kebab-case names).
+  `<Icon name>` and the searchable styleguide gallery (kebab-case names). Three of
+  them are the **Quick Access shortcut family** (`lp-house`, `heart-partner`,
+  `emergency-contact`; Figma `icon/lp-house`, `icon/heartparter`,
+  `icon/emergencyContact`), drawn on a 56px grid for the home shortcut cards —
+  a different purpose from the 24px category icons, so the Quick Access editor
+  offers only these (`lib/quick-access-icons.js`).
 - **(C) Service-icon mapping — `lib/service-icons.js`** maps mock-CMS `iconKey`
   values (e.g. `GraduationCap`) + per-slug overrides to the named (A) components,
   fallback `IconBuilding`.
