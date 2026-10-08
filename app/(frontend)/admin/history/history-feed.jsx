@@ -25,6 +25,8 @@ const ACTION = {
     verb: "approved changes to",
     cls: "text-primary",
   },
+  published: { icon: IconCheck, verb: "published", cls: "text-primary" },
+  unpublished: { icon: Pencil, verb: "unpublished", cls: "text-muted-foreground" },
   declined: {
     icon: XCircle,
     verb: "declined changes to",

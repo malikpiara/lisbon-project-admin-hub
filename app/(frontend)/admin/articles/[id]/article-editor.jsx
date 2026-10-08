@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 // DS lacks these — flagged for Rafael. ExternalLink signals "opens the live site
 // in a new tab"; LayoutTemplate marks the standard-sections template shortcut.
 import { ExternalLink, LayoutTemplate } from "lucide-react";
@@ -43,8 +44,10 @@ import { SaveBar } from "@/components/admin/save-bar";
 import { countChanges } from "@/lib/count-changes";
 import { useFlip } from "@/lib/use-flip";
 import { cn } from "@/lib/utils";
+import { Tag } from "@/components/ui/tag";
+import { articleCompleteness } from "@/lib/article-completeness";
 import { AuditMeta } from "@/components/admin/audit-meta";
-import { deleteTopic, saveTopic } from "../actions";
+import { deleteTopic, saveTopic, unpublishTopic } from "../actions";
 import { ArticlePreview } from "./article-preview";
 
 // Stable client-only keys per section/FAQ row so reordering can animate (FLIP)
@@ -114,7 +117,9 @@ export function ArticleEditor({
   services = [],
   audit,
   isAdmin = true,
-  pendingReview = false,
+  // The one publishing state (lib/publish-state.js): Draft, In review,
+  // Published, Published with changes…
+  state = null,
 }) {
   const [draft, setDraft] = useState(() => ({
     ...fromPayload(topic),
@@ -124,6 +129,11 @@ export function ArticleEditor({
   // fromPayload calls would assign different keys and read as dirty on load).
   const [saved, setSaved] = useState(() => draft);
   const [phase, setPhase] = useState("idle"); // idle | saving | error
+  // What the last action did. The editor says so instead of leaving people to
+  // guess — one editor re-submitted the same article 5× in 10 s because
+  // nothing on screen confirmed the first submission.
+  const [outcome, setOutcome] = useState(null);
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const sectionFlip = useFlip();
   const keyLinkFlip = useFlip();
@@ -373,24 +383,61 @@ export function ArticleEditor({
     revealRow(k, setFlashFaqKey);
   };
 
-  const save = () => {
+  const save = (intent) => {
     const snapshot = draft;
     startTransition(async () => {
       setPhase("saving");
       try {
-        await saveTopic(topic.id, toPayload(snapshot));
+        const result = await saveTopic(topic.id, toPayload(snapshot), { intent });
+        if (!result?.ok) {
+          setOutcome({ kind: "error", message: result?.error, missing: [] });
+          setPhase("error");
+          return;
+        }
         setSaved(snapshot); // advance the baseline so dirty clears
+        setOutcome({
+          kind: result.published
+            ? "published"
+            : result.submitted
+              ? "submitted"
+              : result.refused
+                ? "refused"
+                : "draft",
+          missing: result.missing ?? [],
+        });
         setPhase("idle");
+        // Server props (state chip, audit meta) follow without a reload.
+        router.refresh();
       } catch {
         setPhase("error");
       }
     });
   };
 
+  const unpublish = () =>
+    startTransition(async () => {
+      const result = await unpublishTopic(topic.id);
+      if (result?.ok) {
+        setOutcome({ kind: "unpublished", missing: [] });
+        router.refresh();
+      } else {
+        setOutcome({ kind: "error", message: result?.error, missing: [] });
+      }
+    });
+
   const discard = () => {
     setDraft(saved);
     setPhase("idle");
   };
+
+  // Live readiness, from the same rule the server enforces on Publish and on
+  // Approve, so the button and the server never disagree.
+  const completeness = articleCompleteness(toPayload(draft));
+  const live = !!state?.live;
+  const pendingDraft = !!state?.pendingDraft;
+  const publishLabel = live ? "Publish changes" : "Publish";
+  const gateReason =
+    "Fill in the items under “Before this article can go live” to publish";
 
   const serviceSlug = service?.slug ?? "";
   const publicHref = serviceSlug
@@ -413,10 +460,13 @@ export function ArticleEditor({
         count={changeCount}
         saving={phase === "saving"}
         error={phase === "error"}
-        onSave={save}
         onDiscard={discard}
-        saveLabel={isAdmin ? "Save" : "Submit for review"}
-        savingLabel={isAdmin ? "Saving…" : "Submitting…"}
+        secondary={{ label: "Save draft", onClick: () => save("draft") }}
+        onSave={() => save(isAdmin ? "publish" : "submit")}
+        saveLabel={isAdmin ? publishLabel : "Submit for review"}
+        savingLabel="Saving…"
+        saveDisabled={isAdmin && !completeness.complete}
+        saveDisabledReason={gateReason}
       />
       <div className="sticky top-0 z-10 border-b-2 border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-6xl px-8 py-4">
@@ -450,17 +500,19 @@ export function ArticleEditor({
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-ds-xl font-bold text-foreground">
                   {draft.title || "Untitled article"}
-                  {pendingReview ? (
-                    <span
-                      className="ml-2 inline-block rounded-full border-2 border-border px-2 py-0.5 align-middle text-ds-xxs font-bold text-muted-foreground"
-                      title={
-                        isAdmin
-                          ? "An editor submitted changes — approve or decline them under Review"
-                          : "Your changes are waiting for an admin to approve them"
-                      }
-                    >
-                      Pending review
-                    </span>
+                  {state ? (
+                    state.key === "published" ? (
+                      <Tag className="ml-2 align-middle" title={state.description}>
+                        {state.label}
+                      </Tag>
+                    ) : (
+                      <span
+                        className="ml-2 inline-block rounded-full border-2 border-border px-2 py-0.5 align-middle text-ds-xxs font-bold text-muted-foreground"
+                        title={state.description}
+                      >
+                        {state.label}
+                      </span>
+                    )
                   ) : null}
                 </h1>
                 <p className="truncate font-mono text-ds-xxs text-muted-foreground">
@@ -470,7 +522,23 @@ export function ArticleEditor({
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              {publicHref ? (
+              {/* A pending draft with nothing new typed: publish it from here,
+                  not only from Review. Disabled, with the reason, until the
+                  article is complete. */}
+              {isAdmin && pendingDraft && !dirty ? (
+                <Button
+                  size="sm"
+                  onClick={() => save("publish")}
+                  disabled={isPending || !completeness.complete}
+                  title={!completeness.complete ? gateReason : undefined}
+                >
+                  {publishLabel}
+                </Button>
+              ) : null}
+              {isAdmin && live ? (
+                <UnpublishButton onConfirm={unpublish} disabled={isPending} />
+              ) : null}
+              {publicHref && live ? (
                 <Link
                   href={publicHref}
                   target="_blank"
@@ -497,6 +565,63 @@ export function ArticleEditor({
         <div className="border-b-2 border-border bg-card">
           <div className="mx-auto max-w-6xl px-8 py-4">
             <AuditMeta audit={audit} />
+          </div>
+        </div>
+      ) : null}
+
+      {/* What the last action did, and what still stands between this article
+          and the live site. One strip, shown only when there is something to
+          say. The checklist is the same rule the Publish button is gated on. */}
+      {outcome || !completeness.complete ? (
+        <div className="border-b-2 border-border bg-muted/40">
+          <div className="mx-auto max-w-6xl px-8 py-3 text-ds-xxs font-medium text-foreground">
+            {outcome?.kind === "submitted" ? (
+              <p>
+                <span className="font-bold text-primary">Submitted for review.</span>{" "}
+                An admin will check it and publish it;{" "}
+                {live ? "the live page stays as it is until then." : "it is not on the site until then."}
+              </p>
+            ) : null}
+            {outcome?.kind === "draft" ? (
+              <p>
+                <span className="font-bold text-primary">Saved as a draft.</span>{" "}
+                {live ? "The live page is unchanged." : "Not on the live site."}
+              </p>
+            ) : null}
+            {outcome?.kind === "refused" ? (
+              <p>
+                <span className="font-bold text-primary">Saved as a draft, not published.</span>{" "}
+                It goes live once the items below are filled in.
+              </p>
+            ) : null}
+            {outcome?.kind === "published" ? (
+              <p>
+                <span className="font-bold text-primary">Published.</span> The live page is
+                being refreshed.
+              </p>
+            ) : null}
+            {outcome?.kind === "unpublished" ? (
+              <p>
+                <span className="font-bold text-primary">Unpublished.</span> The article is
+                off the site; its content is kept here, and Publish puts it back.
+              </p>
+            ) : null}
+            {outcome?.kind === "error" ? (
+              <p className="text-destructive">
+                <span className="font-bold">Something went wrong.</span>{" "}
+                {outcome.message || "Try again."}
+              </p>
+            ) : null}
+            {!completeness.complete ? (
+              <div className={outcome ? "mt-2" : ""}>
+                <p className="font-bold">Before this article can go live:</p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                  {completeness.missing.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -786,5 +911,39 @@ export function ArticleEditor({
         </aside>
       </div>
     </div>
+  );
+}
+
+// Two-step unpublish, in the same voice as DeleteButton: the first click arms,
+// the second confirms. Admins only; reversible, Publish puts the article back.
+function UnpublishButton({ onConfirm, disabled }) {
+  const [armed, setArmed] = useState(false);
+  if (armed) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-ds-xxs font-medium text-muted-foreground">
+          Take it off the site? Its content is kept.
+        </span>
+        <Button variant="ghost" size="sm" onClick={() => setArmed(false)}>
+          Cancel
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={disabled}
+          onClick={() => {
+            setArmed(false);
+            onConfirm();
+          }}
+        >
+          Unpublish
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <Button variant="ghost" size="sm" onClick={() => setArmed(true)} disabled={disabled}>
+      Unpublish
+    </Button>
   );
 }

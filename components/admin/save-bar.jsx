@@ -4,9 +4,13 @@ import { Button } from "@/components/ui/button";
 
 // Floating action bar for single-document editors. Appears only when the draft
 // differs from the last-saved snapshot (honest diff — not a one-way latch), so
-// reverting an edit hides it again. Carries the two verbs that belong together:
-// Save (primary) and Discard (secondary). It's the conventional home for "you
-// have unsaved changes" and stays in view regardless of scroll depth.
+// reverting an edit hides it again. Carries the verbs that belong together:
+// Discard, an optional secondary verb (e.g. "Save draft"), and the primary
+// verb (Save / Publish / Submit for review). It's the conventional home for
+// "you have unsaved changes" and stays in view regardless of scroll depth.
+//
+// The primary verb can be disabled with a reason (the publish gate): the
+// button stays visible so the editor can see what is being withheld and why.
 //
 // Placement note: the editor content needs bottom padding (pb-28) so the last
 // section isn't covered when scrolled to the very bottom.
@@ -21,6 +25,10 @@ export function SaveBar({
   // say what actually happens ("Submit for review", not "Save").
   saveLabel = "Save",
   savingLabel = "Saving…",
+  saveDisabled = false,
+  saveDisabledReason,
+  // { label, onClick, savingLabel? } — a second way to save, e.g. privately.
+  secondary = null,
 }) {
   if (!dirty) return null;
 
@@ -54,7 +62,22 @@ export function SaveBar({
           >
             Discard
           </Button>
-          <Button size="sm" onClick={onSave} disabled={saving}>
+          {secondary ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={secondary.onClick}
+              disabled={saving}
+            >
+              {saving && secondary.savingLabel ? secondary.savingLabel : secondary.label}
+            </Button>
+          ) : null}
+          <Button
+            size="sm"
+            onClick={onSave}
+            disabled={saving || saveDisabled}
+            title={saveDisabled ? saveDisabledReason : undefined}
+          >
             {saving ? savingLabel : saveLabel}
           </Button>
         </div>

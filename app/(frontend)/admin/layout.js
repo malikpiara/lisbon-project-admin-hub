@@ -34,6 +34,8 @@ export default async function AdminLayout({ children }) {
         where: {
           latest: { equals: true },
           "version._status": { equals: "draft" },
+          // Only drafts an editor submitted; private drafts don't need review.
+          "version.reviewRequested": { equals: true },
         },
       })
       .catch(() => null);

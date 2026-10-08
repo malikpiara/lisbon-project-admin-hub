@@ -8,6 +8,7 @@ import { authedPayload } from "@/lib/admin-auth";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
 import { DEFAULT_FAQ_SUBHEADING } from "@/lib/article-defaults";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { STUB_TITLE, articleCompleteness } from "@/lib/article-completeness";
 
 // Saves the whole topic doc, including the embedded `article` group (sections +
 // FAQs) and the `service` relationship. `data` is already mapped to Payload's
@@ -16,12 +17,21 @@ import { slugify, uniqueSlug } from "@/lib/slugify";
 // service pages (its public URL changes with the service). Stamp the editor as
 // the last modifier (the Local API doesn't infer the user).
 //
-// Role-aware since the review flow: admins publish directly; editors save a
-// DRAFT version ("submit for review") that leaves the published article
-// untouched until an admin approves it at /admin/review.
-export async function saveTopic(id, data) {
+// Explicit publishing (October 2026): the caller says what it wants —
+//   "draft"    save privately; the live page and the review queue are untouched
+//   "submit"   save and ask for review (editors); appears in /admin/review
+//   "publish"  go live (admins) — only if the article is complete
+//              (lib/article-completeness.js); otherwise it is saved as a draft
+//              and the result says what is missing, so no work is lost.
+// Save used to mean a different thing per role with nothing on screen saying
+// which; the verbs now live on the buttons, and this returns what happened.
+export async function saveTopic(id, data, { intent } = {}) {
   const { payload, user } = await authedPayload();
   const isAdmin = user.role === "admin";
+  const want = intent ?? (isAdmin ? "publish" : "submit");
+  if (want === "publish" && !isAdmin) {
+    return { ok: false, status: "draft", error: "Only admins can publish." };
+  }
 
   const prev = await payload
     .findByID({ collection: "topics", id, depth: 0 })
@@ -57,15 +67,21 @@ export async function saveTopic(id, data) {
     patch.order = dest.totalDocs;
   }
 
-  patch._status = isAdmin ? "published" : "draft";
+  const { complete, missing } = articleCompleteness(patch);
+  const publishing = want === "publish" && complete;
+  patch._status = publishing ? "published" : "draft";
+  if (publishing) patch.reviewRequested = false;
+  else if (want === "submit") patch.reviewRequested = true;
+  // "draft" leaves reviewRequested as stored: an editor refining a submission
+  // is still waiting for review.
   await payload.update({
     collection: "topics",
     id,
     data: patch,
-    draft: !isAdmin,
+    draft: !publishing,
   });
   await logAudit(payload, {
-    action: isAdmin ? "updated" : "submitted",
+    action: publishing ? "published" : want === "submit" ? "submitted" : "updated",
     collectionSlug: "topics",
     docId: id,
     docTitle: data.title,
@@ -78,7 +94,48 @@ export async function saveTopic(id, data) {
     revalidatePath(`/admin/services/${prevServiceId}`);
     revalidatePath(`/admin/services/${nextServiceId}`);
   }
-  revalidatePublicContent(); // the article page + its parent category page
+  // Drafts change nothing public; publishing refreshes the article page and
+  // its category page.
+  if (publishing) revalidatePublicContent();
+  return {
+    ok: true,
+    status: patch._status,
+    published: publishing,
+    submitted: want === "submit",
+    // Filled when a publish was asked for but the article is not complete.
+    refused: want === "publish" && !complete,
+    missing,
+  };
+}
+
+// Take an article off the live site. Payload keeps every version, so this is
+// reversible: Publish puts it back. The main document's status flips to draft,
+// which is what the public adapter filters on.
+export async function unpublishTopic(id) {
+  const { payload, user } = await authedPayload();
+  if (user.role !== "admin") return { ok: false, error: "Only admins can unpublish." };
+  const doc = await payload
+    .findByID({ collection: "topics", id, depth: 0, draft: true })
+    .catch(() => null);
+  if (!doc) return { ok: false, error: "Article not found." };
+  await payload.update({
+    collection: "topics",
+    id,
+    data: { _status: "draft", reviewRequested: false, updatedBy: user.id },
+    draft: false,
+  });
+  await logAudit(payload, {
+    action: "unpublished",
+    collectionSlug: "topics",
+    docId: id,
+    docTitle: doc.title,
+    userId: user.id,
+  });
+  revalidatePath("/admin/review");
+  revalidatePath(`/admin/articles/${id}`);
+  revalidatePath("/admin/articles");
+  revalidatePublicContent();
+  return { ok: true };
 }
 
 export async function createTopic(serviceId) {
@@ -87,22 +144,29 @@ export async function createTopic(serviceId) {
     collection: "topics",
     where: { service: { equals: serviceId } },
   });
-  // The stub publishes for every role — an empty shell is harmless, and it
-  // guarantees a published baseline exists for the review flow to diff and
-  // fall back to. Content edits are what go through review.
+  // A new article starts as a DRAFT. It used to publish at once "as a baseline
+  // for review", which put an empty "New article" card on the live category
+  // page every time anyone clicked Add (nine were deleted by hand on
+  // 2026-10-02). The public adapter reads published only, the review queue
+  // only sees submitted drafts, and the slug is unique so two stubs can't
+  // shadow each other.
   const created = await payload.create({
     collection: "topics",
     data: {
-      title: "New article",
-      slug: `new-topic-${existing.totalDocs + 1}`,
+      title: STUB_TITLE,
+      slug: await uniqueSlug(payload, "topics", "new-article", null, {
+        service: { equals: serviceId },
+      }),
       service: serviceId,
       order: existing.totalDocs,
       // Prewrite the FAQ subheading so editors start from a sensible line.
       article: { faqLead: DEFAULT_FAQ_SUBHEADING },
       createdBy: user.id,
       updatedBy: user.id,
-      _status: "published",
+      reviewRequested: false,
+      _status: "draft",
     },
+    draft: true,
   });
   await logAudit(payload, {
     action: "created",
@@ -113,7 +177,6 @@ export async function createTopic(serviceId) {
   });
   revalidatePath(`/admin/services/${serviceId}`);
   revalidatePath("/admin/articles");
-  revalidatePublicContent();
   redirect(`/admin/articles/${created.id}`);
 }
 

@@ -31,6 +31,9 @@ export const AuditLog: CollectionConfig = {
         "submitted",
         "approved",
         "declined",
+        // Explicit publishing (Articles, 2026-10): admins publish / unpublish.
+        "published",
+        "unpublished",
       ],
     },
     {

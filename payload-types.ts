@@ -280,6 +280,10 @@ export interface User {
  */
 export interface Topic {
   id: number;
+  /**
+   * Submitted for review by an editor
+   */
+  reviewRequested?: boolean | null;
   title: string;
   /**
    * URL segment
@@ -494,7 +498,7 @@ export interface QuickAccess {
  */
 export interface AuditLog {
   id: number;
-  action: 'created' | 'updated' | 'deleted' | 'submitted' | 'approved' | 'declined';
+  action: 'created' | 'updated' | 'deleted' | 'submitted' | 'approved' | 'declined' | 'published' | 'unpublished';
   /**
    * services | topics | quick-access | site-text | users
    */
@@ -676,6 +680,7 @@ export interface ServicesSelect<T extends boolean = true> {
  * via the `definition` "topics_select".
  */
 export interface TopicsSelect<T extends boolean = true> {
+  reviewRequested?: T;
   title?: T;
   slug?: T;
   service?: T;

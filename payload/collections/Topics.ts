@@ -22,6 +22,16 @@ export const Topics: CollectionConfig = {
     group: "Content",
   },
   fields: [
+    // Set when an editor submits a draft for review; cleared when it is
+    // published, approved, declined or unpublished. Payload's drafts alone
+    // cannot tell "saved privately" from "please review this" — this flag is
+    // the difference, and the review queue filters on it (lib/publish-state.js).
+    {
+      name: "reviewRequested",
+      type: "checkbox",
+      defaultValue: false,
+      admin: { position: "sidebar", description: "Submitted for review by an editor" },
+    },
     { name: "title", type: "text", required: true },
     {
       name: "slug",

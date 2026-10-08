@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { authedPayload } from "@/lib/admin-auth";
 import { auditLabels } from "@/lib/format-audit";
+import { publishState } from "@/lib/publish-state";
 import { ArticleEditor } from "./article-editor";
 
 export const metadata = {
@@ -39,6 +40,23 @@ export default async function AdminTopicEditPage({ params }) {
     : null;
   const { service: _service, ...topicForClient } = topic;
 
+  // The editor's one state chip (lib/publish-state.js). `topic` is the newest
+  // version; when that is a draft, a second read tells a pending edit to a
+  // live article apart from an article that has never been published.
+  const latestIsDraft = topic._status === "draft";
+  let hasPublished = !latestIsDraft;
+  if (latestIsDraft) {
+    const published = await payload
+      .findByID({ collection: "topics", id, depth: 0, draft: false })
+      .catch(() => null);
+    hasPublished = published?._status === "published";
+  }
+  const state = publishState({
+    latestIsDraft,
+    hasPublished,
+    reviewRequested: !!topic.reviewRequested,
+  });
+
   // All services, for the reassignment dropdown (id + title, in page order).
   const { docs: allServices } = await payload.find({
     collection: "services",
@@ -60,7 +78,7 @@ export default async function AdminTopicEditPage({ params }) {
       services={services}
       audit={auditLabels(topic)}
       isAdmin={user.role === "admin"}
-      pendingReview={topic._status === "draft"}
+      state={state}
     />
   );
 }

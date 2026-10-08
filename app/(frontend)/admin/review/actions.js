@@ -6,6 +6,7 @@ import { logAudit } from "@/lib/audit-log";
 import { authedPayload } from "@/lib/admin-auth";
 import { validateSiteText, withSiteTextDefaults } from "@/lib/site-text-defaults";
 import { revalidatePublicContent } from "@/lib/revalidate-public";
+import { articleCompleteness } from "@/lib/article-completeness";
 
 const notAllowed = { ok: false, error: "Only admins can review changes." };
 
@@ -26,10 +27,24 @@ export async function approveDraft(id) {
   const { payload, user } = await authedPayload();
   if (user.role !== "admin") return notAllowed;
   try {
+    // Approving publishes, so the same completeness gate as Publish applies.
+    const latest = await payload.findByID({
+      collection: "topics",
+      id,
+      depth: 0,
+      draft: true,
+    });
+    const { complete, missing } = articleCompleteness(latest);
+    if (!complete) {
+      return {
+        ok: false,
+        error: `Not ready to publish. Still missing: ${missing.join("; ")}. Open the article to finish it, or ask the editor to.`,
+      };
+    }
     const updated = await payload.update({
       collection: "topics",
       id,
-      data: { _status: "published", updatedBy: user.id },
+      data: { _status: "published", reviewRequested: false, updatedBy: user.id },
       draft: false,
     });
     await logAudit(payload, {
@@ -59,6 +74,16 @@ export async function declineDraft(id) {
       depth: 0,
       draft: false,
     });
+    // Articles start as drafts now, so a submission can be the first version
+    // of an article. There is nothing published to fall back to, and
+    // re-publishing `pub` here would publish the stub itself.
+    if (pub?._status !== "published") {
+      return {
+        ok: false,
+        error:
+          "This article has never been published, so there is no earlier version to keep. Edit it, ask the editor to revise it, or delete it from Articles.",
+      };
+    }
     const {
       id: _id,
       createdAt: _c,
@@ -70,7 +95,7 @@ export async function declineDraft(id) {
     await payload.update({
       collection: "topics",
       id,
-      data: { ...data, _status: "published", updatedBy: user.id },
+      data: { ...data, _status: "published", reviewRequested: false, updatedBy: user.id },
       draft: false,
     });
     await logAudit(payload, {

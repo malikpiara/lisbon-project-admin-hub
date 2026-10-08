@@ -86,6 +86,21 @@ Topics, `joinedAt` on Users, …).
 - [x] Delete leftover test content: the 4 "New card" Quick Access rows
       (ids 10, 12, 13, 14) — done 2026-07-08.
 
+### 4b. Explicit publishing (Oct 2026) — deploy order
+
+Articles now have Save draft / Publish / Submit for review / Unpublish and a
+`reviewRequested` flag; the public adapter reads **published only**.
+
+- [ ] Push the schema (`topics.review_requested` + the two audit verbs) via
+      `scripts/schema-push.ts` (dry run, then `--apply`).
+- [ ] `pnpm tsx scripts/publish-state-migration.ts` (dry run), then `--apply`:
+      unpublishes the published shells (2 "New article" stubs + 3 content-less
+      articles as of 2026-10-07) and flags today's pending drafts as submitted,
+      so the review queue keeps showing them.
+- [ ] Deploy. Tell editors: Save draft is private; Submit for review is what
+      reaches the admins; admins see Publish disabled until an article has a
+      title, a description and one filled section.
+
 ## 5. Content migration (the team's part)
 
 Tracked in full in [CONTENT-MIGRATION-AUDIT.md](./CONTENT-MIGRATION-AUDIT.md):

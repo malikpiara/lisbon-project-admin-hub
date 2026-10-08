@@ -15,13 +15,15 @@ export default async function AdminReviewPage() {
   // Reviewing is publishing; editors can't approve their own work.
   if (user.role !== "admin") redirect("/admin");
 
-  // Pending = the newest version of a doc is a draft. depth: 1 populates the
-  // submitter on version.updatedBy.
+  // Pending = the newest version of a doc is a draft that an editor submitted.
+  // Private drafts (reviewRequested false) and untouched stubs stay out.
+  // depth: 1 populates the submitter on version.updatedBy.
   const { docs: pending } = await payload.findVersions({
     collection: "topics",
     where: {
       latest: { equals: true },
       "version._status": { equals: "draft" },
+      "version.reviewRequested": { equals: true },
     },
     sort: "-updatedAt",
     limit: 50,

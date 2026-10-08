@@ -98,6 +98,11 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
                       </span>
                     ) : null}
                   </span>
+                  {t.stateLabel ? (
+                    <span className="shrink-0 rounded-full border-2 border-border px-2 py-0.5 text-ds-xxs font-bold text-muted-foreground">
+                      {t.stateLabel}
+                    </span>
+                  ) : null}
                   {/* Service as a scannable chip — read the whole list by
                       category at a glance instead of parsing a muted line. */}
                   {t.serviceTitle ? (
