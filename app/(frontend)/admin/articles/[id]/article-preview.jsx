@@ -2,7 +2,7 @@
 
 import { IconArrowRight } from "@/components/icons/ds-icons";
 import { splitLines, splitParagraphs } from "@/lib/article-defaults";
-import { renderInlineRich, renderRichText } from "@/components/services/rich-text";
+import { listClass, renderInlineRich, renderRichText } from "@/components/services/rich-text";
 import { stripListMarker } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
 
@@ -87,13 +87,14 @@ export function ArticlePreview({ draft, topicTitle }) {
                   if (b.type === "list") {
                     const items = splitLines(b.items);
                     const ListTag = b.ordered ? "ol" : "ul";
-                    const listClass = b.ordered ? "list-decimal" : "list-disc";
+                    // Same markers as the page (bold teal step numbers), one
+                    // size down to match the preview's compact type.
                     return items.length ? (
                       <ListTag
                         key={b._k ?? j}
                         className={cn(
-                          listClass,
-                          "space-y-0.5 pl-5 text-ds-xxs font-medium leading-relaxed text-brand-deep"
+                          listClass(b.ordered),
+                          "space-y-0.5 pl-5 text-ds-xxs font-medium leading-relaxed text-brand-deep marker:text-ds-xs"
                         )}
                       >
                         {items.map((it, k) => (

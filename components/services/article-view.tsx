@@ -11,7 +11,7 @@ import {
   ReferenceTable,
   type ReferenceTableData,
 } from "@/components/services/reference-table";
-import { renderInlineRich, renderRichText } from "@/components/services/rich-text";
+import { listClass, renderInlineRich, renderRichText } from "@/components/services/rich-text";
 import { stripListMarker } from "@/lib/rich-text";
 import { MapVisit } from "@/components/home/map-visit";
 import type { SiteText } from "@/lib/site-text-defaults";
@@ -193,16 +193,18 @@ export function ArticleView({
                           ) : null;
                         }
                         if (b.type === "list") {
+                          // Same list styling as numbered lines typed inside a
+                          // text block (rich-text.tsx): step numbers bold, teal
+                          // and a size up — the team's "números em bold" ask,
+                          // which 21 of 25 step-by-step sections build with
+                          // this block, not with typed numbers.
                           const ListTag = b.ordered ? "ol" : "ul";
-                          const listClass = b.ordered
-                            ? "list-decimal"
-                            : "list-disc";
                           return b.items.length ? (
                             <ListTag
                               key={i}
                               className={cn(
-                                listClass,
-                                "space-y-1 pl-6 text-ds-xs font-medium leading-relaxed text-brand-deep"
+                                listClass(b.ordered),
+                                "text-ds-xs font-medium leading-relaxed text-brand-deep"
                               )}
                             >
                               {b.items.map((it, j) => (
