@@ -1,15 +1,13 @@
 import { jetBrainsMono, quicksand } from "@/app/_fonts";
 import "../globals.css";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
+import { MARGIN_ORIGIN, marginOn } from "@/lib/margin";
 import { SITE, SITE_URL } from "@/lib/site";
 
-// Margin, RoundTwenty's review layer, rides on the preview Worker only: the
-// script tag and the commit meta below never reach a production build.
-// DEPLOY_ENV=preview is exported by `scripts/cf.sh build preview` and set in
-// that Worker's vars; MARGIN_VERSION is the commit cf.sh stamps at build time
-// so every comment records the page it was made on (2026-10-07).
-const MARGIN_PREVIEW = process.env.DEPLOY_ENV === "preview";
-const MARGIN_ORIGIN = "https://margin.roundtwenty.com";
+// Margin (RoundTwenty's review layer): lib/margin.js says where it ships.
+// MARGIN_VERSION is the commit cf.sh stamps at build time, so every comment
+// records the page version it was made on.
+const MARGIN = marginOn();
 
 // Shared by the public site, /admin and /login. The default title + description
 // are public-facing (the admin/login routes set their own titles and opt out of
@@ -36,7 +34,7 @@ export const metadata = {
     description: SITE.description,
   },
   robots: { index: true, follow: true },
-  ...(MARGIN_PREVIEW && process.env.MARGIN_VERSION
+  ...(MARGIN && process.env.MARGIN_VERSION
     ? { other: { "margin-version": process.env.MARGIN_VERSION } }
     : {}),
 };
@@ -49,7 +47,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <PostHogProvider>{children}</PostHogProvider>
-        {MARGIN_PREVIEW ? <script src={`${MARGIN_ORIGIN}/v1/margin.js`} defer /> : null}
+        {MARGIN ? <script src={`${MARGIN_ORIGIN}/v1/margin.js`} defer /> : null}
       </body>
     </html>
   );

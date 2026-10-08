@@ -148,10 +148,15 @@ case "$cmd" in
       # DEPLOY_ENV the Worker gets from its vars at runtime.
       export DEPLOY_ENV=preview
       export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://lisbon-project-preview.upfra-me.workers.dev}"
-      # Margin stamps each comment with the commit it was made on
-      # (<meta name="margin-version"> in app/(frontend)/layout.js, 2026-10-07).
-      export MARGIN_VERSION="${MARGIN_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"
     fi
+    # Margin stamps each comment with the commit it was made on
+    # (<meta name="margin-version"> in app/(frontend)/layout.js). Every build,
+    # since production carries Margin too while lp.lisboaux.com is the team's
+    # review copy (lib/margin.js, 2026-10-08). Workers Builds provides the SHA.
+    if [ -z "${MARGIN_VERSION:-}" ] && [ -n "${WORKERS_CI_COMMIT_SHA:-}" ]; then
+      export MARGIN_VERSION="${WORKERS_CI_COMMIT_SHA:0:7}"
+    fi
+    export MARGIN_VERSION="${MARGIN_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"
     if [ -f .env.local ]; then
       export_build_env
       mv .env.local "$HOLD"

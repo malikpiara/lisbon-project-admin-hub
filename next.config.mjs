@@ -1,4 +1,5 @@
 import { withPayload } from "@payloadcms/next/withPayload";
+import { MARGIN_ORIGIN, marginOn } from "./lib/margin.js";
 
 // Baseline security headers applied to every response.
 //   • Content-Security-Policy ships in REPORT-ONLY mode (below): it reports
@@ -19,9 +20,10 @@ import { withPayload } from "@payloadcms/next/withPayload";
 // 'unsafe-inline' stays for now (Next's inline bootstrap + Tailwind); tighten to
 // nonces/hashes when enforcing. 'unsafe-eval' is intentionally omitted so
 // report-only surfaces anything that still needs it.
-// The preview build also loads Margin (RoundTwenty's review layer) and talks
-// to its API; production never does, so its CSP stays as it was (2026-10-07).
-const margin = process.env.DEPLOY_ENV === "preview" ? " https://margin.roundtwenty.com" : "";
+// Builds that load Margin (RoundTwenty's review layer, lib/margin.js) let its
+// script and API in; its passcode curtain also loads two Google Fonts.
+const marginBuild = marginOn();
+const margin = marginBuild ? ` ${MARGIN_ORIGIN}` : "";
 
 const csp = [
   "default-src 'self'",
@@ -30,9 +32,9 @@ const csp = [
   "frame-ancestors 'self'",
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline' https://*.posthog.com https://*.i.posthog.com https://interfaces.zapier.com${margin}`,
-  "style-src 'self' 'unsafe-inline'",
+  `style-src 'self' 'unsafe-inline'${marginBuild ? " https://fonts.googleapis.com" : ""}`,
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  `font-src 'self' data:${marginBuild ? " https://fonts.gstatic.com" : ""}`,
   `connect-src 'self' https://*.posthog.com https://*.i.posthog.com https://*.zapier.com https://*.supabase.co https://connect.mailerlite.com${margin}`,
   "frame-src 'self' https://www.google.com https://interfaces.zapier.com https://*.zapier.com https://*.zapier.app",
   "worker-src 'self' blob:",

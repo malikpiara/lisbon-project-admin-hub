@@ -170,6 +170,21 @@ automate it for a review round, connect a second Workers Builds project to the
 same repository with the branch as its production branch and
 `bash scripts/cf.sh deploy preview` as the deploy command.
 
+### Margin (team review comments)
+
+Margin is RoundTwenty's review layer: one script from `margin.roundtwenty.com`
+that lets people holding a review link comment on any page, `/admin` included.
+`lib/margin.js` decides which builds carry it. The preview Worker always does,
+and so does production while lp.lisboaux.com is the team's review copy
+(2026-10-08). Set `MARGIN_ON_PRODUCTION` to `false` at public launch. The same
+switch adds Margin's origin and its curtain's Google Fonts to the CSP, and
+every build stamps the commit in `<meta name="margin-version">`.
+
+A visitor without a link sees nothing, unless the round has a passcode: then
+Margin's curtain covers the page until they type it. Rounds, origins and
+passcodes are managed from the margin repository (`pnpm review …`, see its
+README); a new address must be added to the round with `pnpm review origin add`.
+
 ## Configuration and secrets
 
 Runtime values are Worker secrets and survive deploys. `.env.local` is the
