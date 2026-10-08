@@ -461,6 +461,42 @@ export interface Contact {
    * What the organization does — the “Service Provided” column. This is free text, distinct from the Categories below.
    */
   service?: string | null;
+  phones?:
+    | {
+        number: string;
+        /**
+         * Optional, e.g. “Helpline” or “24h”
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  emails?:
+    | {
+        address: string;
+        id?: string | null;
+      }[]
+    | null;
+  websites?:
+    | {
+        url: string;
+        /**
+         * Shown instead of the address, e.g. “Book online”
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  socials?:
+    | {
+        network: 'instagram' | 'facebook' | 'linkedin' | 'whatsapp' | 'other';
+        /**
+         * @handle, a number (WhatsApp) or a full URL
+         */
+        handle: string;
+        id?: string | null;
+      }[]
+    | null;
   phone?: string | null;
   email?: string | null;
   /**
@@ -482,7 +518,7 @@ export interface QuickAccess {
   description?: string | null;
   href: string;
   /**
-   * A DS icon name (the same set as service icons). Empty keeps the default.
+   * One of the Quick Access glyphs (lib/quick-access-icons.js). Empty keeps the default.
    */
   iconKey?: string | null;
   /**
@@ -821,6 +857,33 @@ export interface TopicsSelect<T extends boolean = true> {
 export interface ContactsSelect<T extends boolean = true> {
   organization?: T;
   service?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        label?: T;
+        id?: T;
+      };
+  emails?:
+    | T
+    | {
+        address?: T;
+        id?: T;
+      };
+  websites?:
+    | T
+    | {
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  socials?:
+    | T
+    | {
+        network?: T;
+        handle?: T;
+        id?: T;
+      };
   phone?: T;
   email?: T;
   categories?: T;

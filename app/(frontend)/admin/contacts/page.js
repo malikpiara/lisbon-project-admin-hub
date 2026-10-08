@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { contactChannels } from "@/lib/contact-channels";
 import { IconArrowRight, IconPlus } from "@/components/icons/ds-icons";
 
 import { authedPayload } from "@/lib/admin-auth";
@@ -53,6 +54,7 @@ export default async function AdminContactsPage() {
         ) : (
           docs.map((c) => {
             const cats = Array.isArray(c.categories) ? c.categories : [];
+            const primaryEmail = contactChannels(c).emails[0] ?? "";
             return (
               <Link
                 key={c.id}
@@ -63,9 +65,9 @@ export default async function AdminContactsPage() {
                   <span className="block truncate text-ds-xs font-bold text-foreground">
                     {c.organization || "Untitled contact"}
                   </span>
-                  {c.email ? (
+                  {primaryEmail ? (
                     <span className="block truncate text-ds-xxs font-medium text-muted-foreground">
-                      {c.email}
+                      {primaryEmail}
                     </span>
                   ) : null}
                 </div>

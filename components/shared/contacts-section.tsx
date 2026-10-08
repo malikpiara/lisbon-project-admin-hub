@@ -26,6 +26,8 @@ import {
   IconPhone,
   IconSearch,
 } from "@/components/icons/ds-icons";
+import { Icon } from "@/components/ui/icon";
+import { socialLink, telHref, websiteLink } from "@/lib/contact-channels";
 import {
   Table,
   TableBody,
@@ -39,8 +41,11 @@ export type Contact = {
   id: string;
   organization: string;
   service: string;
-  phone: string;
-  email: string;
+  // Channels (lib/contact-channels.js): each entry is one icon link.
+  phones: { number: string; label: string }[];
+  emails: string[];
+  websites: { url: string; label: string }[];
+  socials: { network: string; handle: string }[];
   // Service slugs this contact belongs to — the single taxonomy. A contact can
   // sit in several categories and surfaces on each of their pages.
   categories: string[];
@@ -52,6 +57,39 @@ function mapsHref(org: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${org}, Lisbon`
   )}`;
+}
+
+// The DS glyph for each social network; anything else is a globe.
+const SOCIAL_ICON: Record<string, string> = {
+  instagram: "instagram",
+  facebook: "facebook",
+  linkedin: "linkedin",
+  whatsapp: "whatsapp",
+};
+
+// One channel = one icon link (Figma table-row: button-tertiary rows). Only
+// rendered for channels that exist, so a missing one leaves no bare icon.
+function ChannelLink({
+  href,
+  icon,
+  external = false,
+  children,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  external?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
+    >
+      {icon}
+      <span className="min-w-0 break-words">{children}</span>
+    </a>
+  );
 }
 
 export function ContactsSection({
@@ -101,7 +139,9 @@ export function ContactsSection({
       return (
         c.organization.toLowerCase().includes(q) ||
         c.service.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q)
+        c.emails.some((e) => e.toLowerCase().includes(q)) ||
+        c.phones.some((p) => p.number.replace(/\s/g, "").includes(q.replace(/\s/g, ""))) ||
+        c.websites.some((w) => w.url.toLowerCase().includes(q))
       );
     });
   }, [contacts, deferredQuery, category]);
@@ -193,58 +233,72 @@ export function ContactsSection({
               these headers, not the visible cell content — so filtering/searching
               (which changes the row set) never makes the columns jump. */}
           <ViewTransition>
+          {/* Figma table (3393:7224): four equal columns with 24px gutters and a
+              narrow Directions column with an icon-only button. The gutters
+              are the cells' 12px side padding; the first and last columns sit
+              flush with the card's content edge. */}
           <Table className="min-w-[920px] table-fixed">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="w-[16%] py-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
-                <TableHead className="w-[21%] text-ds-xxs font-medium text-muted-foreground">Service Provided</TableHead>
-                <TableHead className="w-[33%] text-ds-xxs font-medium text-muted-foreground">Contact Information</TableHead>
-                <TableHead className="w-[30%] text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
-                {/* Link is a fixed-width column: the "Get Directions" button has a
-                    fixed intrinsic width, so a percentage column would starve it on
-                    narrower tables. The other four columns share the rest. */}
-                <TableHead className="w-[188px] text-ds-xxs font-medium text-muted-foreground">Link</TableHead>
+                <TableHead className="py-3 pl-0 pr-3 text-ds-xxs font-medium text-muted-foreground">Organization</TableHead>
+                <TableHead className="px-3 text-ds-xxs font-medium text-muted-foreground">Service</TableHead>
+                <TableHead className="px-3 text-ds-xxs font-medium text-muted-foreground">Contact</TableHead>
+                <TableHead className="px-3 text-ds-xxs font-medium text-muted-foreground">Category</TableHead>
+                <TableHead className="w-[72px] pl-3 pr-0 text-ds-xxs font-medium text-muted-foreground">Directions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.id} className="border-border hover:bg-transparent">
-                  <TableCell className="max-w-48 py-6 align-top text-ds-m font-bold whitespace-normal text-foreground">
+                  <TableCell className="py-6 pl-0 pr-3 align-top text-ds-m font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
-                  <TableCell className="max-w-56 py-6 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
+                  <TableCell className="px-3 py-6 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
                     {c.service}
                   </TableCell>
-                  {/* Each channel renders only when it has a value — no bare icon or
-                      dead mailto:/tel: link. With neither, the cell stays empty (the
-                      <td> itself stays so the row's columns keep lining up). */}
-                  <TableCell className="py-6 align-top">
-                    {c.email.trim() || c.phone.trim() ? (
+                  {/* One icon link per channel, in the frame's order: emails,
+                      phones, social profiles, websites. Nothing renders for a
+                      channel the organisation doesn't have; the <td> stays so
+                      the columns line up. */}
+                  <TableCell className="px-3 py-6 align-top">
+                    {c.emails.length || c.phones.length || c.socials.length || c.websites.length ? (
                       <div className="space-y-2">
-                        {c.email.trim() ? (
-                          <a
-                            href={`mailto:${c.email.trim()}`}
-                            className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                          >
-                            <IconMail className="size-4" />
-                            {c.email}
-                          </a>
-                        ) : null}
-                        {/* tel: href strips spaces/punctuation (keep digits + leading
-                            +) so it dials correctly; the label stays formatted. */}
-                        {c.phone.trim() ? (
-                          <a
-                            href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}
-                            className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
-                          >
-                            <IconPhone className="size-4" />
-                            {c.phone}
-                          </a>
-                        ) : null}
+                        {c.emails.map((e) => (
+                          <ChannelLink key={e} href={`mailto:${e}`} icon={<IconMail className="size-4 shrink-0" />}>
+                            {e}
+                          </ChannelLink>
+                        ))}
+                        {c.phones.map((p, i) => (
+                          <ChannelLink key={`${p.number}-${i}`} href={telHref(p.number)} icon={<IconPhone className="size-4 shrink-0" />}>
+                            {p.number}
+                            {p.label ? <span className="font-medium text-muted-foreground"> · {p.label}</span> : null}
+                          </ChannelLink>
+                        ))}
+                        {c.socials.map((s, i) => {
+                          const { href, label } = socialLink(s);
+                          return (
+                            <ChannelLink
+                              key={`${s.network}-${i}`}
+                              href={href}
+                              external
+                              icon={<Icon name={SOCIAL_ICON[s.network] ?? "globe"} className="size-4 shrink-0" />}
+                            >
+                              {label}
+                            </ChannelLink>
+                          );
+                        })}
+                        {c.websites.map((w, i) => {
+                          const { href, label } = websiteLink(w);
+                          return (
+                            <ChannelLink key={`${w.url}-${i}`} href={href} external icon={<Icon name="globe" className="size-4 shrink-0" />}>
+                              {label}
+                            </ChannelLink>
+                          );
+                        })}
                       </div>
                     ) : null}
                   </TableCell>
-                  <TableCell className="py-6 align-top">
+                  <TableCell className="px-3 py-6 align-top">
                     <div className="flex flex-wrap gap-1.5">
                       {c.categories.map((slug) => {
                         const label = labelBySlug[slug] ?? slug;
@@ -265,14 +319,16 @@ export function ContactsSection({
                       })}
                     </div>
                   </TableCell>
-                  <TableCell className="py-6 align-top">
+                  <TableCell className="py-6 pl-3 pr-0 align-top">
+                    {/* Icon-only, as in the frame; the name is in the accessible label. */}
                     <a
                       href={mapsHref(c.organization)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={buttonVariants()}
+                      aria-label={`Get directions to ${c.organization}`}
+                      title={`Get directions to ${c.organization}`}
+                      className={buttonVariants({ size: "icon" })}
                     >
-                      Get Directions
                       <IconArrowRight className="size-4" />
                     </a>
                   </TableCell>

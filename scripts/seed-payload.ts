@@ -141,8 +141,8 @@ for (const c of defaultAdminData.contacts ?? []) {
     data: {
       organization: c.organization,
       service: c.service,
-      phone: c.phone,
-      email: c.email,
+      phones: c.phone ? [{ number: c.phone }] : [],
+      emails: c.email ? [{ address: c.email }] : [],
       categories: (c.categories ?? [])
         .map((slug) => serviceIdBySlug[slug])
         .filter((id) => id !== undefined),
