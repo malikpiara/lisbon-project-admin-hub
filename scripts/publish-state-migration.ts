@@ -37,6 +37,15 @@ for (const file of [".env.local", ".env"]) {
 }
 
 const apply = process.argv.includes("--apply");
+
+// RAN ON PRODUCTION 2026-10-08. Do not --apply it again: since then, an
+// unsubmitted draft is someone's saved work, and step 2 would put every one
+// of them in the review queue. --unflag stays available; anything else needs
+// --rerun on purpose.
+if (apply && !process.argv.includes("--unflag") && !process.argv.includes("--rerun")) {
+  console.error("publish-state-migration already ran on 2026-10-08; step 2 would now flag unsubmitted drafts. Pass --rerun if you really mean it.");
+  process.exit(1);
+}
 const fromJson = process.argv.indexOf("--from-json");
 
 type Topic = { id: number | string; slug: string; title: string; _status?: string; article?: { sections?: any[] } };
