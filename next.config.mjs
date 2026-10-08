@@ -100,13 +100,19 @@ function forCloudflare(config) {
   return {
     ...config,
     serverExternalPackages: config.serverExternalPackages.filter(
-      (name) => !name.startsWith("drizzle-kit"),
+      (name) =>
+        !name.startsWith("drizzle-kit") &&
+        !name.startsWith("@payloadcms/db-sqlite") &&
+        !name.startsWith("@libsql"),
     ),
     turbopack: {
       ...config.turbopack,
       resolveAlias: {
         ...config.turbopack?.resolveAlias,
         "drizzle-kit/api": "./lib/cloudflare/drizzle-kit-stub.cjs",
+        // The local SQLite sandbox adapter (payload.config.ts) would leave an
+        // unresolvable @libsql/client import in the Worker.
+        "@payloadcms/db-sqlite": "./lib/cloudflare/db-sqlite-stub.cjs",
       },
     },
   };
