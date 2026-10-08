@@ -81,6 +81,39 @@ export const Topics: CollectionConfig = {
             },
           ],
         },
+        // "Key links" is three optional cards — Websites (keyLinks) / Contacts /
+        // Locations (Figma 3805:13877). A card with no entries is not rendered;
+        // with none at all the whole block disappears (team feedback 2026-10).
+        {
+          name: "keyContacts",
+          type: "array",
+          labels: { singular: "Key contact", plural: "Key contacts" },
+          admin: { description: "People or desks to reach: a phone, an email or a page" },
+          fields: [
+            { name: "label", type: "text", required: true },
+            {
+              name: "href",
+              type: "text",
+              required: true,
+              admin: { description: "tel:…, mailto:…, /path or https://…" },
+            },
+          ],
+        },
+        {
+          name: "keyLocations",
+          type: "array",
+          labels: { singular: "Key location", plural: "Key locations" },
+          admin: { description: "Places to go: a maps link or an address page" },
+          fields: [
+            { name: "label", type: "text", required: true },
+            {
+              name: "href",
+              type: "text",
+              required: true,
+              admin: { description: "https://maps.… or /path" },
+            },
+          ],
+        },
         {
           name: "sections",
           type: "array",

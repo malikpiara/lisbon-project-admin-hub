@@ -78,6 +78,9 @@ function fromPayload(topic) {
       label: l.label ?? "",
       href: l.href ?? "",
     })),
+    // Two more shortcut lists beside Key links (the Contacts and Locations cards).
+    keyContacts: (a.keyContacts ?? []).map((l) => ({ label: l.label ?? "", href: l.href ?? "" })),
+    keyLocations: (a.keyLocations ?? []).map((l) => ({ label: l.label ?? "", href: l.href ?? "" })),
     faqLead: a.faqLead ?? "",
     faqs: (a.faqs ?? []).map((f) => ({
       _k: nextRowKey(),
@@ -102,6 +105,8 @@ function toPayload(d) {
         blocks: blocksToPayload(s.blocks),
       })),
       keyLinks: d.keyLinks.map((l) => ({ label: l.label, href: l.href })),
+      keyContacts: d.keyContacts.filter((l) => l.label.trim() && l.href.trim()),
+      keyLocations: d.keyLocations.filter((l) => l.label.trim() && l.href.trim()),
       faqLead: d.faqLead,
       faqs: d.faqs.map((f) => ({ question: f.question, answer: f.answer })),
     },
@@ -747,6 +752,82 @@ export function ArticleEditor({
             </div>
           )}
         </Section>
+
+        {/* The Key links block is three cards —
+            Websites (the list above), Contacts and Locations. Plain rows here;
+            the reorder/flash polish of Key links can follow if the shape sticks. */}
+        {[
+          {
+            key: "keyContacts",
+            title: "Key contacts",
+            addLabel: "Add contact",
+            hint: "People or desks to reach — tel:…, mailto:… or a page.",
+            placeholder: "tel:+351… / mailto:… / https://…",
+          },
+          {
+            key: "keyLocations",
+            title: "Key locations",
+            addLabel: "Add location",
+            hint: "Places to go — a Google Maps link or an address page.",
+            placeholder: "https://maps.google.com/…",
+          },
+        ].map(({ key, title, addLabel, hint, placeholder }) => (
+          <Section
+            key={key}
+            title={title}
+            description={hint}
+            count={draft[key].length}
+            action={
+              <Button
+                size="sm"
+                onClick={() =>
+                  set({ [key]: [...draft[key], { label: "", href: "" }] })
+                }
+              >
+                <IconPlus className="size-3.5" />
+                {addLabel}
+              </Button>
+            }
+          >
+            {draft[key].length === 0 ? (
+              <EmptyState
+                icon={IconArrowRight}
+                label={`No ${title.toLowerCase()}`}
+                hint="Leave this empty and the card is simply not shown."
+              />
+            ) : (
+              <div className="space-y-3">
+                {draft[key].map((l, i) => (
+                  <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <Field
+                      label="Label"
+                      value={l.label}
+                      onChange={(v) =>
+                        set({ [key]: draft[key].map((r, idx) => (idx === i ? { ...r, label: v } : r)) })
+                      }
+                    />
+                    <Field
+                      label="Link"
+                      value={l.href}
+                      onChange={(v) =>
+                        set({ [key]: draft[key].map((r, idx) => (idx === i ? { ...r, href: v } : r)) })
+                      }
+                      placeholder={placeholder}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="self-end"
+                      onClick={() => set({ [key]: draft[key].filter((_, idx) => idx !== i) })}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+        ))}
 
         <Section
           title="Article sections"

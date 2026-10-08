@@ -311,6 +311,32 @@ export interface Topic {
           id?: string | null;
         }[]
       | null;
+    /**
+     * People or desks to reach: a phone, an email or a page
+     */
+    keyContacts?:
+      | {
+          label: string;
+          /**
+           * tel:…, mailto:…, /path or https://…
+           */
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Places to go: a maps link or an address page
+     */
+    keyLocations?:
+      | {
+          label: string;
+          /**
+           * https://maps.… or /path
+           */
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
     sections?:
       | {
           heading: string;
@@ -732,6 +758,20 @@ export interface TopicsSelect<T extends boolean = true> {
     | {
         heroLead?: T;
         keyLinks?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        keyContacts?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        keyLocations?:
           | T
           | {
               label?: T;

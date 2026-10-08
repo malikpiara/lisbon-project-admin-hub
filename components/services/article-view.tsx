@@ -55,6 +55,8 @@ type Article = {
   heroLead: string;
   sections: ArticleSection[];
   keyLinks?: KeyLink[];
+  keyContacts?: KeyLink[];
+  keyLocations?: KeyLink[];
   faqLead: string;
   faqs: Faq[];
 };
@@ -64,6 +66,7 @@ type Topic = {
   description: string;
   article?: Article | null;
 };
+
 type ServiceMeta = {
   slug: string;
   title: string;
@@ -147,7 +150,11 @@ export function ArticleView({
         <div className="mx-auto max-w-[1680px] px-4 pb-16 sm:px-6 lg:px-14">
           {/* Key links lead the article ("I just need the portal link") —
               decided 2026-07-04, matching the old site's hierarchy. */}
-          <KeyLinks links={article.keyLinks ?? []} />
+          <KeyLinks
+            links={article.keyLinks ?? []}
+            contacts={article.keyContacts ?? []}
+            locations={article.keyLocations ?? []}
+          />
 
           {article.sections.map((s, index) => {
             const panel = index % 2 === 0;
