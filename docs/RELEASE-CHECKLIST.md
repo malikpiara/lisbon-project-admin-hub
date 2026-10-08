@@ -97,6 +97,9 @@ Articles now have Save draft / Publish / Submit for review / Unpublish and a
       unpublishes the published shells (2 "New article" stubs + 3 content-less
       articles as of 2026-10-07) and flags today's pending drafts as submitted,
       so the review queue keeps showing them.
+- [ ] `pnpm tsx scripts/quick-access-figma-content.ts` (dry run), then
+      `--apply`: gives the three live Quick Access cards the Figma copy and
+      glyphs (Lisbon Project / Get Support / Emergency contacts).
 - [ ] Deploy. Tell editors: Save draft is private; Submit for review is what
       reaches the admins; admins see Publish disabled until an article has a
       title, a description and one filled section.

@@ -158,6 +158,8 @@ for (const [qi, q] of defaultAdminData.quickAccess.entries()) {
       description: q.description,
       href: q.href,
       external: q.external,
+      cta: q.cta ?? "",
+      iconKey: q.iconKey ?? "",
       order: qi,
     },
   });
